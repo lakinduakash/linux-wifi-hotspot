@@ -84,4 +84,6 @@ Using the persistent [systemd](https://wiki.archlinux.org/index.php/systemd#Basi
 
 
 ## License
-FreeBSD
+FreeBSD 
+- Copyright (c) 2013, oblique
+- Copyright (c) 2019, lakinduakash
