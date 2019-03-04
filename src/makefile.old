@@ -14,7 +14,7 @@ $(ODIR)/%.o: ui/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 wihotspot: $(OBJ)
-	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o ui/$@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 
