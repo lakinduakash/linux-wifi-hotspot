@@ -13,4 +13,7 @@ target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES})
 
 include_directories(/usr/include)
 
-file(COPY ui/glade DESTINATION ${CMAKE_BINARY_DIR})
+add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND cp -pr ${CMAKE_CURRENT_SOURCE_DIR}/ui/glade ${CMAKE_CURRENT_BINARY_DIR}
+        )
