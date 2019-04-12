@@ -354,6 +354,10 @@ is_wifi_connected() {
     return 1
 }
 
+#is_wifi_connected() {
+#    return 1
+#}
+
 is_macaddr() {
     echo "$1" | grep -E "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$" > /dev/null 2>&1
 }
@@ -625,6 +629,7 @@ VHT_CAPAB=
 DRIVER=nl80211
 NO_VIRT=0
 COUNTRY=
+FREQ_BAND_SET=0
 FREQ_BAND=2.4
 NEW_MACADDR=
 DAEMONIZE=0
@@ -1132,6 +1137,7 @@ while :; do
         --freq-band)
             shift
             FREQ_BAND="$1"
+            FREQ_BAND_SET=1
             shift
             ;;
         --mac)
@@ -1230,8 +1236,7 @@ if [[ -n "$LOAD_CONFIG" && $# -eq 0 ]]; then
 fi
 
 # Check if required number of positional args are present
-if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" &&
-      $LIST_RUNNING -eq 0 && -z "$LIST_CLIENTS_ID" ]]; then
+if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && $LIST_RUNNING -eq 0 && -z "$LIST_CLIENTS_ID" ]]; then
     usage >&2
     exit 1
 fi
@@ -1528,7 +1533,8 @@ if [[ $NO_VIRT -eq 0 ]]; then
         echo "DONE"
     fi
 
-    if is_wifi_connected ${WIFI_IFACE}; then
+
+    if is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 0 ]]; then
         WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
         WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
         echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
@@ -1541,9 +1547,13 @@ if [[ $NO_VIRT -eq 0 ]]; then
             echo ", fallback to channel ${WIFI_IFACE_CHANNEL}"
             CHANNEL=$WIFI_IFACE_CHANNEL
         else
-            echo
+            echo "channel------------------ ${CHANNEL}"
         fi
+    elif is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 1 ]]; then
+        echo "Custom frequency band set with ${FREQ_BAND}Mhz with channel ${CHANNEL}"
     fi
+
+
 
     VIRTDIEMSG="Maybe your WiFi adapter does not fully support virtual interfaces.
        Try again with --no-virt."
