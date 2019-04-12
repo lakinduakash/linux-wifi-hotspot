@@ -7,37 +7,38 @@
 #define BUFSIZE 1024
 
 
-typedef struct{
-    GtkEntry* ssid;
-    GtkEntry* pass;
+typedef struct {
+    GtkEntry *ssid;
+    GtkEntry *pass;
 } WIData;
 
 
-void* threadFunc(void* args){
+void *threadFunc(void *args) {
     startShell(args);
     return 0;
 }
 
-void* stopHp(){
+void *stopHp() {
     startShell("sudo create_ap --stop ap0");
 }
 
 static void on_create_hp_clicked(GtkWidget *widget,
-                         gpointer data) {
+                                 gpointer data) {
 
-    WIData* d= (WIData*)data;
-    g_thread_new("shell",threadFunc,build_command("wlp3s0","wlp3s0",(char*)gtk_entry_get_text(d->ssid),(char*)gtk_entry_get_text(d->pass)));
+    WIData *d = (WIData *) data;
+    g_thread_new("shell", threadFunc, build_command("wlp3s0", "wlp3s0", (char *) gtk_entry_get_text(d->ssid),
+                                                    (char *) gtk_entry_get_text(d->pass)));
 
 
 }
 
-static void on_stop_hp_clicked(GtkWidget *widget,gpointer data){
-    g_thread_new("shell2",stopHp,NULL);
+static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
+    g_thread_new("shell2", stopHp, NULL);
 
 }
 
 
-int main(int argc,char *argv[]) {
+int main(int argc, char *argv[]) {
     GtkBuilder *builder;
     GObject *window;
     GtkButton *button_create_hp;
@@ -61,21 +62,20 @@ int main(int argc,char *argv[]) {
     g_signal_connect (window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 
+    entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
+    entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
-    entry_ssd = (GtkEntry*)gtk_builder_get_object(builder, "entry_ssid");
-    entry_pass = (GtkEntry*)gtk_builder_get_object(builder, "entry_pass");
 
-
-    WIData wiData={
+    WIData wiData = {
             .pass= entry_pass,
             .ssid= entry_ssd
     };
 
-    button_create_hp = (GtkButton*)gtk_builder_get_object(builder, "button_create_hp");
-    g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked),&wiData);
+    button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
+    g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), &wiData);
 
-    button_stop_hp = (GtkButton*)gtk_builder_get_object(builder, "button_stop_hp");
-    g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked),NULL);
+    button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
+    g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
     gtk_main();
 

@@ -8,7 +8,6 @@
 #include "h_prop.h"
 
 
-
 #define BUFSIZE 1024
 
 
@@ -32,7 +31,7 @@ int parse_output(char *cmd) {
         printf("OUTPUT: %s", buf);
     }
 
-    if(pclose(fp))  {
+    if (pclose(fp)) {
         printf("Command not found or exited with error status\n");
         return -1;
     }
@@ -41,15 +40,15 @@ int parse_output(char *cmd) {
 }
 
 
-char * build_command(char* iface_src,char* iface_dest,char* ssid, char* pass){
+char *build_command(char *iface_src, char *iface_dest, char *ssid, char *pass) {
 
-    snprintf(cmd,BUFSIZE,"%s %s %s %s %s %s",SUDO,CREATE_AP,iface_src,iface_dest,ssid,pass);
+    snprintf(cmd, BUFSIZE, "%s %s %s %s %s %s", SUDO, CREATE_AP, iface_src, iface_dest, ssid, pass);
 
 
     return cmd;
 }
 
 
-int startShell(char* cmd){
+int startShell(char *cmd) {
     parse_output(cmd);
 }
