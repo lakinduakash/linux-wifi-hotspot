@@ -1,5 +1,11 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <pthread.h>
+
+#include "h_prop.h"
+
+#define BUFSIZE 1024
+
 
 typedef struct{
     GtkEntry* ssid;
@@ -7,12 +13,14 @@ typedef struct{
 } WIData;
 
 
-static void print_hello(GtkEntry *widget,
-            gpointer data) {
-    const char *name;
-    name = gtk_entry_get_text (widget);
+void* threadFunc(void* args){
+    startShell(args);
+    //parse_output("sudo create_ap wlp3s0 wlp3s0 my 12345679");
+    return 0;
+}
 
-    g_print ("\nHello %s!\n\n", name);
+void* stopHp(){
+    startShell("sudo create_ap --stop ap0");
 }
 
 static void on_create_hp_clicked(GtkWidget *widget,
@@ -21,14 +29,23 @@ static void on_create_hp_clicked(GtkWidget *widget,
     WIData* d= (WIData*)data;
     printf ("Entry contents: %s\n", gtk_entry_get_text(d->ssid));
     printf ("Entry contents: %s\n", gtk_entry_get_text(d->pass));
+
+    g_thread_new("shell",threadFunc,build_command("wlp3s0","wlp3s0",(char*)gtk_entry_get_text(d->ssid),(char*)gtk_entry_get_text(d->pass)));
+
+
 }
 
+static void on_stop_hp_clicked(GtkWidget *widget,gpointer data){
+    g_thread_new("shell2",stopHp,NULL);
+
+}
 
 
 int main(int argc,char *argv[]) {
     GtkBuilder *builder;
     GObject *window;
     GtkButton *button_create_hp;
+    GtkButton *button_stop_hp;
     GtkEntry *entry_ssd;
     GtkEntry *entry_pass;
     GError *error = NULL;
@@ -50,11 +67,7 @@ int main(int argc,char *argv[]) {
 
 
     entry_ssd = (GtkEntry*)gtk_builder_get_object(builder, "entry_ssid");
-    g_signal_connect (entry_ssd, "activate", G_CALLBACK(print_hello), NULL);
-
     entry_pass = (GtkEntry*)gtk_builder_get_object(builder, "entry_pass");
-    g_signal_connect (entry_pass, "activate", G_CALLBACK(print_hello), NULL);
-
 
 
     WIData wiData={
@@ -65,8 +78,11 @@ int main(int argc,char *argv[]) {
     button_create_hp = (GtkButton*)gtk_builder_get_object(builder, "button_create_hp");
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked),&wiData);
 
+    button_stop_hp = (GtkButton*)gtk_builder_get_object(builder, "button_stop_hp");
+    g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked),NULL);
 
     gtk_main();
+
 
     return 0;
 }
