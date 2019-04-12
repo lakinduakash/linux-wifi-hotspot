@@ -15,7 +15,6 @@ typedef struct{
 
 void* threadFunc(void* args){
     startShell(args);
-    //parse_output("sudo create_ap wlp3s0 wlp3s0 my 12345679");
     return 0;
 }
 
@@ -27,9 +26,6 @@ static void on_create_hp_clicked(GtkWidget *widget,
                          gpointer data) {
 
     WIData* d= (WIData*)data;
-    printf ("Entry contents: %s\n", gtk_entry_get_text(d->ssid));
-    printf ("Entry contents: %s\n", gtk_entry_get_text(d->pass));
-
     g_thread_new("shell",threadFunc,build_command("wlp3s0","wlp3s0",(char*)gtk_entry_get_text(d->ssid),(char*)gtk_entry_get_text(d->pass)));
 
 
