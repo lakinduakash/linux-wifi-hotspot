@@ -7,9 +7,9 @@ include_directories(${GTK_INCLUDE_DIRS})
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(wihotspot ui/main.c)
+add_executable(wihotspot ui/main.c ui/h_prop.c ui/h_prop.h)
 
-target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES} "pthread")
 
 include_directories(/usr/include)
 
