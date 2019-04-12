@@ -13,7 +13,11 @@ target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES})
 
 include_directories(/usr/include)
 
-add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND cp -pr ${CMAKE_CURRENT_SOURCE_DIR}/ui/glade ${CMAKE_CURRENT_BINARY_DIR}
-        )
+set (source "${CMAKE_SOURCE_DIR}/ui/glade")
+set (destination "${CMAKE_CURRENT_BINARY_DIR}/glade")
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink ${source} ${destination}
+        DEPENDS ${destination}
+        COMMENT "symbolic link resources folder from ${source} => ${destination}"
+)

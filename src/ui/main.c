@@ -1,28 +1,43 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
 
-static void
-print_hello(GtkWidget *widget,
+typedef struct{
+    GtkEntry* ssid;
+    GtkEntry* pass;
+} WIData;
+
+
+static void print_hello(GtkEntry *widget,
             gpointer data) {
-    g_print("Hello World\n");
+    const char *name;
+    name = gtk_entry_get_text (widget);
+
+    g_print ("\nHello %s!\n\n", name);
 }
 
-static void print_hello2(GtkWidget *widget,
+static void on_create_hp_clicked(GtkWidget *widget,
                          gpointer data) {
-    g_print("Hello World 2\n");
+
+    WIData* d= (WIData*)data;
+    printf ("Entry contents: %s\n", gtk_entry_get_text(d->ssid));
+    printf ("Entry contents: %s\n", gtk_entry_get_text(d->pass));
 }
+
 
 
 int main(int argc,char *argv[]) {
     GtkBuilder *builder;
     GObject *window;
-    GObject *button;
+    GtkButton *button_create_hp;
+    GtkEntry *entry_ssd;
+    GtkEntry *entry_pass;
     GError *error = NULL;
 
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
     builder = gtk_builder_new();
-    if (gtk_builder_add_from_file(builder, "glade/main.ui", &error) == 0) {
+    if (gtk_builder_add_from_file(builder, "glade/wifih.ui", &error) == 0) {
         g_printerr("Error loading file: %s\n", error->message);
         g_clear_error(&error);
         return 1;
@@ -32,14 +47,24 @@ int main(int argc,char *argv[]) {
     window = gtk_builder_get_object(builder, "window");
     g_signal_connect (window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    button = gtk_builder_get_object(builder, "button1");
-    g_signal_connect (button, "clicked", G_CALLBACK(print_hello), NULL);
 
-    button = gtk_builder_get_object(builder, "button_new");
-    g_signal_connect (button, "clicked", G_CALLBACK(print_hello2), NULL);
 
-    button = gtk_builder_get_object(builder, "quit");
-    g_signal_connect (button, "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    entry_ssd = (GtkEntry*)gtk_builder_get_object(builder, "entry_ssid");
+    g_signal_connect (entry_ssd, "activate", G_CALLBACK(print_hello), NULL);
+
+    entry_pass = (GtkEntry*)gtk_builder_get_object(builder, "entry_pass");
+    g_signal_connect (entry_pass, "activate", G_CALLBACK(print_hello), NULL);
+
+
+
+    WIData wiData={
+            .pass= entry_pass,
+            .ssid= entry_ssd
+    };
+
+    button_create_hp = (GtkButton*)gtk_builder_get_object(builder, "button_create_hp");
+    g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked),&wiData);
+
 
     gtk_main();
 
