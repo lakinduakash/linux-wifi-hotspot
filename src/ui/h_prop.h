@@ -47,6 +47,11 @@ int create_config(char *);
 
 int init_read_wh_config(void);
 
-const char *print_test();
+
+void set_ssid(const char* ssid);
+const char* get_ssid(void);
+
+void set_pass(const char* pass);
+const char* get_pass(void);
 
 #endif //WIHOTSPOT_H_PROP_H
