@@ -985,6 +985,8 @@ write_config() {
         eval echo $config_opt=\$$config_opt
     done >> "$STORE_CONFIG"
 
+    chmod 600 $STORE_CONFIG
+    chown $(logname):$(logname) $STORE_CONFIG
     echo -e "Config options written to '$STORE_CONFIG'"
     exit 0
 }
