@@ -16,7 +16,11 @@
 
 char cmd[BUFSIZE];
 
-int parse_output(char *cmd) {
+const char* SSID;
+const char* PASS;
+
+
+static int parse_output(char *cmd) {
 
     char buf[BUFSIZE];
     FILE *fp;
@@ -52,3 +56,5 @@ char *build_command(char *iface_src, char *iface_dest, char *ssid, char *pass) {
 int startShell(char *cmd) {
     parse_output(cmd);
 }
+
+
