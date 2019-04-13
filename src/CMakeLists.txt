@@ -9,7 +9,7 @@ set(CMAKE_C_STANDARD 99)
 
 add_executable(wihotspot ui/main.c ui/h_prop.c ui/h_prop.h ui/ui.c ui/ui.h)
 
-target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES} "pthread")
+target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES})
 
 include_directories(/usr/include)
 
