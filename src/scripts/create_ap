@@ -985,6 +985,8 @@ write_config() {
         eval echo $config_opt=\$$config_opt
     done >> "$STORE_CONFIG"
 
+    chmod 600 $STORE_CONFIG
+    chown $(logname):$(logname) $STORE_CONFIG
     echo -e "Config options written to '$STORE_CONFIG'"
     exit 0
 }
@@ -1262,7 +1264,7 @@ trap "die" SIGUSR2
 [[ -n "$STORE_CONFIG" ]] && write_config "$@"
 
 if [[ $LIST_RUNNING -eq 1 ]]; then
-    echo -e "List of running $PROGNAME instances:\n"
+    #echo -e "List of running $PROGNAME instances:\n"
     list_running
     exit 0
 fi
