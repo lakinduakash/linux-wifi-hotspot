@@ -1264,7 +1264,7 @@ trap "die" SIGUSR2
 [[ -n "$STORE_CONFIG" ]] && write_config "$@"
 
 if [[ $LIST_RUNNING -eq 1 ]]; then
-    echo -e "List of running $PROGNAME instances:\n"
+    #echo -e "List of running $PROGNAME instances:\n"
     list_running
     exit 0
 fi
