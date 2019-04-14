@@ -11,8 +11,20 @@
 #include "ui.h"
 #include "read_config.h"
 
+GtkBuilder *builder;
+GObject *window;
+GtkButton *button_create_hp;
+GtkButton *button_stop_hp;
+GtkEntry *entry_ssd;
+GtkEntry *entry_pass;
+
+GtkComboBox *combo_wifi;
+GtkComboBox *combo_internet;
+
+GError *error = NULL;
 
 
+void init_interface_list();
 
 void *threadFunc(void *args) {
     startShell(args);
@@ -28,10 +40,27 @@ static void on_create_hp_clicked(GtkWidget *widget,
 
     WIData *d = (WIData *) data;
 
-    startShell(build_wh_mkconfig_command("wlp3s0", "wlp3s0", (char *) gtk_entry_get_text(d->ssid),
-                           (char *) gtk_entry_get_text(d->pass)));
+    if (gtk_combo_box_get_active (combo_wifi) >= 0 && gtk_combo_box_get_active (combo_internet) >= 0) {
 
-    g_thread_new("shell_create_hp", threadFunc, (void*)build_wh_from_config());
+
+        gchar *wifi = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_wifi));
+        gchar *internet = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_internet));
+
+        //Remove trailing new lines
+        wifi[strcspn(wifi, "\n")] = 0;
+        internet[strcspn(internet, "\n")] = 0;
+
+        startShell(build_wh_mkconfig_command(wifi, internet, (char *) gtk_entry_get_text(d->ssid),
+                                             (char *) gtk_entry_get_text(d->pass)));
+
+        g_thread_new("shell_create_hp", threadFunc, (void*)build_wh_from_config());
+
+        g_free (wifi);
+        g_free (internet);
+    } else{
+
+        g_print("Please select Wifi and Internet interfaces\n");
+    }
 
 
 }
@@ -42,13 +71,7 @@ static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
 }
 
 int initUi(int argc, char *argv[]){
-    GtkBuilder *builder;
-    GObject *window;
-    GtkButton *button_create_hp;
-    GtkButton *button_stop_hp;
-    GtkEntry *entry_ssd;
-    GtkEntry *entry_pass;
-    GError *error = NULL;
+
 
     gtk_init(&argc, &argv);
 
@@ -68,6 +91,11 @@ int initUi(int argc, char *argv[]){
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
+    combo_wifi = (GtkComboBox *) gtk_builder_get_object(builder, "combo_wifi");
+    combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
+
+
+
 
 
     WIData wiData = {
@@ -82,6 +110,8 @@ int initUi(int argc, char *argv[]){
 
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
+
+    init_interface_list();
 
     gtk_main();
 
@@ -102,4 +132,16 @@ void init_ui_from_config(WIData* data){
             gtk_entry_set_text(data->pass,values->pass);
 
     }
+}
+
+void init_interface_list(){
+
+    int length=0;
+    const char** list=(const char**)get_interface_list(&length);
+
+    for (int i = 0; i < length; i++){
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), list[i]);
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_internet), list[i]);
+    }
+
 }
