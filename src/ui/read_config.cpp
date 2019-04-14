@@ -41,7 +41,7 @@ int read_config_file() {
 
             strcpy(configs[i],value.c_str());
             setConfigValues(name.c_str(),configs[i]);
-            std::cout << name << " " << value << '\n';
+            //std::cout << name << " " << value << '\n';
             ++i;
         }
 
@@ -78,7 +78,7 @@ const char* get_config_file(const char* file){
     }
     snprintf(a,BUFSIZE,"%s%s%s",homedir,"/",file);
 
-    printf(" from %s \n",a);
+    //printf(" from %s \n",a);
     return (const char*)a;
 }
 
