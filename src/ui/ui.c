@@ -11,6 +11,11 @@
 #include "ui.h"
 #include "read_config.h"
 
+
+void init_interface_list();
+static int find_str(char *find, const char **array, int length);
+void* init_running_info();
+
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
@@ -21,14 +26,15 @@ GtkEntry *entry_pass;
 GtkComboBox *combo_wifi;
 GtkComboBox *combo_internet;
 
+GtkLabel *label_status;
+
 GError *error = NULL;
 
 
 const char** iface_list;
 int iface_list_length;
+char* running_info[3];
 
-void init_interface_list();
-static int find_str(char *find, const char **array, int length);
 
 void *threadFunc(void *args) {
     startShell(args);
@@ -36,7 +42,9 @@ void *threadFunc(void *args) {
 }
 
 void *stopHp() {
-    startShell("sudo create_ap --stop ap0");
+    if(running_info[0]!=NULL)
+        startShell(build_kill_create_ap_command(running_info[0]));
+    return 0;
 }
 
 static void on_create_hp_clicked(GtkWidget *widget,
@@ -99,6 +107,9 @@ int initUi(int argc, char *argv[]){
     combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
 
 
+    label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
+
+
 
 
 
@@ -106,6 +117,9 @@ int initUi(int argc, char *argv[]){
             .pass= entry_pass,
             .ssid= entry_ssd
     };
+
+    g_thread_new("init_running",init_running_info,NULL);
+    //init_running_info();
 
     init_interface_list();
 
@@ -167,11 +181,21 @@ void init_interface_list(){
 
 }
 
+
+void* init_running_info(){
+    get_running_info(running_info);
+
+    if(running_info[0]!=NULL){
+
+        gtk_label_set_label(label_status,running_info[0]);
+    }
+
+}
+
 int find_str(char *find, const char **array, int length) {
     int i;
 
     for ( i = 0; i < length; i++ ) {
-        g_print("%s ", array[i]);
         if (strcmp(array[i], find) == 0) {
             return i;
         }
