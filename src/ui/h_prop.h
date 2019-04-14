@@ -21,5 +21,6 @@ static int init_get_running();
 
 static int init_get_interface_list();
 char** get_interface_list(int*);
+const char* build_kill_create_ap_command(char* pid);
 
 #endif //WIHOTSPOT_H_PROP_H
