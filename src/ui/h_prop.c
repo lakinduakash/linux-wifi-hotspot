@@ -168,3 +168,75 @@ int get_running_info(char* a[3]){
 
     return 1;
 }
+
+
+static int init_get_interface_list(){
+    const char* cmd="ls -x /sys/class/net ";
+
+    FILE *fp;
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return -1;
+    }
+
+    while (fgets(interface_list, BUFSIZE, fp) != NULL) {
+        // Do whatever you want here...
+        //printf("%s", running_info);
+    }
+
+    if (pclose(fp)) {
+        printf("Command not found or exited with error status\n");
+        return -1;
+    }
+
+
+    return 0;
+}
+
+//int i=0;
+//char ** a=get_interface_list(&i);
+//
+//for(int j=0;j<i;j++){
+//printf("%s ",a[j]);
+//}
+
+char** get_interface_list(int *length){
+
+    if(init_get_interface_list()==0){
+
+        char *a=strdup(interface_list);
+        char *b=strdup(interface_list);
+
+        char * pch;
+        pch = strtok (a," ");
+        int i=0;
+        while (pch != NULL)
+        {
+            pch = strtok (NULL, " ");
+            i++;
+        }
+
+        static char** arr;
+        arr =malloc(i * sizeof(char*));
+
+        free(a);
+
+        pch = strtok (b," ");
+        i=0;
+        while (pch != NULL)
+        {
+            arr[i]=strdup(pch);
+            pch = strtok (NULL, " ");
+            i++;
+        }
+
+        *length= i;
+
+        return arr;
+
+    }
+
+    return NULL;
+
+}
