@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-int read_config_1();
+int read_config_file();
 
 #ifdef __cplusplus
 }
