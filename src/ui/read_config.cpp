@@ -65,6 +65,12 @@ static void setConfigValues(const char * key, char *value){
 
     if( !strcmp ( PASSPHRASE, key ))
         configValues.pass = value;
+
+    if( !strcmp ( WIFI_IFACE, key ))
+        configValues.iface_wifi = value;
+
+    if( !strcmp ( INTERNET_IFACE, key ))
+        configValues.iface_inet = value;
 }
 
 
