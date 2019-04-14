@@ -7,6 +7,7 @@
 #include <libconfig.h>
 
 #include "h_prop.h"
+#include "read_config.h"
 
 
 #define BUFSIZE 1024
@@ -61,7 +62,9 @@ const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid
 
 const char *build_wh_mkconfig_command(char *iface_src, char *iface_dest, char *ssid, char *pass){
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, iface_src, iface_dest, ssid, pass,MKCONFIG,CONFIG_FILE);
+    const char* a=get_config_file(CONFIG_FILE_NAME);
+
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, iface_src, iface_dest, ssid, pass,MKCONFIG,a);
     printf("%s \n",cmd_mkconfig);
     return cmd_mkconfig;
 
@@ -69,7 +72,7 @@ const char *build_wh_mkconfig_command(char *iface_src, char *iface_dest, char *s
 
 const char *build_wh_from_config(){
 
-    snprintf(cmd_config, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,LOAD_CONFIG,CONFIG_FILE);
+    snprintf(cmd_config, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,LOAD_CONFIG,get_config_file(CONFIG_FILE_NAME));
     return cmd_config;
 
 }
@@ -99,7 +102,7 @@ int write_config(char* file){
     config_setting_set_string(setting, "123456789");
 
     /* Write out the new configuration. */
-    if(! config_write_file(&cfg, CONFIG_FILE))
+    if(! config_write_file(&cfg, get_config_file(CONFIG_FILE_NAME)))
     {
         fprintf(stderr, "Error while writing file.\n");
         config_destroy(&cfg);
@@ -107,7 +110,7 @@ int write_config(char* file){
     }
 
     fprintf(stderr, "New configuration successfully written to: %s\n",
-            CONFIG_FILE);
+            get_config_file(CONFIG_FILE_NAME));
 
     config_destroy(&cfg);
     return(EXIT_SUCCESS);

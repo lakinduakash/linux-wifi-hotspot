@@ -91,12 +91,15 @@ int initUi(int argc, char *argv[]){
 
 void init_ui_from_config(WIData* data){
 
-    read_config_file();
-    ConfigValues *values=getConfigValues();
+    if(read_config_file()==READ_CONFIG_FILE_SUCCESS){
+
+        ConfigValues *values=getConfigValues();
 
 
-    if(values->ssid!=NULL)
-        gtk_entry_set_text(data->ssid,values->ssid);
-    if(values->pass!=NULL)
-        gtk_entry_set_text(data->pass,values->pass);
+        if(values->ssid!=NULL)
+            gtk_entry_set_text(data->ssid,values->ssid);
+        if(values->pass!=NULL)
+            gtk_entry_set_text(data->pass,values->pass);
+
+    }
 }

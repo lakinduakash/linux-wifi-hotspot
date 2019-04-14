@@ -35,7 +35,9 @@
 #define PASSPHRASE       "PASSPHRASE"
 #define USE_PSK          "USE_PSK"
 
-#define CONFIG_FILE "/home/lakinduakash/wh.config"
+
+
+#define CONFIG_FILE_NAME ".wh.config"
 
 typedef struct{
     char *ssid;
