@@ -9,13 +9,9 @@
 
 #include "h_prop.h"
 #include "ui.h"
+#include "read_config.h"
 
 
-
-typedef struct {
-    GtkEntry *ssid;
-    GtkEntry *pass;
-} WIData;
 
 
 void *threadFunc(void *args) {
@@ -31,8 +27,11 @@ static void on_create_hp_clicked(GtkWidget *widget,
                                  gpointer data) {
 
     WIData *d = (WIData *) data;
-    g_thread_new("shell", threadFunc, build_command("wlp3s0", "wlp3s0", (char *) gtk_entry_get_text(d->ssid),
-                                                    (char *) gtk_entry_get_text(d->pass)));
+
+    startShell(build_wh_mkconfig_command("wlp3s0", "wlp3s0", (char *) gtk_entry_get_text(d->ssid),
+                           (char *) gtk_entry_get_text(d->pass)));
+
+    g_thread_new("shell_create_hp", threadFunc, (void*)build_wh_from_config());
 
 
 }
@@ -70,10 +69,13 @@ int initUi(int argc, char *argv[]){
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
 
+
     WIData wiData = {
             .pass= entry_pass,
             .ssid= entry_ssd
     };
+
+    init_ui_from_config(&wiData);
 
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), &wiData);
@@ -84,4 +86,17 @@ int initUi(int argc, char *argv[]){
     gtk_main();
 
     return 0;
+}
+
+
+void init_ui_from_config(WIData* data){
+
+    read_config_file();
+    ConfigValues *values=getConfigValues();
+
+
+    if(values->ssid!=NULL)
+        gtk_entry_set_text(data->ssid,values->ssid);
+    if(values->pass!=NULL)
+        gtk_entry_set_text(data->pass,values->pass);
 }
