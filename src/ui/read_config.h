@@ -7,6 +7,9 @@
 
 #include "h_prop.h"
 
+#define READ_CONFIG_FILE_SUCCESS 0
+#define READ_CONFIG_FILE_FAIL 1
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,6 +17,8 @@ extern "C" {
 int read_config_file();
 static void setConfigValues(const char * key, char *value);
 ConfigValues* getConfigValues(void);
+const char *get_config_file(const char* file);
+
 #ifdef __cplusplus
 }
 #endif

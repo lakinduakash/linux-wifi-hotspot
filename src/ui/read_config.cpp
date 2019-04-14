@@ -8,15 +8,16 @@
 #include <fstream>
 #include <algorithm>
 #include <cstring>
+#include <pwd.h>
+#include <unistd.h>
 
 #include "read_config.h"
-#include "h_prop.h"
 
 #define CONFIG_KEY_COUNT 30
 #define STRING_MAX_LENGTH 100
+#define BUFSIZE 150
 
 extern "C" {
-
 
 ConfigValues configValues;
 
@@ -24,7 +25,7 @@ char configs[CONFIG_KEY_COUNT][STRING_MAX_LENGTH];
 
 int read_config_file() {
     // std::ifstream is RAII, i.e. no need to call close
-    std::ifstream cFile(CONFIG_FILE);
+    std::ifstream cFile(get_config_file(CONFIG_FILE_NAME));
     if (cFile.is_open()) {
         std::string line;
 
@@ -46,9 +47,10 @@ int read_config_file() {
 
     } else {
         std::cerr << "Couldn't open config file for reading.\n";
+        return READ_CONFIG_FILE_FAIL;
     }
 
-    return 0;
+    return READ_CONFIG_FILE_SUCCESS;
 }
 
 ConfigValues* getConfigValues(){
@@ -63,6 +65,21 @@ static void setConfigValues(const char * key, char *value){
 
     if( !strcmp ( PASSPHRASE, key ))
         configValues.pass = value;
+}
+
+
+const char* get_config_file(const char* file){
+    static char *homedir;
+
+    static char a[BUFSIZE];
+
+    if ((homedir = getenv("HOME")) == nullptr) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+    snprintf(a,BUFSIZE,"%s%s%s",homedir,"/",file);
+
+    printf(" from %s \n",a);
+    return (const char*)a;
 }
 
 }

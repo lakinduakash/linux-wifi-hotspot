@@ -981,6 +981,8 @@ write_config() {
         PASSPHRASE="$4"
     fi
 
+    echo "$@"
+
     for config_opt in "${CONFIG_OPTS[@]}"; do
         eval echo $config_opt=\$$config_opt
     done >> "$STORE_CONFIG"
