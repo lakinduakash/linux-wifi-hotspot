@@ -227,7 +227,7 @@ char** get_interface_list(int *length){
         while (pch != NULL)
         {
             arr[i]=strdup(pch);
-            pch = strtok (NULL, " ");
+            pch = strtok (NULL, " \n");
             i++;
         }
 
