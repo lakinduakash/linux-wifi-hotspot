@@ -24,7 +24,11 @@ GtkComboBox *combo_internet;
 GError *error = NULL;
 
 
+const char** iface_list;
+int iface_list_length;
+
 void init_interface_list();
+static int find_str(char *find, const char **array, int length);
 
 void *threadFunc(void *args) {
     startShell(args);
@@ -103,6 +107,8 @@ int initUi(int argc, char *argv[]){
             .ssid= entry_ssd
     };
 
+    init_interface_list();
+
     init_ui_from_config(&wiData);
 
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
@@ -111,7 +117,6 @@ int initUi(int argc, char *argv[]){
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
-    init_interface_list();
 
     gtk_main();
 
@@ -131,17 +136,48 @@ void init_ui_from_config(WIData* data){
         if(values->pass!=NULL)
             gtk_entry_set_text(data->pass,values->pass);
 
+        if(values->iface_wifi!=NULL){
+            int idw=find_str(values->iface_wifi,iface_list,iface_list_length);
+
+            if(idw !=-1){
+                gtk_combo_box_set_active(combo_wifi,idw);
+            }
+        }
+
+        if(values->iface_inet!=NULL){
+            int idw=find_str(values->iface_inet,iface_list,iface_list_length);
+
+            if(idw !=-1){
+                gtk_combo_box_set_active(combo_internet,idw);
+            }
+        }
+
     }
 }
 
 void init_interface_list(){
 
-    int length=0;
-    const char** list=(const char**)get_interface_list(&length);
+    iface_list_length=0;
+    iface_list=(const char**)get_interface_list(&iface_list_length);
 
-    for (int i = 0; i < length; i++){
-        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), list[i]);
-        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_internet), list[i]);
+    for (int i = 0; i < iface_list_length; i++){
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), iface_list[i]);
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_internet), iface_list[i]);
     }
+
+}
+
+int find_str(char *find, const char **array, int length) {
+    int i;
+
+    for ( i = 0; i < length; i++ ) {
+        g_print("%s ", array[i]);
+        if (strcmp(array[i], find) == 0) {
+            return i;
+        }
+    }
+
+
+    return -1;
 
 }
