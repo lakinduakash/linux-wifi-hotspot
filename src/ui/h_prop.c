@@ -24,6 +24,9 @@ char cmd_start[BUFSIZE];
 char cmd_mkconfig[BUFSIZE];
 char cmd_config[BUFSIZE];
 
+char running_info[BUFSIZE];
+char interface_list[BUFSIZE];
+
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
 
@@ -41,7 +44,7 @@ static int parse_output(const char *cmd) {
 
     while (fgets(buf, BUFSIZE, fp) != NULL) {
         // Do whatever you want here...
-        printf("OUTPUT: %s", buf);
+        printf("%s", buf);
     }
 
     if (pclose(fp)) {
@@ -116,3 +119,52 @@ int write_config(char* file){
     return(EXIT_SUCCESS);
 }
 
+
+static int init_get_running(){
+
+    const char* cmd="create_ap --list-running";
+    FILE *fp;
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return -1;
+    }
+
+    while (fgets(running_info, BUFSIZE, fp) != NULL) {
+        // Do whatever you want here...
+        //printf("%s", running_info);
+    }
+
+    if (pclose(fp)) {
+        printf("Command not found or exited with error status\n");
+        return -1;
+    }
+
+    return 0;
+
+}
+
+
+// Ex:
+// char *a[3];
+//get_running_info(a);
+//printf("%s",a[0]);
+
+int get_running_info(char* a[3]){
+
+    if(init_get_running()==0){
+        char * pch;
+        pch = strtok (running_info," ");
+        int i=0;
+        while (pch != NULL && i<3)
+        {
+            a[i] = strdup(pch);
+            pch = strtok (NULL, " ");
+            i++;
+        }
+
+        return 0;
+    }
+
+    return 1;
+}
