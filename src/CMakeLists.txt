@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
-project(wihotspot C)
+project(wihotspot)
 
 include(FindPkgConfig)
 pkg_check_modules(GTK gtk+-3.0 REQUIRED)
 include_directories(${GTK_INCLUDE_DIRS})
 
 set(CMAKE_C_STANDARD 99)
+set (CMAKE_CXX_STANDARD 11)
 
-add_executable(wihotspot ui/main.c ui/h_prop.c ui/h_prop.h ui/ui.c ui/ui.h)
+add_executable(wihotspot ui/main.c ui/h_prop.c ui/h_prop.h ui/ui.c ui/ui.h ui/read_config.cpp ui/read_config.h)
 
 target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES} config)
 
