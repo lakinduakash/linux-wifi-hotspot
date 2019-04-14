@@ -15,15 +15,20 @@
 #define SUDO "pkexec --user root"
 #define CREATE_AP "create_ap"
 
+#define MKCONFIG "--mkconfig"
+#define LOAD_CONFIG "--config"
 
-char cmd[BUFSIZE];
+
+char cmd_start[BUFSIZE];
+char cmd_mkconfig[BUFSIZE];
+char cmd_config[BUFSIZE];
 
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
 
 config_t cfg;
 
-static int parse_output(char *cmd) {
+static int parse_output(const char *cmd) {
 
     char buf[BUFSIZE];
     FILE *fp;
@@ -47,22 +52,35 @@ static int parse_output(char *cmd) {
 }
 
 
-char *build_command(char *iface_src, char *iface_dest, char *ssid, char *pass) {
+const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid, char *pass) {
 
-    snprintf(cmd, BUFSIZE, "%s %s %s %s %s %s", SUDO, CREATE_AP, iface_src, iface_dest, ssid, pass);
+    snprintf(cmd_start, BUFSIZE, "%s %s %s %s %s %s", SUDO, CREATE_AP, iface_src, iface_dest, ssid, pass);
 
-
-    return cmd;
+    return cmd_start;
 }
 
+const char *build_wh_mkconfig_command(char *iface_src, char *iface_dest, char *ssid, char *pass){
 
-int startShell(char *cmd) {
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, iface_src, iface_dest, ssid, pass,MKCONFIG,CONFIG_FILE);
+    printf("%s \n",cmd_mkconfig);
+    return cmd_mkconfig;
+
+}
+
+const char *build_wh_from_config(){
+
+    snprintf(cmd_config, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,LOAD_CONFIG,CONFIG_FILE);
+    return cmd_config;
+
+}
+
+int startShell(const char *cmd) {
     parse_output(cmd);
     return 0;
 }
 
 
-int create_config(char* file){
+int write_config(char* file){
 
     config_t cfg;
     config_setting_t *root, *setting, *group, *array;
@@ -95,62 +113,3 @@ int create_config(char* file){
     return(EXIT_SUCCESS);
 }
 
-
-int init_read_wh_config(){
-
-
-    config_init(&cfg);
-
-    if (!config_read_file(&cfg, CONFIG_FILE)) {
-        fprintf(stderr, "%s:%d - %s\n",
-                config_error_file(&cfg),
-                config_error_line(&cfg),
-                config_error_text(&cfg));
-        config_destroy(&cfg);
-        return(EXIT_FAILURE);
-    }
-
-
-    if (config_lookup_string(&cfg, SSID, &g_ssid))
-        printf("SSID: %s", g_ssid);
-    else
-        printf("SSID is not defined\n");
-
-    if (config_lookup_string(&cfg, PASSPHRASE, &g_pass))
-        printf("PASS: %s", g_pass);
-    else
-        printf("PASS is not defined\n");
-
-
-
-
-
-    //config_destroy(cfg);
-    return 0;
-
-
-}
-
-
-
-void set_ssid(const char* ssid){
-
-    g_ssid=ssid;
-}
-
-const char* get_ssid(){
-
-    return g_ssid;
-}
-
-
-void set_pass(const char* pass){
-
-    g_pass=pass;
-}
-
-
-const char* get_pass(){
-
-    return g_pass;
-}

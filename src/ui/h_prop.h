@@ -35,23 +35,22 @@
 #define PASSPHRASE       "PASSPHRASE"
 #define USE_PSK          "USE_PSK"
 
-#define CONFIG_FILE "wh.config"
+#define CONFIG_FILE "/home/lakinduakash/wh.config"
 
-static int parse_output(char *);
+typedef struct{
+    char *ssid;
+    char *pass;
+} ConfigValues;
 
-char *build_command(char *, char *, char *, char *);
+static int parse_output(const char *);
 
-int startShell(char *);
+const char *build_wh_start_command(char *, char *, char *, char *);
+const char *build_wh_mkconfig_command(char *, char *, char *, char *);
+const char *build_wh_from_config(void);
 
-int create_config(char *);
+int startShell(const char *);
 
-int init_read_wh_config(void);
+int write_config(char *);
 
-
-void set_ssid(const char* ssid);
-const char* get_ssid(void);
-
-void set_pass(const char* pass);
-const char* get_pass(void);
 
 #endif //WIHOTSPOT_H_PROP_H
