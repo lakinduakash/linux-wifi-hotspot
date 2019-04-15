@@ -12,6 +12,8 @@
 #include "ui.h"
 #include "read_config.h"
 
+#define BUFSIZE 1024
+#define AP_ENABLED "AP-ENABLED"
 
 void init_interface_list();
 static int find_str(char *find, const char **array, int length);
@@ -47,8 +49,36 @@ int iface_list_length;
 char* running_info[3];
 guint id;
 
-void *threadFunc(void *args) {
-    startShell(args);
+void* run_create_hp_shell(void *cmd) {
+
+    char buf[BUFSIZE];
+    FILE *fp;
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return -1;
+    }
+
+    start_pb_pulse();
+
+    while (fgets(buf, BUFSIZE, fp) != NULL) {
+        // Do whatever you want here...
+        buf[strcspn(buf, "\n")] = 0;
+        gtk_label_set_label(label_status,buf);
+
+        if (strstr(buf, AP_ENABLED) != NULL) {
+            init_running_info();
+            return 0;
+        }
+    }
+
+    if (pclose(fp)) {
+        printf("Command not found or exited with error status\n");
+        init_running_info();
+        return -1;
+    }
+
+    init_running_info();
     return 0;
 }
 
@@ -80,7 +110,7 @@ static void on_create_hp_clicked(GtkWidget *widget,
         startShell(build_wh_mkconfig_command(wifi, internet, (char *) gtk_entry_get_text(d->ssid),
                                              (char *) gtk_entry_get_text(d->pass)));
 
-        g_thread_new("shell_create_hp", threadFunc, (void*)build_wh_from_config());
+        g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
 
         g_free (wifi);
         g_free (internet);
