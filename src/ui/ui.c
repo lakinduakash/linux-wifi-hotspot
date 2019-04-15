@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include <X11/Xlib.h>
 
 #include "h_prop.h"
 #include "ui.h"
@@ -98,6 +99,7 @@ static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
 
 int initUi(int argc, char *argv[]){
 
+    XInitThreads();
 
     gtk_init(&argc, &argv);
 
