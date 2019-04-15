@@ -22,6 +22,8 @@ void lock_all_views(gboolean set_lock);
 
 void lock_running_views(gboolean set_lock);
 
+static guint start_pb_pulse();
+
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
@@ -42,7 +44,7 @@ GError *error = NULL;
 const char** iface_list;
 int iface_list_length;
 char* running_info[3];
-
+guint id;
 
 void *threadFunc(void *args) {
     startShell(args);
@@ -50,8 +52,12 @@ void *threadFunc(void *args) {
 }
 
 void *stopHp() {
-    if(running_info[0]!=NULL)
+    if(running_info[0]!=NULL){
+        start_pb_pulse();
+        lock_all_views(TRUE);
         startShell(build_kill_create_ap_command(running_info[0]));
+        g_thread_new("init_running",init_running_info,NULL);
+    }
     return 0;
 }
 
@@ -131,6 +137,7 @@ int initUi(int argc, char *argv[]){
             .ssid= entry_ssd
     };
 
+    start_pb_pulse();
     g_thread_new("init_running",init_running_info,NULL);
     //init_running_info();
 
@@ -234,6 +241,15 @@ void lock_running_views(gboolean set_lock){
     }
 }
 
+static guint start_pb_pulse(){
+    gtk_widget_set_visible((GtkWidget*)progress_bar,TRUE);
+    return id= g_timeout_add (100, update_progress_in_timeout, progress_bar);
+}
+
+static void stop_pb_pulse(){
+    g_source_remove(id);
+    gtk_widget_set_visible((GtkWidget*)progress_bar,FALSE);
+}
 
 static gboolean update_progress_in_timeout (gpointer pbar)
 {
@@ -241,11 +257,17 @@ static gboolean update_progress_in_timeout (gpointer pbar)
     return TRUE; /* keep running */
 }
 
-void* init_running_info(){
-    lock_all_views(TRUE);
 
-    gtk_widget_set_visible((GtkWidget*)progress_bar,TRUE);
-    guint a=g_timeout_add (100, update_progress_in_timeout, progress_bar);
+void clear_running_info(){
+
+        g_free(running_info[0]);
+        running_info[0]=NULL;
+}
+
+void* init_running_info(){
+
+    clear_running_info();
+    lock_all_views(TRUE);
 
     get_running_info(running_info);
 
@@ -264,9 +286,7 @@ void* init_running_info(){
         lock_running_views(FALSE);
     }
 
-    g_source_remove(a);
-    gtk_widget_set_visible((GtkWidget*)progress_bar,FALSE);
-
+    stop_pb_pulse();
     return 0;
 }
 
