@@ -182,6 +182,55 @@ void init_interface_list(){
 }
 
 
+void lock_all_views(gboolean set_lock){
+    if(set_lock){
+        gtk_editable_set_editable( (GtkEditable*)entry_ssd,FALSE);
+        gtk_editable_set_editable( (GtkEditable*)entry_pass,FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
+    } else{
+        gtk_editable_set_editable( (GtkEditable*)entry_ssd,TRUE);
+        gtk_editable_set_editable( (GtkEditable*)entry_pass,TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
+    }
+}
+
+
+void lock_running_views(gboolean set_lock){
+    if(set_lock){
+        gtk_editable_set_editable( (GtkEditable*)entry_ssd,FALSE);
+        gtk_editable_set_editable( (GtkEditable*)entry_pass,FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
+    } else{
+        gtk_editable_set_editable( (GtkEditable*)entry_ssd,TRUE);
+        gtk_editable_set_editable( (GtkEditable*)entry_pass,TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, TRUE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
+    }
+}
+
+
+static gboolean update_progress_in_timeout (gpointer pbar)
+{
+    gtk_progress_bar_pulse (pbar);
+    return TRUE; /* keep running */
+}
+
 void* init_running_info(){
     get_running_info(running_info);
 
