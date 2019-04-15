@@ -13,6 +13,25 @@ typedef struct {
 } WIData;
 
 int initUi(int argc, char *argv[]);
+
 void init_ui_from_config(WIData* data);
+
+static void* run_create_hp_shell(void *cmd);
+
+void init_interface_list();
+
+static int find_str(char *find, const char **array, int length);
+
+void* init_running_info();
+
+static gboolean update_progress_in_timeout (gpointer pbar);
+
+void lock_all_views(gboolean set_lock);
+
+void lock_running_views(gboolean set_lock);
+
+static guint start_pb_pulse();
+
+static void on_create_hp_clicked(GtkWidget *widget,gpointer data);
 
 #endif //WIHOTSPOT_UI_H

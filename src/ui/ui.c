@@ -15,18 +15,6 @@
 #define BUFSIZE 1024
 #define AP_ENABLED "AP-ENABLED"
 
-void init_interface_list();
-static int find_str(char *find, const char **array, int length);
-void* init_running_info();
-
-static gboolean update_progress_in_timeout (gpointer pbar);
-
-void lock_all_views(gboolean set_lock);
-
-void lock_running_views(gboolean set_lock);
-
-static guint start_pb_pulse();
-
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
@@ -49,38 +37,9 @@ int iface_list_length;
 char* running_info[3];
 guint id;
 
-void* run_create_hp_shell(void *cmd) {
 
-    char buf[BUFSIZE];
-    FILE *fp;
 
-    if ((fp = popen(cmd, "r")) == NULL) {
-        printf("Error opening pipe!\n");
-        return -1;
-    }
-
-    start_pb_pulse();
-
-    while (fgets(buf, BUFSIZE, fp) != NULL) {
-        // Do whatever you want here...
-        buf[strcspn(buf, "\n")] = 0;
-        gtk_label_set_label(label_status,buf);
-
-        if (strstr(buf, AP_ENABLED) != NULL) {
-            init_running_info();
-            return 0;
-        }
-    }
-
-    if (pclose(fp)) {
-        printf("Command not found or exited with error status\n");
-        init_running_info();
-        return -1;
-    }
-
-    init_running_info();
-    return 0;
-}
+void *stopHp();
 
 void *stopHp() {
     if(running_info[0]!=NULL){
@@ -92,8 +51,7 @@ void *stopHp() {
     return 0;
 }
 
-static void on_create_hp_clicked(GtkWidget *widget,
-                                 gpointer data) {
+static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
     WIData *d = (WIData *) data;
 
@@ -305,7 +263,9 @@ void* init_running_info(){
 
     if(running_info[0]!=NULL){
 
-        gtk_label_set_label(label_status,running_info[0]);
+        char a[BUFSIZE];
+        snprintf(a,BUFSIZE,"Running as PID: %s",running_info[0]);
+        gtk_label_set_label(label_status,a);
 
         lock_all_views(FALSE);
         lock_running_views(TRUE);
@@ -334,4 +294,36 @@ int find_str(char *find, const char **array, int length) {
 
     return -1;
 
+}
+
+static void *run_create_hp_shell(void *cmd) {
+
+    char buf[BUFSIZE];
+    FILE *fp;
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return NULL;
+    }
+
+    start_pb_pulse();
+
+    while (fgets(buf, BUFSIZE, fp) != NULL) {
+        buf[strcspn(buf, "\n")] = 0;
+        gtk_label_set_label(label_status,buf);
+
+        if (strstr(buf, AP_ENABLED) != NULL) {
+            init_running_info();
+            return 0;
+        }
+    }
+
+    if (pclose(fp)) {
+        printf("Command not found or exited with error status\n");
+        init_running_info();
+        return NULL;
+    }
+
+    init_running_info();
+    return 0;
 }
