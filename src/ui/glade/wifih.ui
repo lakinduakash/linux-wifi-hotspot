@@ -196,7 +196,16 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkProgressBar" id="progress_bar">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pulse_step">0.20000000000000001</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
         </child>
         <child>
           <object class="GtkLabel" id="label_status">
@@ -206,7 +215,7 @@
             <property name="margin_left">5</property>
             <property name="margin_top">1</property>
             <property name="margin_bottom">1</property>
-            <property name="label" translatable="yes">Running on:</property>
+            <property name="label" translatable="yes">Running status</property>
           </object>
           <packing>
             <property name="expand">False</property>
