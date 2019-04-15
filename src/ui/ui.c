@@ -16,6 +16,12 @@ void init_interface_list();
 static int find_str(char *find, const char **array, int length);
 void* init_running_info();
 
+static gboolean update_progress_in_timeout (gpointer pbar);
+
+void lock_all_views(gboolean set_lock);
+
+void lock_running_views(gboolean set_lock);
+
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
@@ -25,6 +31,8 @@ GtkEntry *entry_pass;
 
 GtkComboBox *combo_wifi;
 GtkComboBox *combo_internet;
+
+GtkProgressBar *progress_bar;
 
 GtkLabel *label_status;
 
@@ -100,6 +108,9 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 
+    button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
+    button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
+
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
@@ -108,6 +119,8 @@ int initUi(int argc, char *argv[]){
 
 
     label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
+
+    progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
 
 
@@ -125,10 +138,7 @@ int initUi(int argc, char *argv[]){
 
     init_ui_from_config(&wiData);
 
-    button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), &wiData);
-
-    button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
 
@@ -232,13 +242,32 @@ static gboolean update_progress_in_timeout (gpointer pbar)
 }
 
 void* init_running_info(){
+    lock_all_views(TRUE);
+
+    gtk_widget_set_visible((GtkWidget*)progress_bar,TRUE);
+    guint a=g_timeout_add (100, update_progress_in_timeout, progress_bar);
+
     get_running_info(running_info);
 
     if(running_info[0]!=NULL){
 
         gtk_label_set_label(label_status,running_info[0]);
+
+        lock_all_views(FALSE);
+        lock_running_views(TRUE);
+
+
+    } else{
+
+        gtk_label_set_label(label_status,"Not running");
+        lock_all_views(FALSE);
+        lock_running_views(FALSE);
     }
 
+    g_source_remove(a);
+    gtk_widget_set_visible((GtkWidget*)progress_bar,FALSE);
+
+    return 0;
 }
 
 int find_str(char *find, const char **array, int length) {
