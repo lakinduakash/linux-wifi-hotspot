@@ -11,6 +11,7 @@
 #include "h_prop.h"
 #include "ui.h"
 #include "read_config.h"
+#include "util.h"
 
 #define BUFSIZE 1024
 #define AP_ENABLED "AP-ENABLED"
@@ -282,19 +283,6 @@ void* init_running_info(){
     return 0;
 }
 
-int find_str(char *find, const char **array, int length) {
-    int i;
-
-    for ( i = 0; i < length; i++ ) {
-        if (strcmp(array[i], find) == 0) {
-            return i;
-        }
-    }
-
-
-    return -1;
-
-}
 
 static void *run_create_hp_shell(void *cmd) {
 

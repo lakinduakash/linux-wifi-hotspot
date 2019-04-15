@@ -20,8 +20,6 @@ static void* run_create_hp_shell(void *cmd);
 
 void init_interface_list();
 
-static int find_str(char *find, const char **array, int length);
-
 void* init_running_info();
 
 static gboolean update_progress_in_timeout (gpointer pbar);
