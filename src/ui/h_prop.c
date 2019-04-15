@@ -18,11 +18,13 @@
 
 #define MKCONFIG "--mkconfig"
 #define LOAD_CONFIG "--config"
+#define STOP "--stop"
 
 
 char cmd_start[BUFSIZE];
 char cmd_mkconfig[BUFSIZE];
 char cmd_config[BUFSIZE];
+char cmd_kill[BUFSIZE];
 
 char running_info[BUFSIZE];
 char interface_list[BUFSIZE];
@@ -85,6 +87,11 @@ int startShell(const char *cmd) {
     return 0;
 }
 
+
+const char* build_kill_create_ap_command(char* pid){
+    snprintf(cmd_kill, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,STOP,pid);
+    return cmd_kill;
+}
 
 int write_config(char* file){
 
