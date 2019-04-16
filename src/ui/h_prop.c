@@ -10,7 +10,7 @@
 #include "read_config.h"
 
 
-#define BUFSIZE 1024
+#define BUFSIZE 512
 
 
 #define SUDO "pkexec --user root"
@@ -28,6 +28,7 @@ char cmd_kill[BUFSIZE];
 
 char running_info[BUFSIZE];
 char interface_list[BUFSIZE];
+char wifi_interface_list[BUFSIZE];
 
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
@@ -235,6 +236,71 @@ char** get_interface_list(int *length){
         {
             arr[i]=strdup(pch);
             pch = strtok (NULL, " \n");
+            i++;
+        }
+
+        *length= i;
+
+        return arr;
+
+    }
+
+    return NULL;
+
+}
+
+
+static int init_get_wifi_interface_list(){
+    const char* cmd="iw dev | awk '$1==\"Interface\"{print $2}' ";
+
+    FILE *fp;
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return -1;
+    }
+
+    while (fgets(wifi_interface_list, BUFSIZE, fp) != NULL) {
+        // Do whatever you want here...
+    }
+
+    if (pclose(fp)) {
+        printf("Command not found or exited with error status\n");
+        return -1;
+    }
+
+
+    return 0;
+}
+
+char** get_wifi_interface_list(int *length){
+
+    if(init_get_wifi_interface_list()==0){
+
+        char *a=strdup(wifi_interface_list);
+        char *b=strdup(wifi_interface_list);
+
+        char * pch;
+        pch = strtok (a,"\n");
+        int i=0;
+        while (pch != NULL)
+        {
+            pch = strtok (NULL, "\n");
+            i++;
+        }
+
+        static char** arr;
+        arr =malloc(i * sizeof(char*));
+
+        free(a);
+
+        pch = strtok (b,"\n");
+        i=0;
+        while (pch != NULL)
+        {
+            printf("%s", pch);
+            arr[i]=strdup(pch);
+            pch = strtok (NULL, "\n");
             i++;
         }
 

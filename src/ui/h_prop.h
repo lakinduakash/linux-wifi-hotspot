@@ -23,4 +23,6 @@ static int init_get_interface_list();
 char** get_interface_list(int*);
 const char* build_kill_create_ap_command(char* pid);
 
+char** get_wifi_interface_list(int *length);
+
 #endif //WIHOTSPOT_H_PROP_H

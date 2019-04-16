@@ -34,7 +34,9 @@ GError *error = NULL;
 
 
 const char** iface_list;
+const char** wifi_iface_list;
 int iface_list_length;
+int wifi_iface_list_length;
 char* running_info[3];
 guint id;
 
@@ -159,7 +161,7 @@ void init_ui_from_config(WIData* data){
             gtk_entry_set_text(data->pass,values->pass);
 
         if(values->iface_wifi!=NULL){
-            int idw=find_str(values->iface_wifi,iface_list,iface_list_length);
+            int idw=find_str(values->iface_wifi,wifi_iface_list,wifi_iface_list_length);
 
             if(idw !=-1){
                 gtk_combo_box_set_active(combo_wifi,idw);
@@ -180,11 +182,17 @@ void init_ui_from_config(WIData* data){
 void init_interface_list(){
 
     iface_list_length=0;
+    wifi_iface_list_length=0;
     iface_list=(const char**)get_interface_list(&iface_list_length);
+    wifi_iface_list=(const char**)get_wifi_interface_list(&wifi_iface_list_length);
 
     for (int i = 0; i < iface_list_length; i++){
-        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), iface_list[i]);
+
         gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_internet), iface_list[i]);
+    }
+
+    for (int i = 0; i < wifi_iface_list_length; i++){
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), wifi_iface_list[i]);
     }
 
 }
