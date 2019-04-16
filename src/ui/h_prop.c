@@ -298,7 +298,7 @@ char** get_wifi_interface_list(int *length){
         i=0;
         while (pch != NULL)
         {
-            printf("%s", pch);
+
             arr[i]=strdup(pch);
             pch = strtok (NULL, "\n");
             i++;
