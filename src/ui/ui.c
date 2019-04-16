@@ -13,18 +13,30 @@
 #include "read_config.h"
 #include "util.h"
 
-#define BUFSIZE 1024
+#define BUFSIZE 512
 #define AP_ENABLED "AP-ENABLED"
 
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
+
 GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
+GtkEntry *entry_mac;
+GtkEntry *entry_channel;
 
 GtkComboBox *combo_wifi;
 GtkComboBox *combo_internet;
+
+GtkRadioButton *rb_freq_auto;
+GtkRadioButton *rb_freq_2;
+GtkRadioButton *rb_freq_5;
+
+GtkCheckButton *cb_hidden;
+GtkCheckButton *cb_psk;
+GtkCheckButton *cb_mac;
+GtkCheckButton *cb_novirt;
 
 GtkProgressBar *progress_bar;
 
@@ -46,6 +58,7 @@ void *stopHp();
 
 void *stopHp() {
     if(running_info[0]!=NULL){
+        gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
         lock_all_views(TRUE);
         startShell(build_kill_create_ap_command(running_info[0]));
@@ -113,17 +126,23 @@ int initUi(int argc, char *argv[]){
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
+    entry_mac = (GtkEntry *) gtk_builder_get_object(builder, "entry_mac");
+    entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
+
     combo_wifi = (GtkComboBox *) gtk_builder_get_object(builder, "combo_wifi");
     combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
 
+    cb_hidden = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_hidden");
+    cb_psk = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_psk");
+    cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
+    cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
 
     label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
 
     progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
 
-
-
+    //gtk_entry_set_visibility(entry_pass,FALSE);
 
     WIData wiData = {
             .pass= entry_pass,
@@ -267,6 +286,8 @@ void* init_running_info(){
 
     clear_running_info();
     lock_all_views(TRUE);
+
+    gtk_label_set_label(label_status,"Getting running info...");
 
     get_running_info(running_info);
 
