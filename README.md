@@ -2,7 +2,8 @@
 
 ### Features
  
-* Share your wifi like in Windows - Share wifi on same interface while you are connected to a network.
+* Share your wifi like in Windows - Share wifi on same interface which you are connected to internet.
+* Share access point from any network interface
 * Includes Both command line and gui.
 * Support both 2.4GHz and 5GHz (Need to compatible with your wifi adapter). Ex: You have connected to 5GHz and share connection with 2.4GHz.
 * Select Channel to share.
@@ -10,7 +11,7 @@
 ### Dependencies
 
 #### General
-* bash (to run this script)
+* bash
 * util-linux (for getopt)
 * procps or procps-ng
 * hostapd
@@ -19,13 +20,16 @@
 * iwconfig (you only need this if 'iw' can not recognize your adapter)
 * haveged (optional)
 
+_Make sure you have those dependencies by typing them in terminal. If any of dependencies fail
+install it using your distro's package manager_
+
 #### For 'NATed' or 'None' Internet sharing method
 * dnsmasq
 * iptables
 
 #### For building from source
 
-* cmake
+* cmake (https://cmake.org)
 * make
 * gcc and g++
 * build-essential
@@ -43,3 +47,7 @@
     
 ## Uninstallation
     sudo make uninstall
+    
+Tested with Ubuntu 18.10. If any issue found file a issue on github.
+
+**credits** - oblique
