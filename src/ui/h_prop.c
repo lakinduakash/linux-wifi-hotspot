@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <libconfig.h>
+//#include <libconfig.h>
 
 #include "h_prop.h"
 #include "read_config.h"
@@ -33,7 +33,7 @@ char wifi_interface_list[BUFSIZE];
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
 
-config_t cfg;
+//config_t cfg;
 
 static int parse_output(const char *cmd) {
 
@@ -94,38 +94,38 @@ const char* build_kill_create_ap_command(char* pid){
     return cmd_kill;
 }
 
-int write_config(char* file){
-
-    config_t cfg;
-    config_setting_t *root, *setting, *group, *array;
-    int i;
-
-    config_init(&cfg);
-    root = config_root_setting(&cfg);
-
-    /* Add some settings to the configuration. */
-
-
-    setting = config_setting_add(root, SSID, CONFIG_TYPE_STRING);
-    config_setting_set_string(setting, "myssid");
-
-    setting = config_setting_add(root, PASSPHRASE, CONFIG_TYPE_STRING);
-    config_setting_set_string(setting, "123456789");
-
-    /* Write out the new configuration. */
-    if(! config_write_file(&cfg, get_config_file(CONFIG_FILE_NAME)))
-    {
-        fprintf(stderr, "Error while writing file.\n");
-        config_destroy(&cfg);
-        return(EXIT_FAILURE);
-    }
-
-    fprintf(stderr, "New configuration successfully written to: %s\n",
-            get_config_file(CONFIG_FILE_NAME));
-
-    config_destroy(&cfg);
-    return(EXIT_SUCCESS);
-}
+//int write_config(char* file){
+//
+//    config_t cfg;
+//    config_setting_t *root, *setting, *group, *array;
+//    int i;
+//
+//    config_init(&cfg);
+//    root = config_root_setting(&cfg);
+//
+//    /* Add some settings to the configuration. */
+//
+//
+//    setting = config_setting_add(root, SSID, CONFIG_TYPE_STRING);
+//    config_setting_set_string(setting, "myssid");
+//
+//    setting = config_setting_add(root, PASSPHRASE, CONFIG_TYPE_STRING);
+//    config_setting_set_string(setting, "123456789");
+//
+//    /* Write out the new configuration. */
+//    if(! config_write_file(&cfg, get_config_file(CONFIG_FILE_NAME)))
+//    {
+//        fprintf(stderr, "Error while writing file.\n");
+//        config_destroy(&cfg);
+//        return(EXIT_FAILURE);
+//    }
+//
+//    fprintf(stderr, "New configuration successfully written to: %s\n",
+//            get_config_file(CONFIG_FILE_NAME));
+//
+//    config_destroy(&cfg);
+//    return(EXIT_SUCCESS);
+//}
 
 
 static int init_get_running(){
