@@ -48,6 +48,6 @@ install it using your distro's package manager_
 ## Uninstallation
     sudo make uninstall
     
-Tested with Ubuntu 18.10. If any issue found file a issue on github.
+Tested with Ubuntu 18.10. If any issue found, file a issue on github.
 
 **credits** - oblique
