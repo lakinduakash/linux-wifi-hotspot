@@ -7,12 +7,39 @@
 * Support both 2.4GHz and 5GHz (Need to compatible with your wifi adapter). Ex: You have connected to 5GHz and share connection with 2.4GHz.
 * Select Channel to share.
 
+### Dependencies
 
-### Installing
+#### General
+* bash (to run this script)
+* util-linux (for getopt)
+* procps or procps-ng
+* hostapd
+* iproute2
+* iw
+* iwconfig (you only need this if 'iw' can not recognize your adapter)
+* haveged (optional)
 
-##### Dependencies
+#### For 'NATed' or 'None' Internet sharing method
+* dnsmasq
+* iptables
 
-* bash
+#### For building from source
+
 * cmake
+* make
 * gcc and g++
 * build-essential
+* pkg-config
+* gtk
+
+
+
+## Installation
+    git clone https://github.com/lakinduakash/linux-wifi-hotspot
+    cd linux-wifi-hotspot
+    make
+    sudo make install
+    
+    
+## Uninstallation
+    sudo make uninstall
