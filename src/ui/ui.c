@@ -54,9 +54,7 @@ guint id;
 
 
 
-void *stopHp();
-
-void *stopHp() {
+static void *stopHp() {
     if(running_info[0]!=NULL){
         gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
@@ -108,12 +106,31 @@ int initUi(int argc, char *argv[]){
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
+    const char* debug_glade_file="glade/wifih.ui";
+    const char* prod_glade_file="/usr/share/wihotspot/glade/wifih.ui";
+
+    FILE *file;
     builder = gtk_builder_new();
-    if (gtk_builder_add_from_file(builder, "glade/wifih.ui", &error) == 0) {
-        g_printerr("Error loading file: %s\n", error->message);
-        g_clear_error(&error);
+
+    if ((file = fopen(debug_glade_file, "r"))){
+        fclose(file);
+        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
+            g_printerr("Error loading file: %s\n", error->message);
+            g_clear_error(&error);
+            return 1;
+        }
+    }
+    else if ((file = fopen(prod_glade_file, "r"))){
+        fclose(file);
+        if (gtk_builder_add_from_file(builder, prod_glade_file, &error) == 0) {
+            g_printerr("Error loading file: %s\n", error->message);
+            g_clear_error(&error);
+            return 1;
+        }
+    } else{
         return 1;
     }
+
 
     /* Connect signal handlers to the constructed widgets. */
     window = gtk_builder_get_object(builder, "window");
