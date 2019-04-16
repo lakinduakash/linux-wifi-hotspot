@@ -13,18 +13,30 @@
 #include "read_config.h"
 #include "util.h"
 
-#define BUFSIZE 1024
+#define BUFSIZE 512
 #define AP_ENABLED "AP-ENABLED"
 
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
+
 GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
+GtkEntry *entry_mac;
+GtkEntry *entry_channel;
 
 GtkComboBox *combo_wifi;
 GtkComboBox *combo_internet;
+
+GtkRadioButton *rb_freq_auto;
+GtkRadioButton *rb_freq_2;
+GtkRadioButton *rb_freq_5;
+
+GtkCheckButton *cb_hidden;
+GtkCheckButton *cb_psk;
+GtkCheckButton *cb_mac;
+GtkCheckButton *cb_novirt;
 
 GtkProgressBar *progress_bar;
 
@@ -34,16 +46,17 @@ GError *error = NULL;
 
 
 const char** iface_list;
+const char** wifi_iface_list;
 int iface_list_length;
+int wifi_iface_list_length;
 char* running_info[3];
 guint id;
 
 
 
-void *stopHp();
-
-void *stopHp() {
+static void *stopHp() {
     if(running_info[0]!=NULL){
+        gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
         lock_all_views(TRUE);
         startShell(build_kill_create_ap_command(running_info[0]));
@@ -93,12 +106,31 @@ int initUi(int argc, char *argv[]){
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
+    const char* debug_glade_file="glade/wifih.ui";
+    const char* prod_glade_file="/usr/share/wihotspot/glade/wifih.ui";
+
+    FILE *file;
     builder = gtk_builder_new();
-    if (gtk_builder_add_from_file(builder, "glade/wifih.ui", &error) == 0) {
-        g_printerr("Error loading file: %s\n", error->message);
-        g_clear_error(&error);
+
+    if ((file = fopen(debug_glade_file, "r"))){
+        fclose(file);
+        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
+            g_printerr("Error loading file: %s\n", error->message);
+            g_clear_error(&error);
+            return 1;
+        }
+    }
+    else if ((file = fopen(prod_glade_file, "r"))){
+        fclose(file);
+        if (gtk_builder_add_from_file(builder, prod_glade_file, &error) == 0) {
+            g_printerr("Error loading file: %s\n", error->message);
+            g_clear_error(&error);
+            return 1;
+        }
+    } else{
         return 1;
     }
+
 
     /* Connect signal handlers to the constructed widgets. */
     window = gtk_builder_get_object(builder, "window");
@@ -111,17 +143,23 @@ int initUi(int argc, char *argv[]){
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
 
+    entry_mac = (GtkEntry *) gtk_builder_get_object(builder, "entry_mac");
+    entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
+
     combo_wifi = (GtkComboBox *) gtk_builder_get_object(builder, "combo_wifi");
     combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
 
+    cb_hidden = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_hidden");
+    cb_psk = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_psk");
+    cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
+    cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
 
     label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
 
     progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
 
-
-
+    //gtk_entry_set_visibility(entry_pass,FALSE);
 
     WIData wiData = {
             .pass= entry_pass,
@@ -159,7 +197,7 @@ void init_ui_from_config(WIData* data){
             gtk_entry_set_text(data->pass,values->pass);
 
         if(values->iface_wifi!=NULL){
-            int idw=find_str(values->iface_wifi,iface_list,iface_list_length);
+            int idw=find_str(values->iface_wifi,wifi_iface_list,wifi_iface_list_length);
 
             if(idw !=-1){
                 gtk_combo_box_set_active(combo_wifi,idw);
@@ -180,11 +218,17 @@ void init_ui_from_config(WIData* data){
 void init_interface_list(){
 
     iface_list_length=0;
+    wifi_iface_list_length=0;
     iface_list=(const char**)get_interface_list(&iface_list_length);
+    wifi_iface_list=(const char**)get_wifi_interface_list(&wifi_iface_list_length);
 
     for (int i = 0; i < iface_list_length; i++){
-        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), iface_list[i]);
+
         gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_internet), iface_list[i]);
+    }
+
+    for (int i = 0; i < wifi_iface_list_length; i++){
+        gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), wifi_iface_list[i]);
     }
 
 }
@@ -259,6 +303,8 @@ void* init_running_info(){
 
     clear_running_info();
     lock_all_views(TRUE);
+
+    gtk_label_set_label(label_status,"Getting running info...");
 
     get_running_info(running_info);
 

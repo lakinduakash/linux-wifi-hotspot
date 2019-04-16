@@ -32,4 +32,6 @@ static guint start_pb_pulse();
 
 static void on_create_hp_clicked(GtkWidget *widget,gpointer data);
 
+static void *stopHp();
+
 #endif //WIHOTSPOT_UI_H

@@ -6,5 +6,6 @@
 #define WIHOTSPOT_UTIL_H
 
 int find_str(char *find, const char **array, int length);
+void rand_str(char *dest, size_t length);
 
 #endif //WIHOTSPOT_UTIL_H
