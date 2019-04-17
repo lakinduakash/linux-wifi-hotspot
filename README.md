@@ -9,6 +9,8 @@
 * Select Channel to share.
 * Hide ssid
 
+[Command line help and documentation](src/script/README.md)
+
 ### Dependencies
 
 #### General
@@ -44,6 +46,9 @@ install it using your distro's package manager_
     cd linux-wifi-hotspot
     make
     sudo make install
+    
+    
+If you don't want to install it to system, you can run programm from build directory. Then you don't want to run `sudo make install`
     
     
 ## Uninstallation
