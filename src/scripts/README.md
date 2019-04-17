@@ -28,8 +28,8 @@
 
 ## Installation
 ### Generic
-    git clone https://github.com/oblique/create_ap
-    cd create_ap
+    git clone https://github.com/lakinduakash/linux-wifi-hotspot
+    cd linux-wifi-hotspot/src/scripts
     make install
 
 ### ArchLinux
