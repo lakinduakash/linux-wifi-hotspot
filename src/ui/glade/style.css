@@ -1,9 +1,22 @@
-.enter_button{
+.stop_button{
     background: #ff3f4e;
     color: #ffffff;
     border-radius: 2px;
 }
 
-.enter_button:disabled{
+.stop_button:disabled{
     color: #ffffff;
+}
+
+
+button:active {
+    background-color: #0274d9;
+}
+
+.entry-error {
+    border-color: #ff6a6b;
+}
+
+.label-error{
+    color: #ff3f4e;
 }
