@@ -9,7 +9,7 @@
 * Select Channel to share.
 * Hide ssid
 
-![screenshot](docs/sc1.png)
+![screenshot](docs/sc2.png)
 
 [Command line help and documentation](src/scripts/README.md)
 
