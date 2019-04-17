@@ -94,8 +94,10 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
     init_config_val_input(&cv);
 
 
-    if(validator(&cv)==FALSE)
+    if(validator(&cv)==FALSE){
+        set_error_text("Check inputs");
         return;
+    }
 
 
     startShell(build_wh_mkconfig_command(&cv));

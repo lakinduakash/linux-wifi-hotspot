@@ -40,4 +40,6 @@ static int init_config_val_input(ConfigValues* cv);
 
 static gboolean validator(ConfigValues *cv);
 
+static void set_error_text(char * text);
+
 #endif //WIHOTSPOT_UI_H
