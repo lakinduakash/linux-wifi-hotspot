@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <regex.h>
 
 #include "h_prop.h"
 #include "ui.h"
@@ -42,6 +43,10 @@ GtkCheckButton *cb_channel;
 GtkProgressBar *progress_bar;
 
 GtkLabel *label_status;
+
+GtkCssProvider* provider;
+GdkDisplay *display;
+GdkScreen *screen;
 
 GError *error = NULL;
 
@@ -87,6 +92,15 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
     g_thread_new("shell2", stopHp, NULL);
 
+}
+
+
+void loadStyles(){
+    provider = gtk_css_provider_new();
+    display = gdk_display_get_default();
+    screen = gdk_display_get_default_screen (display);
+    gtk_style_context_add_provider_for_screen (screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
 }
 
 int initUi(int argc, char *argv[]){

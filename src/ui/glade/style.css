@@ -1,0 +1,9 @@
+.enter_button{
+    background: #ff3f4e;
+    color: #ffffff;
+    border-radius: 2px;
+}
+
+.enter_button:disabled{
+    color: #ffffff;
+}
