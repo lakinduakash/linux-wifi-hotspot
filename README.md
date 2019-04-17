@@ -68,7 +68,8 @@ sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make
     sudo make install
     
     
-If you don't want to install it to system, you can run programm from build directory. Then you don't want to run `sudo make install`
+If you don't want to install it to system, you can run programm from build directory. Then you don't want to run `sudo make install`.
+But make sure `create_ap` the command line util is installed.
     
     
 ## Uninstallation
