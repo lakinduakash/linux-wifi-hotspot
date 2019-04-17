@@ -1,5 +1,7 @@
 ## Linux Wifi Hotspot
 
+[![Build Status](https://travis-ci.com/lakinduakash/linux-wifi-hotspot.svg?branch=master)](https://travis-ci.com/lakinduakash/linux-wifi-hotspot)
+
 ### Features
  
 * Share your wifi like in Windows - Share wifi on same interface which you are connected to internet.
