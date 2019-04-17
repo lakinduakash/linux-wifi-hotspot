@@ -38,4 +38,6 @@ static void *stopHp();
 
 static int init_config_val_input(ConfigValues* cv);
 
+static gboolean validator(ConfigValues *cv);
+
 #endif //WIHOTSPOT_UI_H

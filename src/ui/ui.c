@@ -52,6 +52,7 @@ int iface_list_length;
 int wifi_iface_list_length;
 char* running_info[3];
 guint id;
+static ConfigValues cv;
 
 
 
@@ -69,9 +70,12 @@ static void *stopHp() {
 static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
 
-    static ConfigValues cv;
-
     init_config_val_input(&cv);
+
+
+    if(validator(&cv)==FALSE)
+        return;
+
 
     startShell(build_wh_mkconfig_command(&cv));
 
@@ -149,6 +153,8 @@ int initUi(int argc, char *argv[]){
 
     progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
+    loadStyles();
+
 
     //gtk_entry_set_visibility(entry_pass,FALSE);
 
@@ -169,7 +175,6 @@ int initUi(int argc, char *argv[]){
     init_ui_from_config(&wiData);
 
 
-
     gtk_main();
 
     return 0;
@@ -184,9 +189,9 @@ void init_ui_from_config(WIData* data){
 
 
         if(values->ssid!=NULL)
-            gtk_entry_set_text(data->ssid,values->ssid);
+            gtk_entry_set_text(entry_ssd,values->ssid);
         if(values->pass!=NULL)
-            gtk_entry_set_text(data->pass,values->pass);
+            gtk_entry_set_text(entry_pass,values->pass);
 
         if(values->iface_wifi!=NULL){
             int idw=find_str(values->iface_wifi,wifi_iface_list,wifi_iface_list_length);
@@ -354,6 +359,55 @@ static void *run_create_hp_shell(void *cmd) {
     return 0;
 }
 
+
+static gboolean validator(ConfigValues *cv){
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE){
+
+        if(cv->mac==NULL)
+            return FALSE;
+
+        if(isValidMacAddress(cv->mac)==1){
+            return FALSE;
+        }
+    }
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_channel))==TRUE){
+
+        if(cv->channel==NULL)
+            return FALSE;
+
+        char *end;
+        long li;
+        char *c=strdup(cv->channel);
+        li = strtol(c,&end,10);
+
+        if (end == c) {
+            fprintf(stderr, "%s: not a decimal number\n", c);
+            return FALSE;
+        } else if ('\0' != *end) {
+            fprintf(stderr, "%s: extra characters at end of input: %s\n", c, end);
+            return FALSE;
+        }
+
+
+        if(cv->freq==NULL){
+            if(!(li<=36 && li>0))
+                return FALSE;
+        }
+        else if(strcmp(cv->freq,"2.4")==0){
+            if(!(li<=11 && li>0))
+                return FALSE;
+        } else if(strcmp(cv->freq,"5")==0){
+            if(!(li<=36 && li>0))
+                return FALSE;
+        }
+
+    }
+
+
+    return TRUE;
+}
 
 static int init_config_val_input(ConfigValues* cv){
 
