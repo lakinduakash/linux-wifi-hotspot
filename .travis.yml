@@ -1,9 +1,9 @@
-addons:
-  apt:
-    sources:
-      - george-edison55-precise-backports
-    packages:
-      - cmake-data
-      - cmake
+      
+before_install:
+  - mkdir $HOME/usr
+  - export PATH="$HOME/usr/bin:$PATH"
+  - wget https://github.com/Kitware/CMake/releases/download/v3.14.2/cmake-3.14.2-Linux-x86_64.sh
+  - chmod +x cmake-3.14.2-Linux-x86_64.sh
+  - ./cmake-3.14.2-Linux-x86_64.sh --prefix=$HOME/usr --exclude-subdir --skip-license
       
 script: make && sudo make install
