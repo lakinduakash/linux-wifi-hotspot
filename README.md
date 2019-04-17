@@ -1,6 +1,9 @@
 ## Linux Wifi Hotspot
 
 [![Build Status](https://travis-ci.com/lakinduakash/linux-wifi-hotspot.svg?branch=master)](https://travis-ci.com/lakinduakash/linux-wifi-hotspot)
+[![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![HitCount](http://hits.dwyl.io/lakinduakash/linux-wifi-hotspot.svg)](http://hits.dwyl.io/lakinduakash/linux-wifi-hotspot)
+
 
 ### Features
  
