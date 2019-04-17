@@ -71,8 +71,6 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
 
     const char* a=get_config_file(CONFIG_FILE_NAME);
 
-    char* new_str;
-
     snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
 
     if(cv->freq!=NULL){
@@ -89,9 +87,10 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
     if(cv->hidden!=NULL && (strcmp(cv->hidden,"1") == 0))
         strcat(cmd_mkconfig," --hidden ");
 
-    if(cv->channel!=NULL && (strcmp(cv->channel,"default") != 0) && ((strcmp(cv->channel,"2.4") == 0)|| (strcmp(cv->channel,"5") == 0))){
-        strcat(cmd_mkconfig," -c ");
-        strcat(cmd_mkconfig,cv->channel);
+    if(cv->channel!=NULL && (strcmp(cv->channel,"default") != 0) && (cv->freq==NULL||(strcmp(cv->freq,"2.4") == 0)|| (strcmp(cv->freq,"5") == 0))){
+
+            strcat(cmd_mkconfig," -c ");
+            strcat(cmd_mkconfig,cv->channel);
     }
 
     if(cv->mac!=NULL) {
