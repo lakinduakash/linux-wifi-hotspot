@@ -71,6 +71,25 @@ static void setConfigValues(const char * key, char *value){
 
     if( !strcmp ( INTERNET_IFACE, key ))
         configValues.iface_inet = value;
+
+    if( !strcmp ( HIDDEN, key ))
+        configValues.hidden = value;
+
+    if( !strcmp ( NO_VIRT, key ))
+        configValues.no_virt = value;
+
+    if( !strcmp ( NEW_MACADDR, key ))
+        configValues.mac = value;
+
+    if( !strcmp ( CHANNEL, key ))
+        configValues.channel = value;
+
+    if( !strcmp ( FREQ_BAND, key ))
+        configValues.freq = value;
+
+    if( !strcmp ( USE_PSK, key ))
+        configValues.use_psk = value;
+
 }
 
 
