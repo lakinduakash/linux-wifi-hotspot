@@ -5,7 +5,6 @@
 #ifndef WIHOTSPOT_READ_CONFIG_H
 #define WIHOTSPOT_READ_CONFIG_H
 
-#include "h_prop.h"
 
 #define READ_CONFIG_FILE_SUCCESS 0
 #define READ_CONFIG_FILE_FAIL 1
@@ -54,7 +53,14 @@ typedef struct{
     char *pass;
     char *iface_wifi;
     char *iface_inet;
+    char *no_virt;
+    char *use_psk;
+    char *channel;
+    char *freq;
+    char *hidden;
+    char *mac;
 } ConfigValues;
+
 
 int read_config_file();
 static void setConfigValues(const char * key, char *value);

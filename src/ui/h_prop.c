@@ -66,11 +66,39 @@ const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid
     return cmd_start;
 }
 
-const char *build_wh_mkconfig_command(char *iface_src, char *iface_dest, char *ssid, char *pass){
+
+const char *build_wh_mkconfig_command(ConfigValues* cv){
 
     const char* a=get_config_file(CONFIG_FILE_NAME);
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, iface_src, iface_dest, ssid, pass,MKCONFIG,a);
+    char* new_str;
+
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
+
+    if(cv->freq!=NULL){
+        strcat(cmd_mkconfig," --freq-band ");
+        strcat(cmd_mkconfig,cv->freq);
+    }
+
+    if(cv->no_virt!=NULL && (strcmp(cv->no_virt,"1") == 0))
+        strcat(cmd_mkconfig," --no-virt ");
+
+    if(cv->use_psk!=NULL && (strcmp(cv->use_psk,"1") == 0))
+        strcat(cmd_mkconfig," --psk ");
+
+    if(cv->hidden!=NULL && (strcmp(cv->hidden,"1") == 0))
+        strcat(cmd_mkconfig," --hidden ");
+
+    if(cv->channel!=NULL && (strcmp(cv->channel,"default") != 0) && ((strcmp(cv->channel,"2.4") == 0)|| (strcmp(cv->channel,"5") == 0))){
+        strcat(cmd_mkconfig," -c ");
+        strcat(cmd_mkconfig,cv->channel);
+    }
+
+    if(cv->mac!=NULL) {
+        strcat(cmd_mkconfig, " --mac ");
+        strcat(cmd_mkconfig, cv->mac);
+    }
+
     printf("%s \n",cmd_mkconfig);
     return cmd_mkconfig;
 
