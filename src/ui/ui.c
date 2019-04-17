@@ -39,16 +39,24 @@ GtkCheckButton *cb_psk;
 GtkCheckButton *cb_mac;
 GtkCheckButton *cb_novirt;
 GtkCheckButton *cb_channel;
+GtkCheckButton *cb_open;
 
 GtkProgressBar *progress_bar;
 
 GtkLabel *label_status;
+GtkLabel *label_input_error;
 
 GtkCssProvider* provider;
 GdkDisplay *display;
 GdkScreen *screen;
 
 GError *error = NULL;
+
+GtkStyleContext *context_entry_mac;
+GtkStyleContext *context_entry_pass;
+GtkStyleContext *context_entry_ssid;
+GtkStyleContext *context_entry_channel;
+GtkStyleContext *context_label_input_error;
 
 
 const char** iface_list;
@@ -95,13 +103,174 @@ static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
 }
 
 
-void loadStyles(){
+static void loadStyles(){
     provider = gtk_css_provider_new();
     display = gdk_display_get_default();
     screen = gdk_display_get_default_screen (display);
     gtk_style_context_add_provider_for_screen (screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
+
+    const char *style_file;
+
+    const char* debug_style_file="glade/style.css";
+    const char* prod_style_file="/usr/share/wihotspot/glade/style.css";
+
+    FILE *file;
+
+    if ((file = fopen(debug_style_file, "r"))){
+        fclose(file);
+        style_file = debug_style_file;
+        gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
+
+    }
+    else if ((file = fopen(prod_style_file, "r"))){
+        fclose(file);
+        style_file = prod_style_file;
+
+    } else{
+        return;
+    }
+
+    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),style_file,NULL);
 }
+
+static void init_style_contexts(){
+    context_entry_mac = gtk_widget_get_style_context((GtkWidget*)entry_mac);
+    context_entry_ssid = gtk_widget_get_style_context((GtkWidget*)entry_ssd);
+    context_entry_pass = gtk_widget_get_style_context((GtkWidget*)entry_pass);
+    context_entry_channel = gtk_widget_get_style_context((GtkWidget*)entry_channel);
+    context_label_input_error = gtk_widget_get_style_context((GtkWidget*)label_input_error);
+
+}
+
+static void set_error_text(char * text){
+    gtk_label_set_label(label_input_error,text);
+}
+
+static void* entry_mac_warn(GtkWidget *widget, gpointer data){
+
+    const char *mac = gtk_entry_get_text(GTK_ENTRY(widget));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE) {
+
+        if (mac == NULL || isValidMacAddress(mac) != 1) {
+            gtk_style_context_add_class(context_entry_mac, "entry-error");
+
+            return NULL;
+        }
+    }
+
+    gtk_style_context_remove_class(context_entry_mac,"entry-error");
+    return NULL;
+}
+
+static void* entry_ssid_warn(GtkWidget *widget, gpointer data){
+
+    const char *ssid = gtk_entry_get_text(GTK_ENTRY(widget));
+
+    if(ssid !=NULL)
+    {
+        size_t len = strlen(ssid);
+
+        if(len<1){
+            gtk_style_context_add_class(context_entry_pass, "entry-error");
+            return NULL;
+        } else{
+            gtk_style_context_remove_class(context_entry_pass, "entry-error");
+        }
+    }
+
+
+    if(ssid ==NULL)
+    {
+        gtk_style_context_add_class(context_entry_ssid, "entry-error");
+        return FALSE;
+    }
+
+    gtk_style_context_remove_class(context_entry_ssid,"entry-error");
+    return NULL;
+}
+
+
+static void* entry_pass_warn(GtkWidget *widget, gpointer data){
+
+    const char *pass = gtk_entry_get_text(GTK_ENTRY(widget));
+
+    if(pass !=NULL)
+    {
+        size_t len = strlen(pass);
+
+        if(len<8 && len>0){
+            gtk_style_context_add_class(context_entry_pass, "entry-error");
+            return NULL;
+        } else{
+            gtk_style_context_remove_class(context_entry_pass, "entry-error");
+        }
+    }
+
+    gtk_style_context_remove_class(context_entry_mac,"entry-error");
+    return NULL;
+}
+
+static void* entry_channel_warn(GtkWidget *widget, gpointer data){
+
+    const char *channel = gtk_entry_get_text(GTK_ENTRY(widget));
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_channel))==TRUE) {
+
+        if (channel == NULL) {
+            gtk_style_context_add_class(context_entry_channel, "entry-error");
+            return FALSE;
+        }
+
+
+        char *end;
+        long li;
+        char *c = strdup(channel);
+        li = strtol(c, &end, 10);
+
+        if (end == c) {
+            gtk_style_context_add_class(context_entry_channel, "entry-error");
+            return FALSE;
+        } else if ('\0' != *end) {
+            gtk_style_context_add_class(context_entry_channel, "entry-error");
+            return FALSE;
+        }
+
+
+        if (cv.freq == NULL) {
+            if (!(li <= 36 && li > 0)) {
+                gtk_style_context_add_class(context_entry_channel, "entry-error");
+                return FALSE;
+            }
+        } else if (strcmp(cv.freq, "2.4") == 0) {
+            if (!(li <= 11 && li > 0)) {
+                gtk_style_context_add_class(context_entry_channel, "entry-error");
+                return FALSE;
+            }
+        } else if (strcmp(cv.freq, "5") == 0) {
+            if (!(li <= 36 && li > 0)) {
+                gtk_style_context_add_class(context_entry_channel, "entry-error");
+                return FALSE;
+            }
+        }
+
+    }
+    gtk_style_context_remove_class(context_entry_channel,"entry-error");
+    return NULL;
+}
+
+
+static void *update_freq_toggle(){
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
+        cv.freq = "2.4";
+
+    else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_5)))
+        cv.freq ="5";
+    else
+        cv.freq =NULL;
+
+    return NULL;
+}
+
 
 int initUi(int argc, char *argv[]){
 
@@ -110,6 +279,23 @@ int initUi(int argc, char *argv[]){
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
+
+//
+//    DIR* dir = opendir("mydir");
+//    if (dir)
+//    {
+//        /* Directory exists. */
+//        closedir(dir);
+//    }
+//    else if (ENOENT == errno)
+//    {
+//        /* Directory does not exist. */
+//    }
+//    else
+//    {
+//        /* opendir() failed for some other reason. */
+//    }
+
     const char* debug_glade_file="glade/wifih.ui";
     const char* prod_glade_file="/usr/share/wihotspot/glade/wifih.ui";
 
@@ -158,16 +344,21 @@ int initUi(int argc, char *argv[]){
     cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
     cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
+    cb_open = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_open");
 
     rb_freq_auto = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_auto");
     rb_freq_2 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_2");
     rb_freq_5 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_5");
 
     label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
+    label_input_error = (GtkLabel *) gtk_builder_get_object(builder, "label_input_error");
 
     progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
     loadStyles();
+    init_style_contexts();
+
+    gtk_style_context_add_class(context_label_input_error, "label-error");
 
 
     //gtk_entry_set_visibility(entry_pass,FALSE);
@@ -175,18 +366,22 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
-    WIData wiData = {
-            .pass= entry_pass,
-            .ssid= entry_ssd
-    };
+    g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
+    g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
+    g_signal_connect (entry_pass, "changed", G_CALLBACK(entry_pass_warn), NULL);
+
+    g_signal_connect (entry_channel, "changed", G_CALLBACK(entry_channel_warn), NULL);
+
+    g_signal_connect (rb_freq_2, "toggled", G_CALLBACK(update_freq_toggle), NULL);
+    g_signal_connect (rb_freq_5, "toggled", G_CALLBACK(update_freq_toggle), NULL);
+    g_signal_connect (rb_freq_auto, "toggled", G_CALLBACK(update_freq_toggle), NULL);
+
 
     start_pb_pulse();
     g_thread_new("init_running",init_running_info,NULL);
-    //init_running_info();
 
     init_interface_list();
-
-    init_ui_from_config(&wiData);
+    init_ui_from_config();
 
 
     gtk_main();
@@ -195,7 +390,7 @@ int initUi(int argc, char *argv[]){
 }
 
 
-void init_ui_from_config(WIData* data){
+void init_ui_from_config(){
 
     if(read_config_file()==READ_CONFIG_FILE_SUCCESS){
 
@@ -376,6 +571,31 @@ static void *run_create_hp_shell(void *cmd) {
 
 static gboolean validator(ConfigValues *cv){
 
+
+    if(cv->pass !=NULL)
+    {
+        size_t len = strlen(cv->pass);
+
+        if(len<8){
+            if(len>0)
+            return FALSE;
+        }
+    }
+
+    if(cv->ssid !=NULL)
+    {
+        size_t len = strlen(cv->ssid);
+
+        if(len<1){
+            return FALSE;
+        }
+    }
+
+    if(cv->ssid ==NULL)
+    {
+        return FALSE;
+    }
+
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE){
 
         if(cv->mac==NULL)
@@ -438,7 +658,13 @@ static int init_config_val_input(ConfigValues* cv){
 
 
         cv->ssid = (char *) gtk_entry_get_text(entry_ssd);
-        cv->pass = (char *) gtk_entry_get_text(entry_pass);
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_open))){
+            cv->pass = "";
+        }
+        else{
+            cv->pass = (char *) gtk_entry_get_text(entry_pass);
+        }
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
             cv->freq = "2.4";

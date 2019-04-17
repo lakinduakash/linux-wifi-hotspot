@@ -16,7 +16,7 @@ typedef struct {
 
 int initUi(int argc, char *argv[]);
 
-void init_ui_from_config(WIData* data);
+void init_ui_from_config();
 
 static void* run_create_hp_shell(void *cmd);
 
