@@ -621,12 +621,12 @@ static gboolean validator(ConfigValues *cv){
         return FALSE;
     }
 
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE){
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE) {
 
-        if(cv->mac==NULL)
-            return FALSE;
+        if (cv->mac == NULL || isValidMacAddress(cv->mac) != 1) {
+            set_error_text(ERROR_MAC_MSG);
+            gtk_style_context_add_class(context_entry_mac, "entry-error");
 
-        if(isValidMacAddress(cv->mac)==1){
             return FALSE;
         }
     }
