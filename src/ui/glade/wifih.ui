@@ -187,7 +187,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="margin_left">10</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">1</property>
                 <property name="label" translatable="yes">Advanced</property>
@@ -494,6 +493,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkLabel" id="label_status">
@@ -515,7 +515,7 @@
               <object class="GtkLabel" id="label_input_error">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
+                <property name="halign">center</property>
               </object>
               <packing>
                 <property name="expand">False</property>
