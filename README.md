@@ -60,3 +60,10 @@ If you don't want to install it to system, you can run programm from build direc
 Tested with Ubuntu 18.10. If any issue found, file a issue on github.
 
 **credits** - oblique
+
+## License
+FreeBSD
+
+Copyright (c) 2013, oblique
+
+Copyright (c) 2019, lakinduakash
