@@ -42,13 +42,26 @@ install it using your distro's package manager_
 * build-essential
 * pkg-config
 * gtk
+* libgtk-3-dev
+
+On Ubuntu or debian install dependencies by,
+
+```bash
+sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make
+```
+
 
 
 
 ## Installation
+
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
+    
+    #build binaries
     make
+    
+    #install
     sudo make install
     
     
