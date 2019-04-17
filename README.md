@@ -57,6 +57,7 @@ If you don't want to install it to system, you can run programm from build direc
     sudo make uninstall
     
 ## Running
+Run in terminal
  `wihotspot`
     
 Tested with Ubuntu 18.10. If any issue found, file a issue on github.
