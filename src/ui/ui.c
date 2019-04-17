@@ -37,6 +37,7 @@ GtkCheckButton *cb_hidden;
 GtkCheckButton *cb_psk;
 GtkCheckButton *cb_mac;
 GtkCheckButton *cb_novirt;
+GtkCheckButton *cb_channel;
 
 GtkProgressBar *progress_bar;
 
@@ -67,29 +68,14 @@ static void *stopHp() {
 
 static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
-    WIData *d = (WIData *) data;
 
-    if (gtk_combo_box_get_active (combo_wifi) >= 0 && gtk_combo_box_get_active (combo_internet) >= 0) {
+    static ConfigValues cv;
 
+    init_config_val_input(&cv);
 
-        gchar *wifi = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_wifi));
-        gchar *internet = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_internet));
+    startShell(build_wh_mkconfig_command(&cv));
 
-        //Remove trailing new lines
-        wifi[strcspn(wifi, "\n")] = 0;
-        internet[strcspn(internet, "\n")] = 0;
-
-        startShell(build_wh_mkconfig_command(wifi, internet, (char *) gtk_entry_get_text(d->ssid),
-                                             (char *) gtk_entry_get_text(d->pass)));
-
-        g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
-
-        g_free (wifi);
-        g_free (internet);
-    } else{
-
-        g_print("Please select Wifi and Internet interfaces\n");
-    }
+    g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
 
 
 }
@@ -153,6 +139,11 @@ int initUi(int argc, char *argv[]){
     cb_psk = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_psk");
     cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
+    cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
+
+    rb_freq_auto = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_auto");
+    rb_freq_2 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_2");
+    rb_freq_5 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_5");
 
     label_status = (GtkLabel *) gtk_builder_get_object(builder, "label_status");
 
@@ -160,6 +151,9 @@ int initUi(int argc, char *argv[]){
 
 
     //gtk_entry_set_visibility(entry_pass,FALSE);
+
+    g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
+    g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
     WIData wiData = {
             .pass= entry_pass,
@@ -174,8 +168,6 @@ int initUi(int argc, char *argv[]){
 
     init_ui_from_config(&wiData);
 
-    g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), &wiData);
-    g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
 
 
     gtk_main();
@@ -360,4 +352,68 @@ static void *run_create_hp_shell(void *cmd) {
 
     init_running_info();
     return 0;
+}
+
+
+static int init_config_val_input(ConfigValues* cv){
+
+
+    if (gtk_combo_box_get_active (combo_wifi) >= 0 && gtk_combo_box_get_active (combo_internet) >= 0) {
+
+
+        gchar *wifi =cv->iface_wifi= gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_wifi));
+        gchar *internet =cv->iface_inet= gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT(combo_internet));
+
+        //Remove trailing new lines
+        wifi[strcspn(wifi, "\n")] = 0;
+        internet[strcspn(internet, "\n")] = 0;
+
+
+        cv->ssid = (char *) gtk_entry_get_text(entry_ssd);
+        cv->pass = (char *) gtk_entry_get_text(entry_pass);
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
+            cv->freq = "2.4";
+
+        else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_5)))
+            cv->freq ="5";
+        else
+            cv->freq =NULL;
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_channel)))
+            cv->channel = (char*)gtk_entry_get_text(entry_channel);
+        else
+            cv->channel = NULL;
+
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
+            cv->mac = (char*)gtk_entry_get_text(entry_mac);
+        else
+            cv->mac =NULL;
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_hidden)))
+            cv->hidden = "1";
+
+        else
+            cv->hidden =NULL;
+
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_novirt)))
+            cv->no_virt = "1";
+        else
+            cv->no_virt=NULL;
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_psk)))
+            cv->use_psk = "1";
+        else
+            cv->use_psk =NULL;
+
+        return 0;
+
+    } else{
+
+        g_print("Please select Wifi and Internet interfaces\n");
+        return 1;
+    }
+
 }

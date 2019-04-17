@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include "read_config.h"
+
 typedef struct {
     GtkEntry *ssid;
     GtkEntry *pass;
@@ -33,5 +35,7 @@ static guint start_pb_pulse();
 static void on_create_hp_clicked(GtkWidget *widget,gpointer data);
 
 static void *stopHp();
+
+static int init_config_val_input(ConfigValues* cv);
 
 #endif //WIHOTSPOT_UI_H
