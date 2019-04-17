@@ -17,6 +17,14 @@
 #define BUFSIZE 512
 #define AP_ENABLED "AP-ENABLED"
 
+#define INSTALL_PATH_PREFIX "/usr/share/wihotspot"
+#define ERROR_SSID_MSG "SSID must not empty"
+#define ERROR_PASS_MSG "Password must contain 8 characters"
+#define ERROR_CHANNEL_MSG "Invalid channel number"
+#define ERROR_CHANNEL_MSG_2 "Channel must be 1-11"
+#define ERROR_CHANNEL_MSG_5 "Channel must be 1-36"
+#define ERROR_MAC_MSG "Invalid Mac address"
+
 GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
@@ -152,6 +160,7 @@ static void* entry_mac_warn(GtkWidget *widget, gpointer data){
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE) {
 
         if (mac == NULL || isValidMacAddress(mac) != 1) {
+            set_error_text(ERROR_MAC_MSG);
             gtk_style_context_add_class(context_entry_mac, "entry-error");
 
             return NULL;
@@ -159,6 +168,7 @@ static void* entry_mac_warn(GtkWidget *widget, gpointer data){
     }
 
     gtk_style_context_remove_class(context_entry_mac,"entry-error");
+    set_error_text("");
     return NULL;
 }
 
@@ -171,10 +181,12 @@ static void* entry_ssid_warn(GtkWidget *widget, gpointer data){
         size_t len = strlen(ssid);
 
         if(len<1){
-            gtk_style_context_add_class(context_entry_pass, "entry-error");
+            gtk_style_context_add_class(context_entry_ssid, "entry-error");
+            set_error_text(ERROR_SSID_MSG);
             return NULL;
         } else{
-            gtk_style_context_remove_class(context_entry_pass, "entry-error");
+            gtk_style_context_remove_class(context_entry_ssid, "entry-error");
+            set_error_text("");
         }
     }
 
@@ -182,10 +194,12 @@ static void* entry_ssid_warn(GtkWidget *widget, gpointer data){
     if(ssid ==NULL)
     {
         gtk_style_context_add_class(context_entry_ssid, "entry-error");
+        set_error_text(ERROR_SSID_MSG);
         return FALSE;
     }
 
     gtk_style_context_remove_class(context_entry_ssid,"entry-error");
+    set_error_text("");
     return NULL;
 }
 
@@ -200,6 +214,7 @@ static void* entry_pass_warn(GtkWidget *widget, gpointer data){
 
         if(len<8 && len>0){
             gtk_style_context_add_class(context_entry_pass, "entry-error");
+            set_error_text(ERROR_PASS_MSG);
             return NULL;
         } else{
             gtk_style_context_remove_class(context_entry_pass, "entry-error");
@@ -207,6 +222,7 @@ static void* entry_pass_warn(GtkWidget *widget, gpointer data){
     }
 
     gtk_style_context_remove_class(context_entry_mac,"entry-error");
+    set_error_text("");
     return NULL;
 }
 
@@ -218,6 +234,7 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
 
         if (channel == NULL) {
             gtk_style_context_add_class(context_entry_channel, "entry-error");
+            set_error_text(ERROR_CHANNEL_MSG);
             return FALSE;
         }
 
@@ -229,9 +246,11 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
 
         if (end == c) {
             gtk_style_context_add_class(context_entry_channel, "entry-error");
+            set_error_text(ERROR_CHANNEL_MSG);
             return FALSE;
         } else if ('\0' != *end) {
             gtk_style_context_add_class(context_entry_channel, "entry-error");
+            set_error_text(ERROR_CHANNEL_MSG);
             return FALSE;
         }
 
@@ -239,22 +258,26 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
         if (cv.freq == NULL) {
             if (!(li <= 36 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
+                set_error_text(ERROR_CHANNEL_MSG);
                 return FALSE;
             }
         } else if (strcmp(cv.freq, "2.4") == 0) {
             if (!(li <= 11 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
+                set_error_text(ERROR_CHANNEL_MSG_2);
                 return FALSE;
             }
         } else if (strcmp(cv.freq, "5") == 0) {
             if (!(li <= 36 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
+                set_error_text(ERROR_CHANNEL_MSG_5);
                 return FALSE;
             }
         }
 
     }
     gtk_style_context_remove_class(context_entry_channel,"entry-error");
+    set_error_text("");
     return NULL;
 }
 
