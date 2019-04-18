@@ -83,6 +83,12 @@ Tested with Ubuntu 18.10. If any issue found, file a issue on github.
 
 **credits** - oblique
 
+
+## Contributing
+
+This project is still new. So you can simply open a issue and send a PR.
+
+
 ## License
 FreeBSD
 
