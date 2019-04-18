@@ -86,7 +86,7 @@ Tested with Ubuntu 18.10. If any issue found, file a issue on github.
 
 ## Contributing
 
-This project is still new. So you can simply open a issue and send a PR.
+This project is still new. So you can simply open a issue and send a PR. Also there are some existing issues. Pick one and start contributing.
 
 
 ## License
