@@ -3,9 +3,9 @@ all:
 	@echo "Run 'make uninstall' for uninstallation."
 	mkdir -p build
 	cd build && cmake -G "CodeBlocks - Unix Makefiles" ../src
-	$(MAKE) -C build
 
 install:
+	cd build && cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
 	$(MAKE) -C src/scripts install
 	$(MAKE) -C build install_build
 

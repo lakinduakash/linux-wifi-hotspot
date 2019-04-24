@@ -30,17 +30,18 @@ set (appdir "/usr/share")
 set (appbin "/usr/bin")
 
 add_custom_target(install_build
-        COMMAND mkdir -p ${appdir}/${PROJECT_NAME}
-        COMMAND mkdir -p ${appdir}/${PROJECT_NAME}/glade
-        COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} ${appdir}/${PROJECT_NAME}/${PROJECT_NAME}
-        COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/glade/* ${appdir}/${PROJECT_NAME}/glade/
-        COMMAND ${CMAKE_COMMAND} -E create_symlink ${appdir}/${PROJECT_NAME}/${PROJECT_NAME} ${appbin}/${PROJECT_NAME}
+        COMMAND mkdir -p $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
+        COMMAND mkdir -p $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/glade
+        COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME}
+        COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/glade/* $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/glade/
+        COMMAND ln -rs $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME} $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
+        #COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME} $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         DEPENDS ${PROJECT_NAME}
         COMMENT Installing files...
         )
 
 add_custom_target(uninstall_build
-        COMMAND rm -r ${appdir}/${PROJECT_NAME}
-        COMMAND rm -f ${appbin}/${PROJECT_NAME}
+        COMMAND rm -r $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
+        COMMAND rm -f $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         COMMENT Unstalling files...
         )
