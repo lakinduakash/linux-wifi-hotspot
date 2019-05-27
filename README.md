@@ -18,6 +18,10 @@
 
 [Command line help and documentation](src/scripts/README.md)
 
+### Notes
+
+Sometimes there are troubles with 5Ghz due to some vendor restriction. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
+
 ### Dependencies
 
 #### General
