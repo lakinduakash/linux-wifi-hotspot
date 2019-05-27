@@ -10,7 +10,7 @@ before_install:
 script: 
   - make
   - sudo -u root -i sh -c '
-         export PATH="$HOME/usr/bin:$PATH"
+         export PATH="/home/travis/usr/bin:$PATH"
          whereis cmake
          '
-  - sudo -E make install
+  - sudo make install
