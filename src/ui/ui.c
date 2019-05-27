@@ -590,12 +590,26 @@ void* init_running_info(){
 static void *run_create_hp_shell(void *cmd) {
 
     char buf[BUFSIZE];
+    char buf2[BUFSIZE];
     FILE *fp;
-
-    if ((fp = popen(cmd, "r")) == NULL) {
-        printf("Error opening pipe!\n");
-        return NULL;
+    
+    if(cv.freq){
+        cmd = strcat( cmd, " --freq-band ");
+        cmd = strcat( cmd, cv.freq);
+        
+        if ((fp = popen(cmd, "r")) == NULL) {
+            printf("Error opening pipe!\n");
+            return NULL;
+        }
     }
+    else{
+        if ((fp = popen(cmd, "r")) == NULL) {
+            printf("Error opening pipe!\n");
+            return NULL;
+        }
+    }
+
+    
 
     start_pb_pulse();
 
