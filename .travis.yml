@@ -9,5 +9,8 @@ before_install:
       
 script: 
   - make
-  - sudo export PATH="$HOME/usr/bin:$PATH"
+  - sudo -u root -i sh -c '
+         export PATH="$HOME/usr/bin:$PATH"
+         whereis cmake
+         '
   - sudo -E make install
