@@ -10,4 +10,4 @@ before_install:
 script: 
   - make
   - whereis cmake
-  - sudo make install
+  - sudo -E make install
