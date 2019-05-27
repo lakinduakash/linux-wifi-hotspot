@@ -8,7 +8,7 @@ install:
 	@echo "Installing"
 	cd build
 	whereis cmake
-	cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
+	/home/travis/usr/bin/cmake /usr/local/cmake-3.12.4/bin/cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
 	$(MAKE) -C src/scripts install
 	$(MAKE) -C build install_build
 
