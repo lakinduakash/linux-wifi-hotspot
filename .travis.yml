@@ -7,4 +7,7 @@ before_install:
   - ./cmake-3.14.2-Linux-x86_64.sh --prefix=$HOME/usr --exclude-subdir --skip-license
   - sudo apt-get install -y build-essential libgtk-3-dev
       
-script: make && sudo make install
+script: 
+  - make
+  - whereis cmake
+  - sudo make install
