@@ -6,7 +6,8 @@ all:
 
 install:
 	@echo "Installing"
-	cd build && cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
+	cd build
+	cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
 	$(MAKE) -C src/scripts install
 	$(MAKE) -C build install_build
 
