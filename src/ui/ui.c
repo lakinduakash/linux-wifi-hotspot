@@ -48,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ERROR_PASS_MSG "Password must contain 8 characters"
 #define ERROR_CHANNEL_MSG "Invalid channel number"
 #define ERROR_CHANNEL_MSG_2 "Channel must be 1-11"
-#define ERROR_CHANNEL_MSG_5 "Channel must be 1-36"
+#define ERROR_CHANNEL_MSG_5 "Channel must be 1-196"
 #define ERROR_MAC_MSG "Invalid Mac address"
 
 GtkBuilder *builder;
@@ -284,7 +284,7 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
 
 
         if (cv.freq == NULL) {
-            if (!(li <= 36 && li > 0)) {
+            if (!(li <= 196 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
                 set_error_text(ERROR_CHANNEL_MSG);
                 return FALSE;
@@ -296,7 +296,7 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
                 return FALSE;
             }
         } else if (strcmp(cv.freq, "5") == 0) {
-            if (!(li <= 36 && li > 0)) {
+            if (!(li <= 196 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
                 set_error_text(ERROR_CHANNEL_MSG_5);
                 return FALSE;
@@ -592,11 +592,11 @@ static void *run_create_hp_shell(void *cmd) {
     char buf[BUFSIZE];
     char buf2[BUFSIZE];
     FILE *fp;
-    
+
     if(cv.freq){
         cmd = strcat( cmd, " --freq-band ");
         cmd = strcat( cmd, cv.freq);
-        
+
         if ((fp = popen(cmd, "r")) == NULL) {
             printf("Error opening pipe!\n");
             return NULL;
@@ -609,7 +609,7 @@ static void *run_create_hp_shell(void *cmd) {
         }
     }
 
-    
+
 
     start_pb_pulse();
 
@@ -691,14 +691,14 @@ static gboolean validator(ConfigValues *cv){
 
 
         if(cv->freq==NULL){
-            if(!(li<=36 && li>0))
+            if(!(li<=196 && li>0))
                 return FALSE;
         }
         else if(strcmp(cv->freq,"2.4")==0){
             if(!(li<=11 && li>0))
                 return FALSE;
         } else if(strcmp(cv->freq,"5")==0){
-            if(!(li<=36 && li>0))
+            if(!(li<=196 && li>0))
                 return FALSE;
         }
 
