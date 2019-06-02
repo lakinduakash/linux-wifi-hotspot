@@ -1546,8 +1546,14 @@ if [[ $NO_VIRT -eq 0 ]]; then
             FREQ_BAND=2.4
         fi
         if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-            echo ", fallback to channel ${WIFI_IFACE_CHANNEL}"
-            CHANNEL=$WIFI_IFACE_CHANNEL
+            if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
+            then
+                echo -e "\nmultiple channels supported"
+            else
+                echo -e  "\nmultiple channels not supported",
+                echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
+                CHANNEL=$WIFI_IFACE_CHANNEL
+            fi
         else
             echo "channel------------------ ${CHANNEL}"
         fi
