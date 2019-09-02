@@ -18,7 +18,7 @@
 
 ### Notes
 
-Sometimes there are troubles with 5Ghz due to some vendor restriction. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
+Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
 
 ### Dependencies
 
