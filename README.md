@@ -20,6 +20,8 @@
 
 Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
 
+If any problems with RealTech Wifi Adapters see [this](docs/howto/realtek.md)
+
 ### Dependencies
 
 #### General
