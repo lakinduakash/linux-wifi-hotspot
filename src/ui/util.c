@@ -61,6 +61,19 @@ void rand_str(char *dest, size_t length) {
     *dest = '\0';
 }
 
+void rand_str_extended(char *dest, size_t length) {
+    char charset[] = "0123456789"
+                     "abcdefghijklmnopqrstuvwxyz"
+                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                     "@_()-{}[].";
+
+    while (length-- > 0) {
+        size_t index = (size_t) ((double) rand() / RAND_MAX * (sizeof charset - 1));
+        *dest++ = charset[index];
+    }
+    *dest = '\0';
+}
+
 
 int isValidMacAddress(const char* mac) {
     int i = 0;
