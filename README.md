@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.com/lakinduakash/linux-wifi-hotspot.svg?branch=master)](https://travis-ci.com/lakinduakash/linux-wifi-hotspot)
 [![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![HitCount](http://hits.dwyl.io/lakinduakash/linux-wifi-hotspot.svg)](http://hits.dwyl.io/lakinduakash/linux-wifi-hotspot)
-
 
 ### Features
  
@@ -20,7 +18,9 @@
 
 ### Notes
 
-Sometimes there are troubles with 5Ghz due to some vendor restriction. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
+Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
+
+If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
 ### Dependencies
 
@@ -54,7 +54,7 @@ install it using your distro's package manager_
 On Ubuntu or debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make
+sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make hostapd
 ```
 
 

@@ -10,3 +10,4 @@ before_install:
 script: 
   - make
   - sudo PATH="$HOME/usr/bin:$PATH" make install
+  - echo "Finished"

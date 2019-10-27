@@ -233,7 +233,7 @@ int get_running_info(char* a[3]){
 
 
 static int init_get_interface_list(){
-    const char* cmd="ls -x /sys/class/net ";
+    const char* cmd="echo $( ls /sys/class/net ) ";
 
     FILE *fp;
 

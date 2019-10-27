@@ -300,6 +300,26 @@ can_be_ap() {
     return 1
 }
 
+get_avail_channel_list() {
+    AVAIL_CH_LIST=$(\
+        get_adapter_info ${IFACE} | \
+        grep "\* [0-9]* MHz \[[0-9]*\]" | \
+        while read l; do\
+            [[ $l != *disabled* ]] && [[ $l != *no\ IR* ]] && echo "$l";\
+        done | \
+        sed 's/^* //'
+        )
+
+    if [[ -z "$AVAIL_CH_LIST" ]]; then
+        echo "Cannot determine which channels are supported"
+        return 1
+    # else
+    #     echo "$AVAIL_CH_LIST"
+    fi
+
+    return 0
+}
+
 can_transmit_to_channel() {
     local IFACE CHANNEL_NUM CHANNEL_INFO
     IFACE=$1
@@ -1546,8 +1566,14 @@ if [[ $NO_VIRT -eq 0 ]]; then
             FREQ_BAND=2.4
         fi
         if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-            echo ", fallback to channel ${WIFI_IFACE_CHANNEL}"
-            CHANNEL=$WIFI_IFACE_CHANNEL
+            if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
+            then
+                echo -e "\nmultiple channels supported"
+            else
+                echo -e  "\nmultiple channels not supported",
+                echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
+                CHANNEL=$WIFI_IFACE_CHANNEL
+            fi
         else
             echo "channel------------------ ${CHANNEL}"
         fi
