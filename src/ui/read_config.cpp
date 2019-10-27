@@ -115,6 +115,9 @@ static void setConfigValues(const char * key, char *value){
 
     if( !strcmp ( USE_PSK, key ))
         configValues.use_psk = value;
+        
+    if( !strcmp ( USE_PPT, key ))
+        configValues.use_ppt = value;
 
 }
 
