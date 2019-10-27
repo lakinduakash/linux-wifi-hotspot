@@ -65,6 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SSID             "SSID"
 #define PASSPHRASE       "PASSPHRASE"
 #define USE_PSK          "USE_PSK"
+#define USE_PPT          "USE_PPT"
 
 
 
@@ -85,6 +86,7 @@ typedef struct{
     char *freq;
     char *hidden;
     char *mac;
+    char *ppt
 } ConfigValues;
 
 
