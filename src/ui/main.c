@@ -26,7 +26,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "ui.h"
-#include "h_prop.h"
 
 
 int main(int argc, char *argv[]) {
