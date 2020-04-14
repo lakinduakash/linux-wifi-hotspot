@@ -30,18 +30,24 @@ set (appdir "/usr/share")
 set (appbin "/usr/bin")
 
 add_custom_target(install_build
+	# echo "HERE: $(HOME)"
         COMMAND mkdir -p $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
         COMMAND mkdir -p $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/glade
         COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME} $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME}
         COMMAND install -Dm755 ${CMAKE_CURRENT_BINARY_DIR}/glade/* $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/glade/
         COMMAND ln -rs $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME} $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         #COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME} $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
+        COMMAND echo $ENV{DESTDIR}
+        COMMAND install -Dm644 ${CMAKE_SOURCE_DIR}/desktop/hotspot.png $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/hotspot.png
+        COMMAND install -Dm644 ${CMAKE_SOURCE_DIR}/desktop/wifihotspot.desktop $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME}.desktop
+        COMMAND install -Dm644 ${CMAKE_SOURCE_DIR}/desktop/wifihotspot.desktop $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
         DEPENDS ${PROJECT_NAME}
         COMMENT Installing files...
         )
 
 add_custom_target(uninstall_build
-        COMMAND rm -r $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
+        COMMAND rm -rf $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
+        COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
         COMMENT Unstalling files...
         )
