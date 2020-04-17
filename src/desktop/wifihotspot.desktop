@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=WifiHotspot
+Icon=/usr/share/wihotspot/hotspot.png
+Exec=sh -c 'pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY sudo /usr/bin/wihotspot'
+Terminal=false
+Categories=System
+Keywords=Hotspot;WiFi

@@ -13,6 +13,7 @@ install:
 	install -Dm644 bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/create_ap
 	install -Dm644 README.md $(DESTDIR)$(PREFIX)/share/doc/create_ap/README.md
 
+
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/create_ap
 	rm -f $(DESTDIR)/etc/create_ap.conf
