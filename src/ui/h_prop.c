@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUFSIZE 512
 
 
-#define SUDO "pkexec --user root"
+#define SUDO "sudo"
 #define CREATE_AP "create_ap"
 
 #define MKCONFIG "--mkconfig"
@@ -184,7 +184,7 @@ const char* build_kill_create_ap_command(char* pid){
 
 static int init_get_running(){
 
-    const char* cmd="pkexec --user root create_ap --list-running";
+    const char* cmd="sudo create_ap --list-running";
     FILE *fp;
 
     if ((fp = popen(cmd, "r")) == NULL) {
