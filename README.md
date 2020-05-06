@@ -3,6 +3,12 @@
 [![Build Status](https://travis-ci.com/lakinduakash/linux-wifi-hotspot.svg?branch=master)](https://travis-ci.com/lakinduakash/linux-wifi-hotspot)
 [![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+### Update
+* It adds new file to sudors.d to run `create_ap` without asking password
+* GUI can be run as normal user. No need to add sudo
+* Config files are wriiten to /etc/wh.config (Previouslu configurations are wriiten to home directory as `.wh.config`).
+* `.desktop` file is added. So You can start from app launcher
+
 ### Features
  
 * Share your wifi like in Windows - Share wifi on same interface which you are connected to internet.
