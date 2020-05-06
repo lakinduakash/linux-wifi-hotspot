@@ -124,12 +124,13 @@ const char* get_config_file(const char* file){
 
     static char a[BUFSIZE];
 
-    if ((homedir = getenv("HOME")) == nullptr) {
-        homedir = getpwuid(getuid())->pw_dir;
-    }
-    snprintf(a,BUFSIZE,"%s%s%s",homedir,"/",file);
+    //    if ((homedir = getenv("HOME")) == nullptr) {
+    //        homedir = getpwuid(getuid())->pw_dir;
+    //    }
+    //    snprintf(a,BUFSIZE,"%s%s%s",homedir,"/",file);
 
-    //printf(" from %s \n",a);
+    snprintf(a,BUFSIZE,"%s",file);
+
     return (const char*)a;
 }
 

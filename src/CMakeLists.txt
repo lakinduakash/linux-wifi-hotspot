@@ -49,5 +49,6 @@ add_custom_target(uninstall_build
         COMMAND rm -rf $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
+        COMMAND rm -f $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME}.desktop
         COMMENT Unstalling files...
         )

@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUFSIZE 512
 
 
-#define SUDO "pkexec --user root"
+#define SUDO "sudo"
 #define CREATE_AP "create_ap"
 
 #define MKCONFIG "--mkconfig"
@@ -98,7 +98,7 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
 
     const char* a=get_config_file(CONFIG_FILE_NAME);
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s", CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
 
     if(cv->freq!=NULL){
         strcat(cmd_mkconfig," --freq-band ");
@@ -184,7 +184,7 @@ const char* build_kill_create_ap_command(char* pid){
 
 static int init_get_running(){
 
-    const char* cmd="create_ap --list-running";
+    const char* cmd="sudo create_ap --list-running";
     FILE *fp;
 
     if ((fp = popen(cmd, "r")) == NULL) {
