@@ -6,7 +6,7 @@
 ### Update
 * It adds new file to sudors.d to run `create_ap` without asking password
 * GUI can be run as normal user. No need to add sudo
-* Config files are wriiten to /etc/wh.config (Previouslu configurations are wriiten to home directory as `.wh.config`).
+* Config files are wriiten to /etc/wh.config (Previously, configurations were wriiten to home directory as `.wh.config`).
 * `.desktop` file is added. So You can start from app launcher
 
 ### Features
