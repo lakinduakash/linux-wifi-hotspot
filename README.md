@@ -89,7 +89,7 @@ But make sure `create_ap` the command line util is installed.
 Run in terminal
  `wihotspot`
     
-Tested with Ubuntu 16.04,18.04,19.04 and 19.10. If any issue found, file a issue on github.
+Tested with Ubuntu from 16.04 to 20.04. If any issue found, file a issue on github.
 
 **credits** - oblique
 
