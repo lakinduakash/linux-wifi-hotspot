@@ -563,7 +563,7 @@ void* init_running_info(){
 
     gtk_label_set_label(label_status,"Getting running info...");
 
-    get_running_info(running_info);
+    get_h_running_info(running_info);
 
     if(running_info[0]!=NULL){
 

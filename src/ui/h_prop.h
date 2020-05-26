@@ -44,7 +44,7 @@ int startShell(const char *);
 
 int write_config(char *);
 
-int get_running_info(char** a);
+int get_h_running_info(char** a);
 static int init_get_running();
 
 static int init_get_interface_list();
