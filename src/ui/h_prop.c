@@ -53,7 +53,7 @@ char cmd_mkconfig[BUFSIZE];
 char cmd_config[BUFSIZE];
 char cmd_kill[BUFSIZE];
 
-char running_info[BUFSIZE];
+char h_running_info[BUFSIZE];
 char interface_list[BUFSIZE];
 char wifi_interface_list[BUFSIZE];
 
@@ -192,9 +192,9 @@ static int init_get_running(){
         return -1;
     }
 
-    while (fgets(running_info, BUFSIZE, fp) != NULL) {
+    while (fgets(h_running_info, BUFSIZE, fp) != NULL) {
         // Do whatever you want here...
-        //printf("%s", running_info);
+        //printf("%s", h_running_info);
     }
 
     if (pclose(fp)) {
@@ -209,14 +209,14 @@ static int init_get_running(){
 
 // Ex:
 // char *a[3];
-//get_running_info(a);
+//get_h_running_info(a);
 //printf("%s",a[0]);
 
-int get_running_info(char* a[3]){
+int get_h_running_info(char* a[3]){
 
     if(init_get_running()==0){
         char * pch;
-        pch = strtok (running_info," ");
+        pch = strtok (h_running_info," ");
         int i=0;
         while (pch != NULL && i<3)
         {
@@ -244,7 +244,7 @@ static int init_get_interface_list(){
 
     while (fgets(interface_list, BUFSIZE, fp) != NULL) {
         // Do whatever you want here...
-        //printf("%s", running_info);
+        //printf("%s", h_running_info);
     }
 
     if (pclose(fp)) {
