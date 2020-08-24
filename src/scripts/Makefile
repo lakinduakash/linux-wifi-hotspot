@@ -7,11 +7,11 @@ all:
 	@echo "Run 'make uninstall' for uninstallation."
 
 install:
-	install -Dm755 create_ap $(DESTDIR)$(BINDIR)/create_ap
-	install -Dm644 create_ap.conf $(DESTDIR)/etc/create_ap.conf
-	[ ! -d /lib/systemd/system ] || install -Dm644 create_ap.service $(DESTDIR)$(PREFIX)/lib/systemd/system/create_ap.service
-	install -Dm644 bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/create_ap
-	install -Dm644 README.md $(DESTDIR)$(PREFIX)/share/doc/create_ap/README.md
+	install -CDm755 create_ap $(DESTDIR)$(BINDIR)/create_ap
+	install -CDm644 create_ap.conf $(DESTDIR)/etc/create_ap.conf
+	[ ! -d /lib/systemd/system ] || install -CDm644 create_ap.service $(DESTDIR)$(PREFIX)/lib/systemd/system/create_ap.service
+	install -CDm644 bash_completion $(DESTDIR)$(PREFIX)/share/bash-completion/completions/create_ap
+	install -CDm644 README.md $(DESTDIR)$(PREFIX)/share/doc/create_ap/README.md
 	echo 'ALL ALL=NOPASSWD: /usr/bin/create_ap' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/create_ap
 
 
