@@ -13,3 +13,4 @@ jobs:
       run: |
         sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make hostapd
         make
+        sudo make install
