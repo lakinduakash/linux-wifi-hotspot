@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BUFSIZE 512
 
 
-#define SUDO "sudo"
+#define SUDO "pkexec --user root"
 #define CREATE_AP "create_ap"
 
 #define MKCONFIG "--mkconfig"
