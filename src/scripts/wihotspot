@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Start wihotspot_gui as root user
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/bin/wihotspot_gui

@@ -184,7 +184,9 @@ const char* build_kill_create_ap_command(char* pid){
 
 static int init_get_running(){
 
-    const char* cmd="sudo create_ap --list-running";
+    char cmd[BUFSIZE];
+    snprintf(cmd, BUFSIZE, "%s %s --list-running",SUDO, CREATE_AP);
+
     FILE *fp;
 
     if ((fp = popen(cmd, "r")) == NULL) {

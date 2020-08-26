@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(wihotspot)
+project(wihotspot_gui)
 
 include(FindPkgConfig)
 pkg_check_modules(GTK gtk+-3.0 REQUIRED)
@@ -10,7 +10,7 @@ include_directories(${X11_INCLUDE_DIRS})
 set(CMAKE_C_STANDARD 99)
 set (CMAKE_CXX_STANDARD 11)
 
-add_executable(wihotspot ui/main.c ui/h_prop.c ui/h_prop.h ui/ui.c ui/ui.h ui/read_config.cpp ui/read_config.h ui/util.c ui/util.h)
+add_executable(wihotspot_gui ui/main.c ui/h_prop.c ui/h_prop.h ui/ui.c ui/ui.h ui/read_config.cpp ui/read_config.h ui/util.c ui/util.h)
 
 target_link_libraries(${PROJECT_NAME} ${GTK_LIBRARIES} ${X11_LIBRARIES})
 
@@ -42,12 +42,20 @@ add_custom_target(install_build
         COMMAND install -Dm644 ${CMAKE_SOURCE_DIR}/desktop/wifihotspot.desktop $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
         DEPENDS ${PROJECT_NAME}
         COMMENT Installing files...
+
+        COMMENT Remove old files if exist
+        COMMAND rm -rf $ENV{DESTDIR}${appdir}/wihotspot
+        COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/wihotspot.desktop
         )
 
 add_custom_target(uninstall_build
         COMMAND rm -rf $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
-        COMMAND rm -f $ENV{DESTDIR}${appdir}/${PROJECT_NAME}/${PROJECT_NAME}.desktop
+        COMMAND rm -rf $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
         COMMENT Unstalling files...
+
+        COMMENT Remove old files if exist
+        COMMAND rm -rf $ENV{DESTDIR}${appdir}/wihotspot
+        COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/wihotspot.desktop
         )

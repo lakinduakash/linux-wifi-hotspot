@@ -148,7 +148,7 @@ static void loadStyles(){
     const char *style_file;
 
     const char* debug_style_file="glade/style.css";
-    const char* prod_style_file="/usr/share/wihotspot/glade/style.css";
+    const char* prod_style_file="/usr/share/wihotspot_gui/glade/style.css";
 
     FILE *file;
 
@@ -348,7 +348,7 @@ int initUi(int argc, char *argv[]){
 //    }
 
     const char* debug_glade_file="glade/wifih.ui";
-    const char* prod_glade_file="/usr/share/wihotspot/glade/wifih.ui";
+    const char* prod_glade_file="/usr/share/wihotspot_gui/glade/wifih.ui";
 
     FILE *file;
     builder = gtk_builder_new();
