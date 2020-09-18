@@ -98,7 +98,7 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
 
     const char* a=get_config_file(CONFIG_FILE_NAME);
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s %s %s %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s '%s' '%s' %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
 
     if(cv->freq!=NULL){
         strcat(cmd_mkconfig," --freq-band ");
