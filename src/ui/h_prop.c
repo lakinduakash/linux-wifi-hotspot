@@ -138,8 +138,7 @@ const char *build_wh_from_config(){
 }
 
 int startShell(const char *cmd) {
-    parse_output(cmd);
-    return 0;
+    return parse_output(cmd);
 }
 
 
@@ -193,6 +192,9 @@ static int init_get_running(){
         printf("Error opening pipe!\n");
         return -1;
     }
+
+    // Clear buffer - Otherwise old one is used
+    h_running_info[0] = '\0';
 
     while (fgets(h_running_info, BUFSIZE, fp) != NULL) {
         // Do whatever you want here...
