@@ -18,7 +18,8 @@
 
 ![screenshot](docs/sc2.png)
 
-[Command line help and documentation](src/scripts/README.md)
+
+### [Command line help and documentation](src/scripts/README.md)
 
 ### Notes
 
