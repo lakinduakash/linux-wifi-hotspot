@@ -1058,6 +1058,8 @@ GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","redir
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
+FREQ_BAND_SET=0
+
 while :; do
     case "$1" in
         -h|--help)
