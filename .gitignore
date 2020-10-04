@@ -2,3 +2,4 @@ build
 .idea
 .vscode
 src/cmake-build-debug
+src/ui/resources.c
