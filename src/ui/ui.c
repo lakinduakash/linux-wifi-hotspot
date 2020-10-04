@@ -328,7 +328,6 @@ static void *update_freq_toggle(){
 int initUi(int argc, char *argv[]){
 
     XInitThreads();
-
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
@@ -337,7 +336,6 @@ int initUi(int argc, char *argv[]){
 //    const char* prod_glade_file="/usr/share/wihotspot_gui/glade/wifih.ui";
 //
 //    FILE *file;
-//    builder = gtk_builder_new();
 //    if ((file = fopen(debug_glade_file, "r"))){
 //        fclose(file);
 //        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
@@ -357,6 +355,7 @@ int initUi(int argc, char *argv[]){
 //        return 1;
 //    }
 
+    builder = gtk_builder_new();
     //Load ui description from built resource - need to generate compiled source with glib-compile-resource
     gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/wifih.ui",&error);
 
