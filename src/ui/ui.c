@@ -98,8 +98,8 @@ const char** wifi_iface_list;
 int iface_list_length;
 int wifi_iface_list_length;
 char* running_info[3];
-guint id;
-static ConfigValues cv;
+guint pb_pulse_id;
+static ConfigValues configValues;
 
 
 
@@ -117,16 +117,16 @@ static void *stopHp() {
 static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
 
-    init_config_val_input(&cv);
+    init_config_val_input(&configValues);
 
 
-    if(validator(&cv)==FALSE){
+    if(validator(&configValues) == FALSE){
         set_error_text("Check inputs");
         return;
     }
 
 
-    startShell(build_wh_mkconfig_command(&cv));
+    startShell(build_wh_mkconfig_command(&configValues));
 
     g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
 
@@ -285,19 +285,19 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
         }
 
 
-        if (cv.freq == NULL) {
+        if (configValues.freq == NULL) {
             if (!(li <= 196 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
                 set_error_text(ERROR_CHANNEL_MSG);
                 return FALSE;
             }
-        } else if (strcmp(cv.freq, "2.4") == 0) {
+        } else if (strcmp(configValues.freq, "2.4") == 0) {
             if (!(li <= 11 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
                 set_error_text(ERROR_CHANNEL_MSG_2);
                 return FALSE;
             }
-        } else if (strcmp(cv.freq, "5") == 0) {
+        } else if (strcmp(configValues.freq, "5") == 0) {
             if (!(li <= 196 && li > 0)) {
                 gtk_style_context_add_class(context_entry_channel, "entry-error");
                 set_error_text(ERROR_CHANNEL_MSG_5);
@@ -314,12 +314,12 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
 
 static void *update_freq_toggle(){
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
-        cv.freq = "2.4";
+        configValues.freq = "2.4";
 
     else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_5)))
-        cv.freq ="5";
+        configValues.freq ="5";
     else
-        cv.freq =NULL;
+        configValues.freq =NULL;
 
     return NULL;
 }
@@ -521,11 +521,11 @@ void lock_running_views(gboolean set_lock){
 
 static guint start_pb_pulse(){
     gtk_widget_set_visible((GtkWidget*)progress_bar,TRUE);
-    return id= g_timeout_add (100, update_progress_in_timeout, progress_bar);
+    return pb_pulse_id= g_timeout_add (100, update_progress_in_timeout, progress_bar);
 }
 
 static void stop_pb_pulse(){
-    g_source_remove(id);
+    g_source_remove(pb_pulse_id);
     gtk_widget_set_visible((GtkWidget*)progress_bar,FALSE);
 }
 
@@ -579,9 +579,9 @@ static void *run_create_hp_shell(void *cmd) {
     char buf2[BUFSIZE];
     FILE *fp;
 
-    if(cv.freq){
+    if(configValues.freq){
         cmd = strcat( cmd, " --freq-band ");
-        cmd = strcat( cmd, cv.freq);
+        cmd = strcat(cmd, configValues.freq);
 
         if ((fp = popen(cmd, "r")) == NULL) {
             printf("Error opening pipe!\n");
