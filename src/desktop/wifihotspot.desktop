@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=WifiHotspot
-Icon=/usr/share/wihotspot_gui/hotspot.png
+Name=Wifi Hotspot
+Icon=/usr/share/wihotspot/hotspot.png
 Exec=sh -c 'env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/bin/wihotspot'
 Terminal=false
 Categories=System
