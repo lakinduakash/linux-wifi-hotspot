@@ -82,21 +82,6 @@ Also you can use `sudo make clean-old` without checking out to the previous vers
 ## Uninstallation
     sudo make uninstall
     
-#### To build with cmake (Deprecated)
-
-You need additionally `cmake`
-Use the `Makefile.cmake`
-
-    cd linux-wifi-hotspot
-    #Build binaries
-    make -f Makefile.cmake
-    
-    #Install
-    sudo make -f Makefile.cmake install
-    
-    #Uninstall
-    sudo make -f Makefile.cmake uninstall
-    
     
 ## Running
 You can run it from terminal or from application menu.
