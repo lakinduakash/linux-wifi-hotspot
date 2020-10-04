@@ -5,4 +5,4 @@ jobs:
        - image: ubuntu:latest
      steps:
        - checkout
-       - run: cd linux-wifi-hotspot && make && sudo make install
+       - run: make && sudo make install
