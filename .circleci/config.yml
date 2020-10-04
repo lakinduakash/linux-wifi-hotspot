@@ -2,7 +2,7 @@ version: 2
 jobs:
    build:
      docker:
-       - image: circleci/ruby:2.4.1
+       - image: ubuntu:latest
      steps:
        - checkout
-       - run: echo "A first hello"
+       - run: cd linux-wifi-hotspot && make && sudo make install
