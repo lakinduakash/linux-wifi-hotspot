@@ -1,15 +1,21 @@
 all:
-	@echo "Run 'make install' for installation."
-	@echo "Run 'make uninstall' for uninstallation."
 	mkdir -p build
-	cd build && cmake -G "CodeBlocks - Unix Makefiles" ../src
+	@echo "Run 'sudo make install' for installation."
+	@echo "Run 'sudo make uninstall' for uninstallation."
+	cd src && $(MAKE)
 
 install:
-	@echo "Installing"
-	cd build && cmake -DCMAKE_INSTALL_PREFIX=$(DESTDIR) -G "CodeBlocks - Unix Makefiles" ../src
-	$(MAKE) -C src/scripts install
-	$(MAKE) -C build install_build
+	@echo "Installing..."
+	cd src && $(MAKE) install
 
 uninstall:
-	$(MAKE) -C src/scripts uninstall
-	$(MAKE) -C build uninstall_build
+	@echo "Uninstalling..."
+	cd src && $(MAKE) uninstall
+
+clean-old:
+	cd src && $(MAKE) clean-old
+
+.PHONY: clean
+
+clean:
+	cd src && $(MAKE) clean

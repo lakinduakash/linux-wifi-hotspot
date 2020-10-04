@@ -6,6 +6,7 @@
 ### Update
 * Config files are wriiten to /etc/wh.config (Previously, configurations were wriiten to home directory as `.wh.config`).
 * `.desktop` file is added. So You can start from app launcher
+* Use `make` to build instead of `cmake`
 
 ### Features
  
@@ -46,9 +47,8 @@ install it using your distro's package manager_
 * dnsmasq
 * iptables
 
-#### For building from source
+#### To build from source
 
-* cmake (https://cmake.org)
 * make
 * gcc and g++
 * build-essential
@@ -59,13 +59,14 @@ install it using your distro's package manager_
 On Ubuntu or debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make hostapd
+sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 ```
 
-
-
-
 ## Installation
+
+**Note: If you have installed previous version of this project make sure to uninstall it by checking out to the previous version (v2.1.1 or below).
+Also you can use `sudo make clean-old` without checking out to the previous version. After that install the binaries. Otherwise your system might left orphaned binaries and files.**
+
 
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
@@ -80,6 +81,7 @@ sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make h
     
 ## Uninstallation
     sudo make uninstall
+    
     
 ## Running
 You can run it from terminal or from application menu.

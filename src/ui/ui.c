@@ -145,28 +145,30 @@ static void loadStyles(){
     screen = gdk_display_get_default_screen (display);
     gtk_style_context_add_provider_for_screen (screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-    const char *style_file;
+//    const char *style_file;
+//
+//    const char* debug_style_file="glade/style.css";
+//    const char* prod_style_file="/usr/share/wihotspot_gui/glade/style.css";
+//    FILE *file;
+//
+//    if ((file = fopen(debug_style_file, "r"))){
+//        fclose(file);
+//        style_file = debug_style_file;
+//        gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
+//
+//    }
+//    else if ((file = fopen(prod_style_file, "r"))){
+//        fclose(file);
+//        style_file = prod_style_file;
+//
+//    } else{
+//        return;
+//    }
+//
+//    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),style_file,NULL);
 
-    const char* debug_style_file="glade/style.css";
-    const char* prod_style_file="/usr/share/wihotspot_gui/glade/style.css";
-
-    FILE *file;
-
-    if ((file = fopen(debug_style_file, "r"))){
-        fclose(file);
-        style_file = debug_style_file;
-        gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
-
-    }
-    else if ((file = fopen(prod_style_file, "r"))){
-        fclose(file);
-        style_file = prod_style_file;
-
-    } else{
-        return;
-    }
-
-    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),style_file,NULL);
+    //Load css description from built resource - need to generate compiled source with glib-compile-resource
+    gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),"/css/style.css");
 }
 
 static void init_style_contexts(){
@@ -326,52 +328,36 @@ static void *update_freq_toggle(){
 int initUi(int argc, char *argv[]){
 
     XInitThreads();
-
     gtk_init(&argc, &argv);
 
     /* Construct a GtkBuilder instance and load our UI description */
 
+//    const char* debug_glade_file="glade/wifih.ui";
+//    const char* prod_glade_file="/usr/share/wihotspot_gui/glade/wifih.ui";
 //
-//    DIR* dir = opendir("mydir");
-//    if (dir)
-//    {
-//        /* Directory exists. */
-//        closedir(dir);
+//    FILE *file;
+//    if ((file = fopen(debug_glade_file, "r"))){
+//        fclose(file);
+//        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
+//            g_printerr("Error loading file: %s\n", error->message);
+//            g_clear_error(&error);
+//            return 1;
+//        }
 //    }
-//    else if (ENOENT == errno)
-//    {
-//        /* Directory does not exist. */
-//    }
-//    else
-//    {
-//        /* opendir() failed for some other reason. */
+//    else if ((file = fopen(prod_glade_file, "r"))){
+//        fclose(file);
+//        if (gtk_builder_add_from_file(builder, prod_glade_file, &error) == 0) {
+//            g_printerr("Error loading file: %s\n", error->message);
+//            g_clear_error(&error);
+//            return 1;
+//        }
+//    } else{
+//        return 1;
 //    }
 
-    const char* debug_glade_file="glade/wifih.ui";
-    const char* prod_glade_file="/usr/share/wihotspot_gui/glade/wifih.ui";
-
-    FILE *file;
     builder = gtk_builder_new();
-
-    if ((file = fopen(debug_glade_file, "r"))){
-        fclose(file);
-        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
-            g_printerr("Error loading file: %s\n", error->message);
-            g_clear_error(&error);
-            return 1;
-        }
-    }
-    else if ((file = fopen(prod_glade_file, "r"))){
-        fclose(file);
-        if (gtk_builder_add_from_file(builder, prod_glade_file, &error) == 0) {
-            g_printerr("Error loading file: %s\n", error->message);
-            g_clear_error(&error);
-            return 1;
-        }
-    } else{
-        return 1;
-    }
-
+    //Load ui description from built resource - need to generate compiled source with glib-compile-resource
+    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/wifih.ui",&error);
 
     /* Connect signal handlers to the constructed widgets. */
     window = gtk_builder_get_object(builder, "window");
