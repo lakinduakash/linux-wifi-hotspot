@@ -438,6 +438,9 @@ void init_ui_from_config(){
             gtk_entry_set_text(entry_ssd,values->ssid);
         if(values->pass!=NULL)
             gtk_entry_set_text(entry_pass,values->pass);
+        
+        if(strcmp(values->pass,"")==0|| values->pass==NULL)
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
 
         if(values->iface_wifi!=NULL){
             int idw=find_str(values->iface_wifi,wifi_iface_list,wifi_iface_list_length);
@@ -453,6 +456,40 @@ void init_ui_from_config(){
             if(idw !=-1){
                 gtk_combo_box_set_active(combo_internet,idw);
             }
+        }
+
+        if(strcmp(values->hidden,"1")==0){
+            
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_hidden,TRUE);
+        }
+
+        if(strcmp(values->use_psk,"1")==0){
+            
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_psk,TRUE);
+        }
+
+        if(strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_channel,TRUE);
+            gtk_entry_set_text(entry_channel,values->channel);
+        }
+
+        if(strcmp(values->freq,"2.4")==0 || strcmp(values->freq,"5")==0 ){
+
+            if(strcmp(values->freq,"2.4")==0){
+                gtk_toggle_button_set_active((GtkToggleButton*) rb_freq_2,TRUE);
+            }
+            else{
+                gtk_toggle_button_set_active((GtkToggleButton*) rb_freq_5,TRUE);
+            }
+        }
+
+        if(strcmp(values->mac,"")!=0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_mac,TRUE);
+            gtk_entry_set_text(entry_mac,values->mac);
+        }
+
+        if(strcmp(values->no_virt,"1")==0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_novirt,TRUE);
         }
 
     }
