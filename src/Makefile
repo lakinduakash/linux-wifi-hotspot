@@ -20,19 +20,26 @@ BUILT_SRC = resources.c
 _OBJ = main.o ui.o h_prop.o util.o read_config.o $(BUILT_SRC:.c=.o)
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-all: resources.c $(ODIR)/wihotspot-gui
+# Determine this makefile's path.
+# Be sure to place this BEFORE `include` directives, if any.
+THIS_FILE := $(lastword $(MAKEFILE_LIST))
+
+.PHONY: clean
+
+all: resources.c
 
 resources.c: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
 	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=ui/$@ --sourcedir=ui/glade --generate-source
-
+	@$(MAKE) -f $(THIS_FILE) wihotspot-gui
+	
 $(ODIR)/%.o: ui/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: ui/%.cpp
 	g++ -c -o $@ $<
 
-$(ODIR)/wihotspot-gui: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+wihotspot-gui: $(OBJ)
+	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 install: $(ODIR)/wihotspot-gui
 	mkdir -p $(DESTDIR)$(APP_DIR)
@@ -53,8 +60,6 @@ clean-old:
 	rm -rf $(DESTDIR)/usr/share/wihotspot
 	rm -f $(DESTDIR)/usr/bin/wihotspot_gui
 	rm -f $(DESTDIR)/usr/bin/wihotspot
-
-.PHONY: clean
 
 clean:
 	rm -f $(ODIR)/*.o
