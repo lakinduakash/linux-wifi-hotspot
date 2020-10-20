@@ -59,7 +59,7 @@ install it using your distro's package manager_
 On Ubuntu or debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
+sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make
 ```
 
 ## Installation
