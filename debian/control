@@ -9,5 +9,5 @@ Homepage: https://github.com/lakinduakash/linux-wifi-hotspot
 Package: linux-wifi-hotspot
 Architecture: any
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, hostapd (>=2.0), iw (>= 5.4),iproute2 (>=5.0), util-linux (>=2.3), procps(>=3.3)
 Description: GUI tool for creating virtual hotspots using the same wi-fi card that is already connected to an access point.
