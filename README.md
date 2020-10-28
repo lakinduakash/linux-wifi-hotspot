@@ -28,6 +28,19 @@ Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions
 
 If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
+### Installation
+
+#### Debian/Ubuntu
+Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
+- [linux-wifi-hotspot_3.1.2_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.1.2/linux-wifi-hotspot_3.1.2_amd64.deb)
+
+#### Arch based distributions
+
+Install by typing
+
+`yay -Sy linux-wifi-hotspot`
+
+
 ### Dependencies
 
 #### General
