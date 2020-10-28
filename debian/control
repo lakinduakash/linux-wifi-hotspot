@@ -1,0 +1,13 @@
+Source: linux-wifi-hotspot
+Section: devel
+Priority: optional
+Maintainer: Lakindu Akash <lakinduakash@users.noreply.github.com>
+Build-Depends: debhelper (>=11~), pkg-config, libgtk-3-dev
+Standards-Version: 4.1.4
+Homepage: https://github.com/lakinduakash/linux-wifi-hotspot
+
+Package: linux-wifi-hotspot
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: GUI tool for creating virtual hotspots using the same wi-fi card that is already connected to an access point.
