@@ -17,8 +17,6 @@ GLIB_COMPILE_RESOURCES = $(shell $(PKGCONFIG) --variable=glib_compile_resources 
 
 BUILT_SRC = resources.c
 
-HEADER_FILES = ui/ui.h ui/read_config.h ui/util.h ui/h_prop.h
-
 _OBJ = main.o ui.o h_prop.o util.o read_config.o $(BUILT_SRC:.c=.o)
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
@@ -26,12 +24,9 @@ OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 # Be sure to place this BEFORE `include` directives, if any.
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
-.PHONY: clean resources.c
+.PHONY: clean
 
 all: resources.c
-
-generate-resources: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
-	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=ui/resources.c --sourcedir=ui/glade --generate-source
 
 resources.c: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
 	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=ui/$@ --sourcedir=ui/glade --generate-source
