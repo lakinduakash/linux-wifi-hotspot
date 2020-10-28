@@ -1,0 +1,5 @@
+linux-wifi-hotspot (3.1.1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Scott Hardin <snhardin@users.noreply.github.com>  Wed, 21 Oct 2020 19:21:49 -0700
