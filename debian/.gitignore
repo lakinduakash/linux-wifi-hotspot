@@ -1,0 +1,5 @@
+linux-wifi-hotspot
+.debhelper
+files
+linux-wifi-hotspot.substvars
+debhelper-build-stamp
