@@ -488,7 +488,7 @@ void init_ui_from_config(){
         }
 
         char *macs =read_mac_filter_file(values->accepted_mac_file);
-        if (macs!=NULL || strlen(macs)<1){
+        if (macs!=NULL && !strlen(macs)<1){
             gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
         }
 
