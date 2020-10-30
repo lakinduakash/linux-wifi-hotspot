@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "read_config.h"
 
 
-#define BUFSIZE 512
+#define BUFSIZE 1024
 
 
 #define SUDO "pkexec --user root"
@@ -52,6 +52,7 @@ char cmd_start[BUFSIZE];
 char cmd_mkconfig[BUFSIZE];
 char cmd_config[BUFSIZE];
 char cmd_kill[BUFSIZE];
+char cmd_write_mac[BUFSIZE];
 
 char h_running_info[BUFSIZE];
 char interface_list[BUFSIZE];
@@ -125,6 +126,12 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
         strcat(cmd_mkconfig, cv->mac);
     }
 
+    if(cv->mac_filter!=NULL && (strcmp(cv->mac_filter,"1") == 0)){
+        strcat(cmd_mkconfig, " --mac-filter ");
+        strcat(cmd_mkconfig, cv->mac_filter);
+        write_accepted_macs(cv->accepted_mac_file,cv->accepted_macs);
+    }
+
     printf("%s \n",cmd_mkconfig);
     return cmd_mkconfig;
 
@@ -145,6 +152,16 @@ int startShell(const char *cmd) {
 const char* build_kill_create_ap_command(char* pid){
     snprintf(cmd_kill, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,STOP,pid);
     return cmd_kill;
+}
+
+void write_accepted_macs(char* filename, char* accepted_macs){
+
+    printf("%s \n",filename);
+    printf("%s \n",accepted_macs);
+
+    snprintf(cmd_write_mac,BUFSIZE,"%s '%s' %s %s","echo", accepted_macs, "| sudo tee", filename);
+    int r=system(cmd_write_mac);
+
 }
 
 //int write_config(char* file){
