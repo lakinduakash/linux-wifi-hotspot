@@ -157,8 +157,7 @@ const char* build_kill_create_ap_command(char* pid){
 
 void write_accepted_macs(char* filename, char* accepted_macs){
 
-    printf("%s \n",filename);
-    printf("%s \n",accepted_macs);
+    printf("mac filter file %s \n",filename);
 
     snprintf(cmd_write_mac,BUFSIZE,"%s '%s' %s %s","echo", accepted_macs, "| sudo tee", filename);
     int r=system(cmd_write_mac);
@@ -174,7 +173,6 @@ char * read_mac_filter_file(char * filename){
 
     if (fp == NULL)
     {
-        perror("Error while opening the file.\n");
         return NULL;
     }
 
