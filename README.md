@@ -4,9 +4,8 @@
 [![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ### Update
-* Config files are wriiten to /etc/wh.config (Previously, configurations were wriiten to home directory as `.wh.config`).
-* `.desktop` file is added. So You can start from app launcher
-* Use `make` to build instead of `cmake`
+* Add MAC filter
+* Release Debian package
 
 ### Features
  
@@ -32,7 +31,7 @@ If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
 #### Debian/Ubuntu
 Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
-- [linux-wifi-hotspot_3.1.2_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.1.2/linux-wifi-hotspot_3.1.2_amd64.deb)
+- [linux-wifi-hotspot_3.2.0_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.2.0/linux-wifi-hotspot_3.2.0_amd64.deb)
 
 #### Arch based distributions
 
