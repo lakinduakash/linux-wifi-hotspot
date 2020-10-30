@@ -68,4 +68,6 @@ static gboolean validator(ConfigValues *cv);
 
 static void set_error_text(char * text);
 
+gchar* get_accepted_macs();
+
 #endif //WIHOTSPOT_UI_H
