@@ -483,6 +483,15 @@ void init_ui_from_config(){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_novirt,TRUE);
         }
 
+        if(strcmp(values->mac_filter,"1")==0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_mac_filter,TRUE);
+        }
+
+        char *macs =read_mac_filter_file(values->accepted_mac_file);
+        if (macs!=NULL || strlen(macs)<1){
+            gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
+        }
+
     }
 }
 

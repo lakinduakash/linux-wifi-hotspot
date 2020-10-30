@@ -57,6 +57,7 @@ char cmd_write_mac[BUFSIZE];
 char h_running_info[BUFSIZE];
 char interface_list[BUFSIZE];
 char wifi_interface_list[BUFSIZE];
+char accepted_macs[BUFSIZE];
 
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
@@ -162,6 +163,26 @@ void write_accepted_macs(char* filename, char* accepted_macs){
     snprintf(cmd_write_mac,BUFSIZE,"%s '%s' %s %s","echo", accepted_macs, "| sudo tee", filename);
     int r=system(cmd_write_mac);
 
+}
+
+char * read_mac_filter_file(char * filename){
+
+    char ch;
+    FILE *fp;
+
+    fp = fopen(filename, "r"); // read mode
+
+    if (fp == NULL)
+    {
+        perror("Error while opening the file.\n");
+        return NULL;
+    }
+
+    while((ch = (char)fgetc(fp)) != EOF)
+        strcat(accepted_macs, &ch);
+
+   fclose(fp);
+   return accepted_macs;
 }
 
 //int write_config(char* file){
