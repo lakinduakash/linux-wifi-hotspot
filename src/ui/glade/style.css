@@ -17,6 +17,11 @@ button:active {
     border-color: #ff6a6b;
 }
 
+.tv-mac-error{
+    border-color: #ff6a6b;
+    color: #ff3f4e;
+}
+
 .label-error{
     color: #ff3f4e;
 }

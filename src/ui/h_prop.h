@@ -55,4 +55,8 @@ const char *build_wh_mkconfig_command(ConfigValues* cv);
 
 char** get_wifi_interface_list(int *length);
 
+void write_accepted_macs(char* filename, char* accepted_macs);
+
+char * read_mac_filter_file(char * filename);
+
 #endif //WIHOTSPOT_H_PROP_H

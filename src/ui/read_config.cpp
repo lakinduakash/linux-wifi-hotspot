@@ -116,6 +116,12 @@ static void setConfigValues(const char * key, char *value){
     if( !strcmp ( USE_PSK, key ))
         configValues.use_psk = value;
 
+    if( !strcmp ( MAC_FILTER, key ))
+        configValues.mac_filter = value;
+
+    if( !strcmp ( MAC_FILTER_ACCEP, key ))
+        configValues.accepted_mac_file = value;
+
 }
 
 

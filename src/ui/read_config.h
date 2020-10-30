@@ -85,6 +85,9 @@ typedef struct{
     char *freq;
     char *hidden;
     char *mac;
+    char *mac_filter;
+    char *accepted_mac_file;
+    char *accepted_macs;
 } ConfigValues;
 
 

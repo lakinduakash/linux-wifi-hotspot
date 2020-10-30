@@ -60,6 +60,9 @@ GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
 GtkEntry *entry_mac;
 GtkEntry *entry_channel;
+GtkTextView *tv_mac_filter;
+
+GtkTextBuffer *buffer_mac_filter;
 
 GtkComboBox *combo_wifi;
 GtkComboBox *combo_internet;
@@ -74,6 +77,7 @@ GtkCheckButton *cb_mac;
 GtkCheckButton *cb_novirt;
 GtkCheckButton *cb_channel;
 GtkCheckButton *cb_open;
+GtkCheckButton *cb_mac_filter;
 
 GtkProgressBar *progress_bar;
 
@@ -91,10 +95,12 @@ GtkStyleContext *context_entry_pass;
 GtkStyleContext *context_entry_ssid;
 GtkStyleContext *context_entry_channel;
 GtkStyleContext *context_label_input_error;
+GtkStyleContext *context_tv_mac_filter;
 
 
 const char** iface_list;
 const char** wifi_iface_list;
+gchar *accepted_macs;
 int iface_list_length;
 int wifi_iface_list_length;
 char* running_info[3];
@@ -145,28 +151,6 @@ static void loadStyles(){
     screen = gdk_display_get_default_screen (display);
     gtk_style_context_add_provider_for_screen (screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-//    const char *style_file;
-//
-//    const char* debug_style_file="glade/style.css";
-//    const char* prod_style_file="/usr/share/wihotspot_gui/glade/style.css";
-//    FILE *file;
-//
-//    if ((file = fopen(debug_style_file, "r"))){
-//        fclose(file);
-//        style_file = debug_style_file;
-//        gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),"glade/style.css",NULL);
-//
-//    }
-//    else if ((file = fopen(prod_style_file, "r"))){
-//        fclose(file);
-//        style_file = prod_style_file;
-//
-//    } else{
-//        return;
-//    }
-//
-//    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider),style_file,NULL);
-
     //Load css description from built resource - need to generate compiled source with glib-compile-resource
     gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider),"/css/style.css");
 }
@@ -177,6 +161,7 @@ static void init_style_contexts(){
     context_entry_pass = gtk_widget_get_style_context((GtkWidget*)entry_pass);
     context_entry_channel = gtk_widget_get_style_context((GtkWidget*)entry_channel);
     context_label_input_error = gtk_widget_get_style_context((GtkWidget*)label_input_error);
+    context_tv_mac_filter = gtk_widget_get_style_context((GtkWidget*)tv_mac_filter);
 
 }
 
@@ -311,6 +296,28 @@ static void* entry_channel_warn(GtkWidget *widget, gpointer data){
     return NULL;
 }
 
+static void* tv_mac_filter_warn(){
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))==TRUE){
+        if (isValidAcceptedMacs(get_accepted_macs())==-1){
+            gtk_style_context_add_class(context_tv_mac_filter, "tv-mac-error");
+            set_error_text(ERROR_MAC_MSG);
+            return FALSE;
+        }
+        else{
+            set_error_text("");
+            gtk_style_context_remove_class(context_tv_mac_filter,"tv-mac-error");
+            return NULL;
+        }
+        
+    }
+
+    gtk_style_context_remove_class(context_tv_mac_filter,"tv-mac-error");
+    set_error_text("");
+
+    return NULL;
+}
+
 
 static void *update_freq_toggle(){
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
@@ -332,29 +339,6 @@ int initUi(int argc, char *argv[]){
 
     /* Construct a GtkBuilder instance and load our UI description */
 
-//    const char* debug_glade_file="glade/wifih.ui";
-//    const char* prod_glade_file="/usr/share/wihotspot_gui/glade/wifih.ui";
-//
-//    FILE *file;
-//    if ((file = fopen(debug_glade_file, "r"))){
-//        fclose(file);
-//        if (gtk_builder_add_from_file(builder, debug_glade_file, &error) == 0) {
-//            g_printerr("Error loading file: %s\n", error->message);
-//            g_clear_error(&error);
-//            return 1;
-//        }
-//    }
-//    else if ((file = fopen(prod_glade_file, "r"))){
-//        fclose(file);
-//        if (gtk_builder_add_from_file(builder, prod_glade_file, &error) == 0) {
-//            g_printerr("Error loading file: %s\n", error->message);
-//            g_clear_error(&error);
-//            return 1;
-//        }
-//    } else{
-//        return 1;
-//    }
-
     builder = gtk_builder_new();
     //Load ui description from built resource - need to generate compiled source with glib-compile-resource
     gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/wifih.ui",&error);
@@ -372,6 +356,9 @@ int initUi(int argc, char *argv[]){
 
     entry_mac = (GtkEntry *) gtk_builder_get_object(builder, "entry_mac");
     entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
+    tv_mac_filter = (GtkTextView *) gtk_builder_get_object(builder, "tv_mac_filter");
+
+    buffer_mac_filter = gtk_text_view_get_buffer (GTK_TEXT_VIEW (tv_mac_filter));
 
     combo_wifi = (GtkComboBox *) gtk_builder_get_object(builder, "combo_wifi");
     combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
@@ -382,6 +369,7 @@ int initUi(int argc, char *argv[]){
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
     cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
     cb_open = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_open");
+    cb_mac_filter = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac_filter");
 
     rb_freq_auto = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_auto");
     rb_freq_2 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_2");
@@ -408,6 +396,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (entry_pass, "changed", G_CALLBACK(entry_pass_warn), NULL);
 
     g_signal_connect (entry_channel, "changed", G_CALLBACK(entry_channel_warn), NULL);
+    g_signal_connect (buffer_mac_filter, "changed", G_CALLBACK(tv_mac_filter_warn), NULL);
 
     g_signal_connect (rb_freq_2, "toggled", G_CALLBACK(update_freq_toggle), NULL);
     g_signal_connect (rb_freq_5, "toggled", G_CALLBACK(update_freq_toggle), NULL);
@@ -433,6 +422,8 @@ void init_ui_from_config(){
 
         ConfigValues *values=getConfigValues();
 
+        //TODO do properly
+        configValues.accepted_mac_file=values->accepted_mac_file;
 
         if(values->ssid!=NULL)
             gtk_entry_set_text(entry_ssd,values->ssid);
@@ -492,6 +483,15 @@ void init_ui_from_config(){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_novirt,TRUE);
         }
 
+        if(strcmp(values->mac_filter,"1")==0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_mac_filter,TRUE);
+        }
+
+        char *macs =read_mac_filter_file(values->accepted_mac_file);
+        if (macs!=NULL || strlen(macs)<1){
+            gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
+        }
+
     }
 }
 
@@ -522,6 +522,7 @@ void lock_all_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, FALSE);
     } else{
         gtk_editable_set_editable( (GtkEditable*)entry_ssd,TRUE);
         gtk_editable_set_editable( (GtkEditable*)entry_pass,TRUE);
@@ -530,6 +531,7 @@ void lock_all_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
     }
 }
 
@@ -544,6 +546,8 @@ void lock_running_views(gboolean set_lock){
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, FALSE);
     } else{
         gtk_editable_set_editable( (GtkEditable*)entry_ssd,TRUE);
         gtk_editable_set_editable( (GtkEditable*)entry_pass,TRUE);
@@ -553,6 +557,8 @@ void lock_running_views(gboolean set_lock){
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
+
+        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
     }
 }
 
@@ -727,6 +733,11 @@ static gboolean validator(ConfigValues *cv){
 
     }
 
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))==TRUE){
+        if (isValidAcceptedMacs(get_accepted_macs())==-1)
+            return FALSE;
+    }
+
 
     return TRUE;
 }
@@ -790,6 +801,14 @@ static int init_config_val_input(ConfigValues* cv){
         else
             cv->use_psk =NULL;
 
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))){
+
+            cv->mac_filter = "1";
+            cv->accepted_macs=get_accepted_macs();
+        }
+        else
+            cv->mac_filter =NULL;
+
         return 0;
 
     } else{
@@ -797,5 +816,20 @@ static int init_config_val_input(ConfigValues* cv){
         g_print("Please select Wifi and Internet interfaces\n");
         return 1;
     }
+
+}
+
+
+gchar* get_accepted_macs(){
+
+    GtkTextIter start;
+    GtkTextIter end;
+
+    /* Obtain iters for the start and end of points of the buffer */
+    gtk_text_buffer_get_start_iter (buffer_mac_filter, &start);
+    gtk_text_buffer_get_end_iter (buffer_mac_filter, &end);
+    accepted_macs=gtk_text_buffer_get_text (buffer_mac_filter,&start,&end,TRUE);
+    
+    return accepted_macs;
 
 }

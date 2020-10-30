@@ -30,9 +30,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include <ctype.h>
 #include "util.h"
+#include <regex.h>
+
+regex_t regex;
+int reti;
+char msgbuf[100];
 
 int find_str(char *find, const char **array, int length) {
     int i;
@@ -86,4 +92,31 @@ int isValidMacAddress(const char* mac) {
     }
 
     return (i == 12 && (s == 5 || s == 0));
+}
+
+
+int isValidAcceptedMacs(const char *macs){
+
+    /* Compile regular expression */
+reti = regcomp(&regex, "^(((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*)(^((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*))*)$", REG_EXTENDED);
+if (reti) {
+    //printf( "Could not compile regex\n");
+    return -1;
+}
+
+/* Execute regular expression */
+reti = regexec(&regex, macs, 0, NULL, 0);
+if (!reti) {
+    return 0;
+}
+else if (reti == REG_NOMATCH) {
+    //puts("Invalid mac addresses");
+    return -1;
+}
+else {
+    regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+    //printf("Regex match failed: %s\n", msgbuf);
+    return -1;
+}
+
 }
