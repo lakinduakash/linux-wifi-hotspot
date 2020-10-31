@@ -57,7 +57,7 @@ char cmd_write_mac[BUFSIZE];
 char h_running_info[BUFSIZE];
 char interface_list[BUFSIZE];
 char wifi_interface_list[BUFSIZE];
-char accepted_macs[BUFSIZE];
+char _accepted_macs[BUFSIZE];
 
 const char* g_ssid=NULL;
 const char* g_pass=NULL;
@@ -177,10 +177,10 @@ char * read_mac_filter_file(char * filename){
     }
 
     while((ch = (char)fgetc(fp)) != EOF)
-        strcat(accepted_macs, &ch);
+        strcat(_accepted_macs, &ch);
 
    fclose(fp);
-   return accepted_macs;
+   return _accepted_macs;
 }
 
 //int write_config(char* file){
