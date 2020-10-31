@@ -48,19 +48,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STOP "--stop"
 
 
-char cmd_start[BUFSIZE];
-char cmd_mkconfig[BUFSIZE];
-char cmd_config[BUFSIZE];
-char cmd_kill[BUFSIZE];
-char cmd_write_mac[BUFSIZE];
+static char cmd_start[BUFSIZE];
+static char cmd_mkconfig[BUFSIZE];
+static char cmd_config[BUFSIZE];
+static char cmd_kill[BUFSIZE];
+static char cmd_write_mac[BUFSIZE];
 
-char h_running_info[BUFSIZE];
-char interface_list[BUFSIZE];
-char wifi_interface_list[BUFSIZE];
-char accepted_macs[BUFSIZE];
+static char h_running_info[BUFSIZE];
+static char interface_list[BUFSIZE];
+static char wifi_interface_list[BUFSIZE];
+static char accepted_macs[BUFSIZE];
 
-const char* g_ssid=NULL;
-const char* g_pass=NULL;
+static const char* g_ssid=NULL;
+static const char* g_pass=NULL;
 
 //config_t cfg;
 
