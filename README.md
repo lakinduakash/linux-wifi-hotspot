@@ -9,11 +9,11 @@
 
 ### Features
  
-* Share your wifi like in Windows - Share wifi on same interface which you are connected to internet.
+* Share your wifi like in Windows - Share wifi on the same interface which you are connected to on the internet.
 * Share access point from any network interface
 * MAC filter
 * Includes Both command line and gui.
-* Support both 2.4GHz and 5GHz (Need to compatible with your wifi adapter). Ex: You have connected to 5GHz network and share connection with 2.4GHz.
+* Support both 2.4GHz and 5GHz (Need to be compatible with your wifi adapter). Ex: You have connected to the 5GHz network and share a connection with 2.4GHz.
 * Select Channel.
 * Hide SSID
 
@@ -77,8 +77,8 @@ sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 
 ## Installation
 
-**Note: If you have installed previous version of this project make sure to uninstall it by checking out to the previous version (v2.1.1 or below).
-Also you can use `sudo make clean-old` without checking out to the previous version. After that install the binaries. Otherwise your system might left orphaned binaries and files.**
+**Note: If you have installed the previous version of this project make sure to uninstall it by checking out the previous version (v2.1.1 or below).
+Also you can use `sudo make clean-old` without checking out the previous version. After that install the binaries. Otherwise your system might leave orphaned binaries and files.**
 
 
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
@@ -97,19 +97,19 @@ Also you can use `sudo make clean-old` without checking out to the previous vers
     
     
 ## Running
-You can run it from terminal or from application menu.
+You can run it from the terminal or from the application menu.
 
 Run in terminal
  `wihotspot`
     
-Tested with Ubuntu from 16.04 to 20.04. If any issue found, file a issue on github.
+Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
 **credits** - oblique
 
 
 ## Contributing
 
-This project is still new. So you can simply open a issue and send a PR. Also there are some existing issues. Pick one and start contributing.
+This project is still new. So you can simply open an issue and send a PR. Also there are some existing issues. Pick one and start contributing.
 
 
 ## License
