@@ -68,7 +68,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-#define CONFIG_FILE_NAME "/etc/wh.config"
+#define CONFIG_FILE_NAME "/etc/create_ap.conf"
 
 #ifdef __cplusplus
 extern "C" {
