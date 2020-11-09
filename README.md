@@ -36,10 +36,11 @@ Download the debian package from latest [release](https://github.com/lakinduakas
 
 #### Arch based distributions
 
-Install by typing
+Install with:
 
-`yay -Sy linux-wifi-hotspot`
-
+```bash
+yay -Sy linux-wifi-hotspot
+```
 
 ### Dependencies
 
@@ -80,37 +81,37 @@ sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 **Note: If you have installed the previous version of this project make sure to uninstall it by checking out the previous version (v2.1.1 or below).
 Also you can use `sudo make clean-old` without checking out the previous version. After that install the binaries. Otherwise your system might leave orphaned binaries and files.**
 
-
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
-    
+
     #build binaries
     make
-    
+
     #install
     sudo make install
-    
-    
     
 ## Uninstallation
     sudo make uninstall
     
-    
 ## Running
-You can run it from the terminal or from the application menu.
+You can launch the GUI by searching for "Wifi Hotspot" in the Application Menu
+or using the terminal with:
 
-Run in terminal
- `wihotspot`
-    
-Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
+    wihotspot
 
-**credits** - oblique
+## Run on Startup
+The `wihotspot` GUI uses `create_ap` to create and manage access points. This service and core logic was originally created by
+[@oblique](http://github.com/oblique), and are now maintained in this
+repository.
 
+Start the hotspot service on startup (using your saved configuration) with:
+
+    systemctl enable create-ap
+
+### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
 ## Contributing
-
 This project is still new. So you can simply open an issue and send a PR. Also there are some existing issues. Pick one and start contributing.
-
 
 ## License
 FreeBSD
