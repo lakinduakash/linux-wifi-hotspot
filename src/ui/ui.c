@@ -78,6 +78,8 @@ GtkCheckButton *cb_novirt;
 GtkCheckButton *cb_channel;
 GtkCheckButton *cb_open;
 GtkCheckButton *cb_mac_filter;
+GtkCheckButton *cb_ieee80211n;
+GtkCheckButton *cb_ieee80211ac;
 
 GtkProgressBar *progress_bar;
 
@@ -370,6 +372,8 @@ int initUi(int argc, char *argv[]){
     cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
     cb_open = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_open");
     cb_mac_filter = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac_filter");
+    cb_ieee80211n = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211n");
+    cb_ieee80211ac= (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211ac");
 
     rb_freq_auto = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_auto");
     rb_freq_2 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_2");
@@ -457,6 +461,16 @@ void init_ui_from_config(){
         if(strcmp(values->use_psk,"1")==0){
             
             gtk_toggle_button_set_active((GtkToggleButton*) cb_psk,TRUE);
+        }
+
+        if(strcmp(values->ieee80211n,"1")==0){
+            
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211n,TRUE);
+        }
+        
+        if(strcmp(values->ieee80211ac,"1")==0){
+            
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ac,TRUE);
         }
 
         if(strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
@@ -800,6 +814,16 @@ static int init_config_val_input(ConfigValues* cv){
             cv->use_psk = "1";
         else
             cv->use_psk =NULL;
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_ieee80211n)))
+            cv->ieee80211n = "1";
+        else
+            cv->ieee80211n =NULL;
+        
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_ieee80211ac)))
+            cv->ieee80211ac = "1";
+        else
+            cv->ieee80211ac =NULL;
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))){
 

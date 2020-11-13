@@ -122,6 +122,12 @@ static void setConfigValues(const char * key, char *value){
     if( !strcmp ( MAC_FILTER_ACCEP, key ))
         configValues.accepted_mac_file = value;
 
+    if( !strcmp ( IEEE80211N, key ))
+        configValues.ieee80211n = value;
+
+    if( !strcmp ( IEEE80211AC, key ))
+        configValues.ieee80211ac = value;
+
 }
 
 

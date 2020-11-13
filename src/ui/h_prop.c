@@ -122,6 +122,14 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
             strcat(cmd_mkconfig,cv->channel);
     }
 
+    if(cv->ieee80211n!=NULL && (strcmp(cv->ieee80211n,"1") == 0)){
+        strcat(cmd_mkconfig," --ieee80211n ");
+    }
+    
+    if(cv->ieee80211ac!=NULL && (strcmp(cv->ieee80211ac,"1") == 0)){
+        strcat(cmd_mkconfig," --ieee80211ac ");
+    }
+
     if(cv->mac!=NULL) {
         strcat(cmd_mkconfig, " --mac ");
         strcat(cmd_mkconfig, cv->mac);
