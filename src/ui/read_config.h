@@ -88,6 +88,8 @@ typedef struct{
     char *mac_filter;
     char *accepted_mac_file;
     char *accepted_macs;
+    char *ieee80211n;
+    char *ieee80211ac;
 } ConfigValues;
 
 
