@@ -5,6 +5,7 @@
 
 ### Update
 * Add MAC filter
+* Support enabling IEEE80211n and IEEE80211ac
 * Release Debian package
 
 ### Features
