@@ -39,7 +39,7 @@ Download the debian package from latest [release](https://github.com/lakinduakas
 Install with:
 
 ```bash
-yay -Sy linux-wifi-hotspot
+yay -S linux-wifi-hotspot
 ```
 
 ### Dependencies
