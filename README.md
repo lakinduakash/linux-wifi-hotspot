@@ -107,7 +107,7 @@ repository.
 
 Start the hotspot service on startup (using your saved configuration) with:
 
-    systemctl enable create-ap
+    systemctl enable create_ap
 
 ### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
