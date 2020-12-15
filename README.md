@@ -10,7 +10,7 @@
 
 ### Features
  
-* Share your wifi like in Windows - Share wifi on the same interface which you are connected to on the internet.
+* Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
 * Share access point from any network interface
 * MAC filter
 * Includes Both command line and gui.
