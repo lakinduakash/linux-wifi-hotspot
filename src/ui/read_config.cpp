@@ -57,11 +57,14 @@ int read_config_file() {
 
         int i=0;
         while (getline(cFile, line)) {
-            line.erase(std::remove_if(line.begin(), line.end(), isspace),
-                       line.end());
+            auto delimiterPos = line.find('=');
+            if (!(line.find("SSID") < delimiterPos) && !(line.find("PASSPHRASE") < delimiterPos)) {
+                line.erase(std::remove_if(line.begin(), line.end(), isspace),
+                           line.end());
+            }
             if (line[0] == '#' || line.empty())
                 continue;
-            auto delimiterPos = line.find('=');
+            delimiterPos = line.find('='); //check again in case it changed
             auto name = line.substr(0, delimiterPos);
             auto value = line.substr(delimiterPos + 1);
 
