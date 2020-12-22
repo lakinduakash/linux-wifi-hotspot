@@ -23,6 +23,8 @@
 
 ### [Command line help and documentation](src/scripts/README.md)
 
+If you only need the command line without GUI please read [Command line help and documentation](src/scripts/README.md) and use `create_ap` directly.
+
 ### Notes
 
 Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
@@ -79,9 +81,6 @@ sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 
 ## Installation
 
-**Note: If you have installed the previous version of this project make sure to uninstall it by checking out the previous version (v2.1.1 or below).
-Also you can use `sudo make clean-old` without checking out the previous version. After that install the binaries. Otherwise your system might leave orphaned binaries and files.**
-
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
 
@@ -112,7 +111,10 @@ Start the hotspot service on startup (using your saved configuration) with:
 ### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
 ## Contributing
-This project is still new. So you can simply open an issue and send a PR. Also there are some existing issues. Pick one and start contributing.
+
+If you found a bug or you have an idea about improving this make an issue. Even a small contribution make open source world more beautiful.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
+
 
 ## License
 FreeBSD
