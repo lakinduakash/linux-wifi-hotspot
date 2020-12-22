@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "lakinduakash",
+      "name": "Lakindu Akash",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/12690013?v=4",
+      "profile": "https://lakinduakash.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "linux-wifi-hotspot",
+  "projectOwner": "lakinduakash",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
