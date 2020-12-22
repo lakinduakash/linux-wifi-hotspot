@@ -23,6 +23,8 @@
 
 ### [Command line help and documentation](src/scripts/README.md)
 
+If you only need the command line without GUI please read [Command line help and documentation](src/scripts/README.md) and use `create_ap` directly
+
 ### Notes
 
 Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
