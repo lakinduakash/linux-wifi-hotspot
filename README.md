@@ -21,9 +21,11 @@
 ![screenshot](docs/sc2.png)
 
 
-### [Command line help and documentation](src/scripts/README.md)
+### Command line help and documentation
 
-If you only need the command line without GUI please read [Command line help and documentation](src/scripts/README.md) and use `create_ap` directly.
+Read [Command line help and documentation here](src/scripts/README.md).
+
+If you only need the command-line without GUI run `make install-cli-only` as root user.
 
 ### Notes
 

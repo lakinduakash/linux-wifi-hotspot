@@ -8,6 +8,10 @@ install:
 	@echo "Installing..."
 	cd src && $(MAKE) install
 
+install-cli-only:
+	@echo "Installing command line interface only..."
+	cd src/scripts && $(MAKE) install
+
 uninstall:
 	@echo "Uninstalling..."
 	cd src && $(MAKE) uninstall
