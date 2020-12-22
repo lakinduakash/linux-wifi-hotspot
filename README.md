@@ -23,7 +23,7 @@
 
 ### [Command line help and documentation](src/scripts/README.md)
 
-If you only need the command line without GUI please read [Command line help and documentation](src/scripts/README.md) and use `create_ap` directly
+If you only need the command line without GUI please read [Command line help and documentation](src/scripts/README.md) and use `create_ap` directly.
 
 ### Notes
 
