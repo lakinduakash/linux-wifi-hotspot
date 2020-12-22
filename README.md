@@ -81,9 +81,6 @@ sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 
 ## Installation
 
-**Note: If you have installed the previous version of this project make sure to uninstall it by checking out the previous version (v2.1.1 or below).
-Also you can use `sudo make clean-old` without checking out the previous version. After that install the binaries. Otherwise your system might leave orphaned binaries and files.**
-
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
 
