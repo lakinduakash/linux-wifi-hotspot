@@ -112,7 +112,10 @@ Start the hotspot service on startup (using your saved configuration) with:
 ### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
 ## Contributing
-This project is still new. So you can simply open an issue and send a PR. Also there are some existing issues. Pick one and start contributing.
+Please read https://github.com/lakinduakash/linux-wifi-hotspot/blob/master/CONTRIBUTING.md
+
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
+
 
 ## License
 FreeBSD
