@@ -13,28 +13,32 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">10</property>
+        <property name="halign">start</property>
+        <property name="valign">start</property>
         <property name="orientation">vertical</property>
         <property name="spacing">5</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="spacing">3</property>
-            <property name="homogeneous">True</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">10</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
+                <property name="valign">center</property>
                 <property name="margin_left">10</property>
-                <property name="label" translatable="yes">SSID</property>
+                <property name="label" translatable="yes">SSID:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">2</property>
+                <property name="padding">10</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -42,6 +46,7 @@
               <object class="GtkEntry" id="entry_ssid">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="valign">center</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -51,21 +56,29 @@
               </packing>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_left">20</property>
-                <property name="spacing">10</property>
+                <property name="halign">end</property>
+                <property name="valign">end</property>
+                <property name="orientation">vertical</property>
+                <property name="baseline_position">top</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Password</property>
+                    <property name="label" translatable="yes">Password:</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -81,26 +94,27 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="padding">10</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="entry_pass">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="valign">center</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">2</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -115,14 +129,20 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="homogeneous">True</property>
+            <property name="margin_left">10</property>
+            <property name="margin_right">10</property>
+            <property name="spacing">5</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
+                <property name="halign">end</property>
+                <property name="valign">center</property>
                 <property name="margin_left">10</property>
-                <property name="label" translatable="yes">Wifi interface</property>
+                <property name="label" translatable="yes">Wifi Interface:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -135,11 +155,29 @@
               <object class="GtkComboBoxText" id="combo_wifi">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="padding">2</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child type="center">
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="combo_internet">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">2</property>
+                <property name="pack_type">end</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -147,27 +185,20 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
+                <property name="halign">end</property>
+                <property name="valign">center</property>
                 <property name="margin_left">20</property>
-                <property name="label" translatable="yes">Internet interface</property>
+                <property name="label" translatable="yes">Internet Interface:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="padding">2</property>
+                <property name="pack_type">end</property>
                 <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="combo_internet">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">2</property>
-                <property name="position">3</property>
               </packing>
             </child>
           </object>
@@ -179,13 +210,46 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="spacing">20</property>
+            <child>
+              <object class="GtkButton" id="button_create_hp">
+                <property name="label" translatable="yes">Create hotspot</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="halign">end</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_stop_hp">
+                <property name="label" translatable="yes">Stop</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="halign">center</property>
+                <property name="valign">start</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">10</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -204,16 +268,32 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
                     <property name="margin_top">10</property>
-                    <property name="margin_bottom">5</property>
-                    <property name="row_spacing">10</property>
-                    <property name="column_homogeneous">True</property>
+                    <property name="row_spacing">13</property>
+                    <property name="column_spacing">20</property>
                     <child>
                       <object class="GtkCheckButton" id="cb_hidden">
                         <property name="label" translatable="yes">Hidden</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="cb_psk">
+                        <property name="label" translatable="yes">Use PSK</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -222,11 +302,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="cb_psk">
-                        <property name="label" translatable="yes">Use psk</property>
+                      <object class="GtkCheckButton" id="cb_mac">
+                        <property name="label" translatable="yes">Set MAC</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -235,27 +317,16 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="cb_mac">
-                        <property name="label" translatable="yes">Set MAC</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="draw_indicator">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkEntry" id="entry_mac">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="halign">start</property>
+                        <property name="valign">start</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">3</property>
+                        <property name="top_attach">2</property>
+                        <property name="height">2</property>
                       </packing>
                     </child>
                     <child>
@@ -265,11 +336,12 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="tooltip_text" translatable="yes">Do not create virtual interface</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">4</property>
+                        <property name="top_attach">3</property>
                       </packing>
                     </child>
                     <child>
@@ -278,11 +350,13 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">5</property>
+                        <property name="top_attach">4</property>
                       </packing>
                     </child>
                     <child>
@@ -290,10 +364,11 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="halign">start</property>
+                        <property name="valign">start</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">5</property>
+                        <property name="top_attach">4</property>
                       </packing>
                     </child>
                     <child>
@@ -302,12 +377,15 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">rb_freq_auto</property>
                       </object>
                       <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">0</property>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">2</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
@@ -316,12 +394,15 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">rb_freq_5</property>
                       </object>
                       <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">1</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
@@ -329,11 +410,17 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
-                        <property name="label" translatable="yes">Frequency band</property>
+                        <property name="valign">start</property>
+                        <property name="label" translatable="yes">Frequency band:</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
                       </object>
                       <packing>
-                        <property name="left_attach">0</property>
+                        <property name="left_attach">3</property>
                         <property name="top_attach">0</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
@@ -342,12 +429,15 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">start</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">rb_freq_auto</property>
                       </object>
                       <packing>
                         <property name="left_attach">3</property>
-                        <property name="top_attach">0</property>
+                        <property name="top_attach">3</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
@@ -356,25 +446,12 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">6</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkTextView" id="tv_mac_filter">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="accepts_tab">False</property>
-                        <property name="input_hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
-                        <property name="monospace">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">6</property>
-                        <property name="height">2</property>
+                        <property name="top_attach">5</property>
                       </packing>
                     </child>
                     <child>
@@ -383,11 +460,13 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
-                        <property name="top_attach">8</property>
+                        <property name="top_attach">7</property>
                       </packing>
                     </child>
                     <child>
@@ -396,54 +475,122 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">center</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">8</property>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">7</property>
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkSeparator">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">0</property>
+                        <property name="height">8</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkSeparator">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">start</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">4</property>
+                        <property name="width">3</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="valign">end</property>
+                        <property name="label" translatable="yes">WPA Version:</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">4</property>
+                        <property name="width">2</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkRadioButton" id="rb_wpa1">
+                        <property name="label" translatable="yes">1+2</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">rb_wpa12</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">7</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkRadioButton" id="rb_wpa2">
+                        <property name="label" translatable="yes">2</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">rb_wpa1</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">6</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkRadioButton" id="rb_wpa12">
+                        <property name="label" translatable="yes">1</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">rb_wpa1</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">5</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
+                      <object class="GtkScrolledWindow">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="tv_mac_filter">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="accepts_tab">False</property>
+                            <property name="input_hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
+                            <property name="monospace">True</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                        <property name="height">2</property>
+                      </packing>
                     </child>
                     <child>
                       <placeholder/>
@@ -467,7 +614,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
               </object>
@@ -476,7 +623,10 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Advanced</property>
+                <property name="label" translatable="yes">Advanced Options</property>
+                <attributes>
+                  <attribute name="weight" value="heavy"/>
+                </attributes>
               </object>
             </child>
           </object>
@@ -487,49 +637,13 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkSeparator">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="halign">end</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkButton" id="button_stop_hp">
-                <property name="label" translatable="yes">Stop</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">end</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">10</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="button_create_hp">
-                <property name="label" translatable="yes">Create hotspot</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">end</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">10</property>
-                <property name="pack_type">end</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="padding">10</property>
             <property name="position">4</property>
           </packing>
         </child>
@@ -550,20 +664,10 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">6</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="valign">start</property>
             <property name="margin_bottom">5</property>
             <property name="orientation">vertical</property>
             <child>
@@ -571,14 +675,19 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
+                <property name="valign">start</property>
                 <property name="margin_left">5</property>
+                <property name="margin_right">5</property>
                 <property name="margin_top">1</property>
                 <property name="margin_bottom">1</property>
                 <property name="label" translatable="yes">Running status</property>
+                <property name="wrap">True</property>
+                <property name="ellipsize">end</property>
+                <property name="lines">1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">True</property>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -596,13 +705,10 @@
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">7</property>
+            <property name="position">6</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
