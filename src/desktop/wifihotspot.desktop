@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Wifi Hotspot
+Comment=feature-rich wifi hotspot creator
 Icon=/usr/share/wihotspot/hotspot.png
 Exec=sh -c 'env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/bin/wihotspot'
 Terminal=false
