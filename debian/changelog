@@ -1,6 +1,7 @@
-linux-wifi-hotspot (3.6.0) UNRELEASED; urgency=low
+linux-wifi-hotspot (3.6.1) UNRELEASED; urgency=low
 
   * Fix allow space in password
   * Fix variouse bugs
+  * Fix Icon location
 
  -- Scott Hardin <snhardin@users.noreply.github.com>  Wed, 21 Oct 2020 19:21:49 -0700
