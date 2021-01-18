@@ -53,7 +53,7 @@ add_custom_target(uninstall_build
         COMMAND rm -f $ENV{DESTDIR}${appbin}/${PROJECT_NAME}
         COMMAND rm -f $ENV{DESTDIR}${appdir}/applications/${PROJECT_NAME}.desktop
         COMMAND rm -rf $ENV{DESTDIR}${appdir}/${PROJECT_NAME}
-        COMMENT Unstalling files...
+        COMMENT Uninstalling files...
 
         COMMENT Remove old files if exist
         COMMAND rm -rf $ENV{DESTDIR}${appdir}/wihotspot

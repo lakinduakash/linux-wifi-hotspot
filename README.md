@@ -2,14 +2,16 @@
 
 [![Build Status](https://travis-ci.com/lakinduakash/linux-wifi-hotspot.svg?branch=master)](https://travis-ci.com/lakinduakash/linux-wifi-hotspot)
 [![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
 ### Update
 * Add MAC filter
+* Support enabling IEEE80211n and IEEE80211ac
 * Release Debian package
 
 ### Features
  
-* Share your wifi like in Windows - Share wifi on the same interface which you are connected to on the internet.
+* Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
 * Share access point from any network interface
 * MAC filter
 * Includes Both command line and gui.
@@ -20,7 +22,11 @@
 ![screenshot](docs/sc2.png)
 
 
-### [Command line help and documentation](src/scripts/README.md)
+### Command line help and documentation
+
+Read [Command line help and documentation here](src/scripts/README.md).
+
+If you only need the command-line without GUI run `make install-cli-only` as root user.
 
 ### Notes
 
@@ -31,15 +37,16 @@ If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 ### Installation
 
 #### Debian/Ubuntu
+
 Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
-- [linux-wifi-hotspot_3.5.1_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.5.1/linux-wifi-hotspot_3.5.1_amd64.deb)
+<!-- - [linux-wifi-hotspot_3.5.1_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.5.1/linux-wifi-hotspot_3.5.1_amd64.deb) -->
 
 #### Arch based distributions
 
 Install with:
 
 ```bash
-yay -Sy linux-wifi-hotspot
+yay -S linux-wifi-hotspot
 ```
 
 ### Dependencies
@@ -78,9 +85,6 @@ sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
 
 ## Installation
 
-**Note: If you have installed the previous version of this project make sure to uninstall it by checking out the previous version (v2.1.1 or below).
-Also you can use `sudo make clean-old` without checking out the previous version. After that install the binaries. Otherwise your system might leave orphaned binaries and files.**
-
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
 
@@ -106,12 +110,15 @@ repository.
 
 Start the hotspot service on startup (using your saved configuration) with:
 
-    systemctl enable create-ap
+    systemctl enable create_ap
 
 ### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
 
 ## Contributing
-This project is still new. So you can simply open an issue and send a PR. Also there are some existing issues. Pick one and start contributing.
+
+If you found a bug or you have an idea about improving this make an issue. Even a small contribution make open source world more beautiful.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
+
 
 ## License
 FreeBSD
@@ -119,3 +126,6 @@ FreeBSD
 Copyright (c) 2013, oblique
 
 Copyright (c) 2020, lakinduakash
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_large)

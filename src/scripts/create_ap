@@ -33,7 +33,7 @@ usage() {
     echo "  -h, --help              Show this help"
     echo "  --version               Print version number"
     echo "  -c <channel>            Channel number (default: 1)"
-    echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, use 1+2 for both (default: 1+2)"
+    echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, use 1+2 for both (default: 2)"
     echo "  -n                      Disable Internet sharing (if you use this, don't pass"
     echo "                          the <interface-with-internet> argument)"
     echo "  -m <method>             Method for Internet sharing."
@@ -626,7 +626,7 @@ networkmanager_wait_until_unmanaged() {
 
 CHANNEL=default
 GATEWAY=192.168.12.1
-WPA_VERSION=1+2
+WPA_VERSION=2
 ETC_HOSTS=0
 ADDN_HOSTS=
 DHCP_DNS=gateway
