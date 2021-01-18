@@ -2,7 +2,7 @@
 Type=Application
 Name=Wifi Hotspot
 Comment=feature-rich wifi hotspot creator
-Icon=/usr/share/wihotspot/hotspot.png
+Icon=wihotspot
 Exec=sh -c 'env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /usr/bin/wihotspot'
 Terminal=false
 Categories=System
