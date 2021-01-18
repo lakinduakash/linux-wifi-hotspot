@@ -9,7 +9,6 @@ APP_GUI_BINARY="wihotspot-gui"
 
 PREFIX=/usr
 BINDIR=$(PREFIX)/bin
-APP_DIR=$(PREFIX)/share/$(APP_NAME)
 
 ODIR=../build
 
@@ -42,15 +41,13 @@ wihotspot-gui: $(OBJ)
 	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 install: $(ODIR)/wihotspot-gui
-	mkdir -p $(DESTDIR)$(APP_DIR)
-	install -Dm644 desktop/hotspot.png $(DESTDIR)$(APP_DIR)/hotspot.png
-	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(APP_DIR)/$(APP_NAME).desktop
+	install -Dm644 desktop/hotspot.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
 	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) install
 
 uninstall:
-	rm -rf $(DESTDIR)$(APP_DIR)
+        rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) uninstall
