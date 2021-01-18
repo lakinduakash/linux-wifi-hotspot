@@ -47,7 +47,7 @@ install: $(ODIR)/wihotspot-gui
 	cd scripts && $(MAKE) install
 
 uninstall:
-        rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) uninstall
@@ -62,3 +62,4 @@ clean:
 	rm -f $(ODIR)/*.o
 	rm -f ui/$(BUILT_SRC)
 	rm -f $(ODIR)/wihotspot-gui
+
