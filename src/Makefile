@@ -42,12 +42,14 @@ wihotspot-gui: $(OBJ)
 
 install: $(ODIR)/wihotspot-gui
 	install -Dm644 desktop/hotspot.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	install -Dm644 desktop/hotspot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
 	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) install
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) uninstall
