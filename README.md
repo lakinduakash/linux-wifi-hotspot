@@ -119,6 +119,8 @@ Start the hotspot service on startup (using your saved configuration) with:
 If you found a bug or you have an idea about improving this make an issue. Even a small contribution make open source world more beautiful.
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
 
+## Disclaimer
+<div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 
 ## License
 FreeBSD
