@@ -1,5 +1,5 @@
-linux-wifi-hotspot (3.6.2) UNRELEASED; urgency=low
+linux-wifi-hotspot (3.6.2) focal; urgency=low
 
   * Update Icon
 
- -- Scott Hardin <snhardin@users.noreply.github.com>  Wed, 21 Oct 2020 19:21:49 -0700
+ -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 23 Jan 2021 06:34:00 +0530
