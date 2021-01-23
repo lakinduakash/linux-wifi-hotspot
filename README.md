@@ -44,8 +44,6 @@ Download the debian package from latest [release](https://github.com/lakinduakas
 **OR**
 
 ```bash
-
-sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com' --recv-key CF5822229C773847E8E991972E2DF77ABB5D3237
 sudo add-apt-repository ppa:lakinduakash/lwh
 sudo apt install linux-wifi-hotspot
 
