@@ -1,5 +1,7 @@
-linux-wifi-hotspot (3.6.6) UNRELEASED; urgency=low
+linux-wifi-hotspot (3.6.7) UNRELEASED; urgency=low
 
   * Update Icon
+  * UI Tweaks
+  * Bug Fixes
 
  -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 23 Jan 2021 06:34:00 +0530
