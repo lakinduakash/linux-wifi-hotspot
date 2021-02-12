@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "read_config.h"
 
 
-#define BUFSIZE 1024
+#define BUFSIZE 2048
 
 
 #define SUDO "pkexec --user root"
@@ -284,15 +284,16 @@ static int init_get_interface_list(){
     const char* cmd="echo $( ls /sys/class/net ) ";
 
     FILE *fp;
+    char temp_buff[1024];
 
     if ((fp = popen(cmd, "r")) == NULL) {
         printf("Error opening pipe!\n");
         return -1;
     }
 
-    while (fgets(interface_list, BUFSIZE, fp) != NULL) {
-        // Do whatever you want here...
-        //printf("%s", h_running_info);
+    while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
+
+        strcat(interface_list,temp_buff);
     }
 
     if (pclose(fp)) {
@@ -357,13 +358,17 @@ static int init_get_wifi_interface_list(){
 
     FILE *fp;
 
+    char temp_buff[1048];
+
     if ((fp = popen(cmd, "r")) == NULL) {
         printf("Error opening pipe!\n");
         return -1;
     }
 
-    while (fgets(wifi_interface_list, BUFSIZE, fp) != NULL) {
-        // Do whatever you want here...
+
+    while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
+
+        strcat(wifi_interface_list,temp_buff);
     }
 
     if (pclose(fp)) {
