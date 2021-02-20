@@ -4,3 +4,4 @@ build
 src/cmake-build-debug
 src/ui/resources.c
 wifih.ui~
+about.glade~

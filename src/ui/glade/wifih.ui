@@ -523,33 +523,16 @@
             <property name="can_focus">False</property>
             <property name="halign">end</property>
             <child>
-              <object class="GtkLinkButton">
-                <property name="label" translatable="yes">Help?</property>
+              <object class="GtkButton" id="button_about">
+                <property name="label" translatable="yes">About</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="focus_on_click">False</property>
                 <property name="receives_default">True</property>
-                <property name="uri">https://github.com/lakinduakash/linux-wifi-hotspot</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">10</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="button_stop_hp">
-                <property name="label" translatable="yes">Stop</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">end</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">10</property>
+                <property name="padding">48</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -567,6 +550,21 @@
                 <property name="padding">10</property>
                 <property name="pack_type">end</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_stop_hp">
+                <property name="label" translatable="yes">Stop</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="halign">end</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">10</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
