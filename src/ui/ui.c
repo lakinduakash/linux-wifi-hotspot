@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui.h"
 #include "read_config.h"
 #include "util.h"
+#include "about_ui.h"
 
 #define BUFSIZE 512
 #define AP_ENABLED "AP-ENABLED"
@@ -55,6 +56,7 @@ GtkBuilder *builder;
 GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
+GtkButton *button_about;
 
 GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
@@ -144,6 +146,11 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
     g_thread_new("shell2", stopHp, NULL);
 
+}
+
+static void on_about_open_click(GtkWidget *widget, gpointer data){
+
+    show_info(widget,data);
 }
 
 
@@ -352,6 +359,7 @@ int initUi(int argc, char *argv[]){
 
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
+    button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
 
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
@@ -394,6 +402,7 @@ int initUi(int argc, char *argv[]){
 
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
+    g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
