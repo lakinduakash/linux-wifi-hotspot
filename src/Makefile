@@ -16,7 +16,7 @@ GLIB_COMPILE_RESOURCES = $(shell $(PKGCONFIG) --variable=glib_compile_resources 
 
 BUILT_SRC = resources.c
 
-_OBJ = main.o ui.o h_prop.o util.o read_config.o $(BUILT_SRC:.c=.o)
+_OBJ = main.o ui.o h_prop.o util.o read_config.o about_ui.o $(BUILT_SRC:.c=.o)
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # Determine this makefile's path.
@@ -41,22 +41,30 @@ wihotspot-gui: $(OBJ)
 	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 install: $(ODIR)/wihotspot-gui
-	install -Dm644 desktop/hotspot.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@48.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@512.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/512x512/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
 	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) install
 
 uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.xpm
 	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/512x512/apps/wihotspot.png
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) uninstall
 
 clean-old:
-	rm -rf $(DESTDIR)/usr/share/wihotspot_gui
-	rm -rf $(DESTDIR)/usr/share/wihotspot
-	rm -f $(DESTDIR)/usr/bin/wihotspot_gui
-	rm -f $(DESTDIR)/usr/bin/wihotspot
+	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
 
 clean:
 	rm -f $(ODIR)/*.o
