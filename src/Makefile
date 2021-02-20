@@ -54,7 +54,6 @@ install: $(ODIR)/wihotspot-gui
 	cd scripts && $(MAKE) install
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.xpm
 	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
 	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/wihotspot.png
 	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/wihotspot.png
