@@ -120,8 +120,6 @@ Start the hotspot service on startup (using your saved configuration) with:
 
     systemctl enable create_ap
 
-### Tested with Ubuntu from 16.04 to 20.04. If any issue is found, file an issue on github.
-
 ## Contributing
 
 If you found a bug or you have an idea about improving this make an issue. Even a small contribution make open source world more beautiful.
@@ -135,7 +133,7 @@ FreeBSD
 
 Copyright (c) 2013, oblique
 
-Copyright (c) 2020, lakinduakash
+Copyright (c) 2021, lakinduakash
 
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_large)
