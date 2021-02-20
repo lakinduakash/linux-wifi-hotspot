@@ -11,6 +11,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build binaries
       run: |
-        sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make hostapd
+        sudo apt install -y libgtk-3-dev build-essential cmake gcc g++ pkg-config make
         make
         sudo make install
