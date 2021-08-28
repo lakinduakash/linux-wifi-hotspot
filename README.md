@@ -5,7 +5,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
 ### *** Open for collaborators ***
- Due to unavidable reasons I am unable to actively maintain the repository. If anyone interseted to improve this repository let me know.
+ Due to unavoidable reasons I am unable to actively maintain the repository. If anyone interseted to improve this repository let me know.
  
 ### Update
 * Add MAC filter
