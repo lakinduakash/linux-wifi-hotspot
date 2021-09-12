@@ -21,8 +21,9 @@
 * Support both 2.4GHz and 5GHz (Need to be compatible with your wifi adapter). Ex: You have connected to the 5GHz network and share a connection with 2.4GHz.
 * Select Channel.
 * Hide SSID
+* Show the connected devices
 
-![screenshot](docs/sc2.png)
+![screenshot](docs/sc3.png)
 
 
 ### Command line help and documentation
