@@ -1,4 +1,4 @@
-linux-wifi-hotspot (4.1.0) UNRELEASED; urgency=low
+linux-wifi-hotspot ($PKG_VERSION) UNRELEASED; urgency=low
 
   * Show connecetd devices
 
