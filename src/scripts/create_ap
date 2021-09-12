@@ -1307,7 +1307,7 @@ if [[ -n "$LIST_CLIENTS_ID" ]]; then
 fi
 
 if [[ $(id -u) -ne 0 ]]; then
-    echo "You must run it as root." >&2
+    echo "create_ap must be run as root." >&2
     exit 1
 fi
 
