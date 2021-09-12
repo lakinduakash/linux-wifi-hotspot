@@ -70,4 +70,6 @@ static void set_error_text(char * text);
 
 gchar* get_accepted_macs();
 
+static void set_connected_devices_label(); // new
+
 #endif //WIHOTSPOT_UI_H

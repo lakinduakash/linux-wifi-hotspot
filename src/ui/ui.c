@@ -57,6 +57,14 @@ GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
 GtkButton *button_about;
+GtkButton *button_refresh; 
+
+GtkGrid *grid_devices;
+GtkWidget *h;
+GtkWidget *i;
+GtkWidget *m;
+GtkWidget *n;
+PtrToNode l;
 
 GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
@@ -153,6 +161,48 @@ static void on_about_open_click(GtkWidget *widget, gpointer data){
     show_info(widget,data);
 }
 
+static void set_connected_devices_label()
+{
+    Position tmp;                              
+    l = get_connected_devices(running_info[0]); // running_info[0] PID
+
+    // Remove all the children widgets
+    GList *children, *iter; 
+
+    children = gtk_container_get_children(GTK_CONTAINER(grid_devices));
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    {
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+
+    while (l->Next != NULL)
+    {
+        tmp = l; // Save the last one
+        l = l->Next;
+        char number[1];
+        sprintf(number, "%d", l->Number);
+        n = gtk_label_new(number);
+        h = gtk_label_new(l->HOSTNAME);
+        i = gtk_label_new(l->IP);
+        m = gtk_label_new(l->MAC);
+
+        gtk_grid_attach(grid_devices, n, 0, l->Number, 1, 1);
+        gtk_grid_attach(grid_devices, h, 1, l->Number, 1, 1);
+        gtk_grid_attach(grid_devices, i, 2, l->Number, 1, 1);
+        gtk_grid_attach(grid_devices, m, 3, l->Number, 1, 1);
+        gtk_widget_show_all((GtkWidget *)grid_devices);
+        free(tmp); // Free the last pointer
+    }
+}
+
+static void on_refresh_clicked(GtkWidget *widget, gpointer data)
+{
+    if (running_info[0] != NULL)
+    {
+        set_connected_devices_label();
+    }
+}
 
 static void loadStyles(){
     provider = gtk_css_provider_new();
@@ -360,6 +410,9 @@ int initUi(int argc, char *argv[]){
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
+    button_refresh = (GtkButton *)gtk_builder_get_object(builder, "button_refresh");
+
+    grid_devices = (GtkGrid *)gtk_builder_get_object(builder, "grid_devices");
 
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
@@ -403,6 +456,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
+    g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL); //new
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);

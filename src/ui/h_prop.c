@@ -420,3 +420,56 @@ char** get_wifi_interface_list(int *length){
     return NULL;
 
 }
+
+Node get_connected_devices(char *PID)
+{
+    char cmd[BUFSIZE];
+    snprintf(cmd, BUFSIZE, "%s --list-clients %s", CREATE_AP, PID);
+    FILE *fp;
+    Node l = (struct Device *)malloc(sizeof(struct Device));
+    Position head = l;
+    fp = popen(cmd, "r");
+    char line[BUFSIZE];
+
+    int _n = 0; //Device number
+    while (fgets(line, BUFSIZE, fp) != NULL)
+    {
+        if (strstr(line, "MAC") != NULL)
+            continue;
+
+        _n++;
+        int size = strlen(line);
+        int marker[3] = {0};
+        int n = 0;             // For marker
+        line[size - 1] = '\0'; // Remove "\n"
+        for (int i = 0; i < size; i++)
+        {
+            if (*(line + i) != ' ' && *(line + i + 1) == ' ')
+            {
+                // End
+                *(line + i + 1) = '\0';
+                i++;
+            }
+            if (*(line + i) == ' ' && *(line + i + 1) != ' ')
+            {
+                // Head
+                *(line + i) = '\0';
+                marker[++n] = i + 1;
+            }
+        }
+        l = add_device_node(l, _n, line, marker);
+    }
+    return head;
+}
+
+PtrToNode add_device_node(PtrToNode l, int number, char line[BUFSIZE], int marker[3])
+{
+    Node next = (PtrToNode)malloc(sizeof(struct Device));
+    strcpy(next->MAC, line);
+    strcpy(next->IP, line + marker[1]);
+    strcpy(next->HOSTNAME, line + marker[2]);
+    next->Number = number;
+    next->Next = NULL;
+    l->Next = next;
+    return next;
+}
