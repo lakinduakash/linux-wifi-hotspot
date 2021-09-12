@@ -57,6 +57,14 @@ GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
 GtkButton *button_about;
+GtkButton *button_refresh; 
+
+GtkGrid *grid_devices;
+GtkWidget *label_cd_hostname;
+GtkWidget *label_cd_ip;
+GtkWidget *label_cd_mac;
+GtkWidget *label_cd_number;
+PtrToNode device_list;
 
 GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
@@ -360,6 +368,9 @@ int initUi(int argc, char *argv[]){
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
+    button_refresh = (GtkButton *)gtk_builder_get_object(builder, "button_refresh");
+
+    grid_devices = (GtkGrid *)gtk_builder_get_object(builder, "grid_devices");
 
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
@@ -403,6 +414,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
+    g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL); //new
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
@@ -865,4 +877,65 @@ gchar* get_accepted_macs(){
     
     return accepted_macs;
 
+}
+
+/**
+ * Clear device list
+*/
+static void clear_connecetd_devices_list(){
+
+    // Remove all the children widgets
+    GList *children, *iter; 
+
+    children = gtk_container_get_children(GTK_CONTAINER(grid_devices));
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    {
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+    }
+    g_list_free(children);
+}
+
+/**
+ * Set connected device list
+ * 
+*/
+static void set_connected_devices_label()
+{
+    Position tmp;                              
+    device_list = get_connected_devices(running_info[0]); // running_info[0] PID
+
+    clear_connecetd_devices_list();
+
+    while (device_list->Next != NULL)
+    {
+        tmp = device_list; // Save the last one
+        device_list = device_list->Next;
+        char number[2];
+        sprintf(number, "%d", device_list->Number);
+        label_cd_number = gtk_label_new(number);
+        label_cd_hostname = gtk_label_new(device_list->HOSTNAME);
+        label_cd_ip = gtk_label_new(device_list->IP);
+        label_cd_mac = gtk_label_new(device_list->MAC);
+
+        gtk_grid_attach(grid_devices, label_cd_number, 0, device_list->Number, 1, 1);
+        gtk_grid_attach(grid_devices, label_cd_hostname, 1, device_list->Number, 1, 1);
+        gtk_grid_attach(grid_devices, label_cd_ip, 2, device_list->Number, 1, 1);
+        gtk_grid_attach(grid_devices, label_cd_mac, 3, device_list->Number, 1, 1);
+        gtk_widget_show_all((GtkWidget *)grid_devices);
+        free(tmp); // Free the last pointer
+    }
+}
+
+/**
+ * When conncetd devices refresh button clicked
+*/
+static void on_refresh_clicked(GtkWidget *widget, gpointer data)
+{
+    if (running_info[0] != NULL)
+    {
+        set_connected_devices_label();
+    }
+    else {
+        clear_connecetd_devices_list();
+    }
 }

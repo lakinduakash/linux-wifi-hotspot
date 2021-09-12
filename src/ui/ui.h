@@ -70,4 +70,10 @@ static void set_error_text(char * text);
 
 gchar* get_accepted_macs();
 
+static void set_connected_devices_label(); // new
+
+static void on_refresh_clicked(GtkWidget *widget, gpointer data);
+
+static void clear_connecetd_devices_list();
+
 #endif //WIHOTSPOT_UI_H
