@@ -4,13 +4,12 @@
 [![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
+### Update
+* Show the connected devices
+* Add MAC filter
+
 ### *** Open for collaborators ***
  Due to unavoidable reasons I am unable to actively maintain the repository. If anyone interseted to improve this repository let me know.
- 
-### Update
-* Add MAC filter
-* Support enabling IEEE80211n and IEEE80211ac
-* Release Debian package
 
 ### Features
  

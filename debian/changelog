@@ -1,7 +1,5 @@
-linux-wifi-hotspot ($PKG_VERSION) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.1.0) UNRELEASED; urgency=low
 
-  * Update Icon
-  * UI Tweaks
-  * Fix not showing multiple wifi interfaces
+  * Show connecetd devices
 
  -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 23 Jan 2021 06:34:00 +0530
