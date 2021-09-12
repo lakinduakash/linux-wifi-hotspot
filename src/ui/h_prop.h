@@ -35,6 +35,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "read_config.h"
 
+typedef struct Device *PtrToNode;
+struct Device
+{
+        char HOSTNAME[2048];
+        char IP[2048];
+        char MAC[2048];
+        unsigned int Number;
+        PtrToNode Next;
+}; // Head node is null
+typedef PtrToNode Position;
+typedef PtrToNode Node;
+
 static int parse_output(const char *);
 
 const char *build_wh_start_command(char *, char *, char *, char *);
@@ -58,5 +70,8 @@ char** get_wifi_interface_list(int *length);
 void write_accepted_macs(char* filename, char* accepted_macs);
 
 char * read_mac_filter_file(char * filename);
+
+Node get_connected_devices(char *PID);
+PtrToNode add_device_node(Node l, int number, char *line, int marker[3]);
 
 #endif //WIHOTSPOT_H_PROP_H
