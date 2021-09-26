@@ -8,9 +8,6 @@
 * Show the connected devices
 * Add MAC filter
 
-### *** Open for collaborators ***
- Due to unavoidable reasons I am unable to actively maintain the repository. If anyone interseted to improve this repository let me know.
-
 ### Features
  
 * Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
