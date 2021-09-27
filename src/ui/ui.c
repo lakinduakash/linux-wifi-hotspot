@@ -362,7 +362,7 @@ int initUi(int argc, char *argv[]){
 
     /* Connect signal handlers to the constructed widgets. */
     window = gtk_builder_get_object(builder, "window");
-    g_signal_connect (window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect (window, "destroy", G_CALLBACK(exit_app), NULL);
 
 
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
@@ -951,4 +951,13 @@ static void on_cb_open_clicked(GtkWidget *widget, gpointer data)
     } else {
         gtk_widget_set_sensitive((GtkWidget*)entry_pass, TRUE);
     }
+}
+
+/**
+ * When exit signal is caught, stop any active hotspot then exit
+*/
+static void exit_app(GtkWidget *widget, gpointer data)
+{
+    stopHp();
+    gtk_main_quit();
 }
