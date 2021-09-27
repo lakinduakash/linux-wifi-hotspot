@@ -74,6 +74,8 @@ static void set_connected_devices_label(); // new
 
 static void on_refresh_clicked(GtkWidget *widget, gpointer data);
 
+static void on_cb_open_clicked(GtkWidget *widget, gpointer data);
+
 static void clear_connecetd_devices_list();
 
 #endif //WIHOTSPOT_UI_H

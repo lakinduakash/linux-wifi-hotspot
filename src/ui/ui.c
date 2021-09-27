@@ -414,7 +414,8 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
-    g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL); //new
+    g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL);
+    g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_clicked), NULL); //new
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
@@ -937,5 +938,17 @@ static void on_refresh_clicked(GtkWidget *widget, gpointer data)
     }
     else {
         clear_connecetd_devices_list();
+    }
+}
+
+/**
+ * When open checkbutton is toogled, disable password entry
+*/
+static void on_cb_open_clicked(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)entry_pass, FALSE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)entry_pass, TRUE);
     }
 }
