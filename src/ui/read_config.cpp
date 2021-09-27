@@ -104,6 +104,9 @@ static void setConfigValues(const char * key, char *value){
     if( !strcmp ( HIDDEN, key ))
         configValues.hidden = value;
 
+    if( !strcmp ( NO_HAVEGED, key ))
+        configValues.no_haveged = value;
+
     if( !strcmp ( NO_VIRT, key ))
         configValues.no_virt = value;
 

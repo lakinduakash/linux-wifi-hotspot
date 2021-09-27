@@ -82,6 +82,7 @@ GtkRadioButton *rb_freq_2;
 GtkRadioButton *rb_freq_5;
 
 GtkCheckButton *cb_hidden;
+GtkCheckButton *cb_no_haveged;
 GtkCheckButton *cb_psk;
 GtkCheckButton *cb_mac;
 GtkCheckButton *cb_novirt;
@@ -385,6 +386,7 @@ int initUi(int argc, char *argv[]){
     combo_internet = (GtkComboBox *) gtk_builder_get_object(builder, "combo_internet");
 
     cb_hidden = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_hidden");
+    cb_no_haveged = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_no_haveged");
     cb_psk = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_psk");
     cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
@@ -476,8 +478,13 @@ void init_ui_from_config(){
         }
 
         if(strcmp(values->hidden,"1")==0){
-            
+
             gtk_toggle_button_set_active((GtkToggleButton*) cb_hidden,TRUE);
+        }
+
+        if(strcmp(values->no_haveged,"1")==0){
+
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_no_haveged,TRUE);
         }
 
         if(strcmp(values->use_psk,"1")==0){
@@ -826,6 +833,11 @@ static int init_config_val_input(ConfigValues* cv){
         else
             cv->hidden =NULL;
 
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_no_haveged)))
+            cv->no_haveged = "1";
+
+        else
+            cv->no_haveged =NULL;
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_novirt)))
             cv->no_virt = "1";
