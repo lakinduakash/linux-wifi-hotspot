@@ -1,5 +1,6 @@
-linux-wifi-hotspot ($PKG_VERSION) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.2.0) UNRELEASED; urgency=low
 
-  * Show connecetd devices
+  * UI improvements
+  * Fallback to same channel when same wifi interface does not support for multiple channels
 
  -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 23 Jan 2021 06:34:00 +0530

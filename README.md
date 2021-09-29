@@ -5,6 +5,8 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
 ### Update
+* UI improvements
+* Fallback to same channel when same wifi interface does not support for multiple channels
 * Show the connected devices
 * Add MAC filter
 
