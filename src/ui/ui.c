@@ -415,7 +415,10 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
     g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL);
-    g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_clicked), NULL); //new
+    g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_toggle), NULL);
+    g_signal_connect (cb_mac, "toggled", G_CALLBACK(on_cb_mac_toggle), NULL); //new
+    g_signal_connect (cb_channel, "toggled", G_CALLBACK(on_cb_channel_toggle), NULL); //new
+    g_signal_connect (cb_mac_filter, "toggled", G_CALLBACK(on_cb_mac_filter_toggle), NULL); //new
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
@@ -457,6 +460,7 @@ void init_ui_from_config(){
             gtk_entry_set_text(entry_pass,values->pass);
         
         if(strcmp(values->pass,"")==0|| values->pass==NULL)
+            // This line will trigger on_cb_open_toggle callback and disable the entry_pass
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
 
         if(values->iface_wifi!=NULL){
@@ -498,6 +502,8 @@ void init_ui_from_config(){
         if(strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_channel,TRUE);
             gtk_entry_set_text(entry_channel,values->channel);
+        } else {
+            gtk_widget_set_sensitive((GtkWidget*)entry_channel, FALSE);
         }
 
         if(strcmp(values->freq,"2.4")==0 || strcmp(values->freq,"5")==0 ){
@@ -513,6 +519,8 @@ void init_ui_from_config(){
         if(strcmp(values->mac,"")!=0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_mac,TRUE);
             gtk_entry_set_text(entry_mac,values->mac);
+        } else {
+            gtk_widget_set_sensitive((GtkWidget*)entry_mac, FALSE);
         }
 
         if(strcmp(values->no_virt,"1")==0){
@@ -521,6 +529,8 @@ void init_ui_from_config(){
 
         if(strcmp(values->mac_filter,"1")==0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_mac_filter,TRUE);
+        } else {
+            gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, FALSE);
         }
 
         char *macs =read_mac_filter_file(values->accepted_mac_file);
@@ -567,7 +577,8 @@ void lock_all_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
-        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
+        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter)))
+            gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
     }
 }
 
@@ -594,7 +605,8 @@ void lock_running_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
 
-        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
+        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter)))
+            gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
     }
 }
 
@@ -942,13 +954,49 @@ static void on_refresh_clicked(GtkWidget *widget, gpointer data)
 }
 
 /**
- * When open checkbutton is toogled, disable password entry
+ * When open password is toogled, disable password entry
 */
-static void on_cb_open_clicked(GtkWidget *widget, gpointer data)
+static void on_cb_open_toggle(GtkWidget *widget, gpointer data)
 {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
         gtk_widget_set_sensitive((GtkWidget*)entry_pass, FALSE);
     } else {
         gtk_widget_set_sensitive((GtkWidget*)entry_pass, TRUE);
+    }
+}
+
+/**
+ * When set mac is not toogled, disable mac entry
+*/
+static void on_cb_mac_toggle(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)entry_mac, TRUE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)entry_mac, FALSE);
+    }
+}
+
+/**
+ * When channel is not toogled, disable channel entry
+*/
+static void on_cb_channel_toggle(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)entry_channel, TRUE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)entry_channel, FALSE);
+    }
+}
+
+/**
+ * When mac_filter button is not toogled, disable mac_filter text view
+*/
+static void on_cb_mac_filter_toggle(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, TRUE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, FALSE);
     }
 }
