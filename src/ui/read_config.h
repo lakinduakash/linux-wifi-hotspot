@@ -45,6 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NO_DNS           "NO_DNS"
 #define NO_DNSMASQ       "NO_DNSMASQ"
 #define HIDDEN           "HIDDEN"
+#define NO_HAVEGED       "NO_HAVEGED"
 #define MAC_FILTER       "MAC_FILTER"
 #define MAC_FILTER_ACCEP "MAC_FILTER_ACCEPT"
 #define ISOLATE_CLIENTS  "ISOLATE_CLIENTS"
@@ -90,6 +91,7 @@ typedef struct{
     char *accepted_macs;
     char *ieee80211n;
     char *ieee80211ac;
+    char *no_haveged;
 } ConfigValues;
 
 

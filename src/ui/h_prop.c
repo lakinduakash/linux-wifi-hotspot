@@ -116,6 +116,9 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
     if(cv->hidden!=NULL && (strcmp(cv->hidden,"1") == 0))
         strcat(cmd_mkconfig," --hidden ");
 
+    if(cv->no_haveged!=NULL && (strcmp(cv->no_haveged,"1") == 0))
+        strcat(cmd_mkconfig," --no-haveged ");
+
     if(cv->channel!=NULL && (strcmp(cv->channel,"default") != 0) && (cv->freq==NULL||(strcmp(cv->freq,"2.4") == 0)|| (strcmp(cv->freq,"5") == 0))){
 
             strcat(cmd_mkconfig," -c ");
