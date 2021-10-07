@@ -14,7 +14,7 @@
 #    dnsmasq
 #    iptables
 
-VERSION=0.4.6
+VERSION=0.4.7
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -1287,6 +1287,11 @@ fi
 
 trap "cleanup_lock" EXIT
 
+if [[ $(id -u) -ne 0 ]]; then
+    echo "create_ap must be run as root." >&2
+    exit 1
+fi
+
 if ! init_lock; then
     echo "ERROR: Failed to initialize lock" >&2
     exit 1
@@ -1309,11 +1314,6 @@ fi
 if [[ -n "$LIST_CLIENTS_ID" ]]; then
     list_clients "$LIST_CLIENTS_ID"
     exit 0
-fi
-
-if [[ $(id -u) -ne 0 ]]; then
-    echo "create_ap must be run as root." >&2
-    exit 1
 fi
 
 if [[ -n "$STOP_ID" ]]; then
