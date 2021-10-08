@@ -1573,38 +1573,32 @@ if [[ $NO_VIRT -eq 0 ]]; then
         echo "DONE"
     fi
 
-    # Find interface frequency and channel
-    WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
-    WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
-    echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
 
-
-    # If the frequency is not explicitly set, set one automatically
     if is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 0 ]]; then
+        WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
+        WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
+        echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
         if is_5ghz_frequency $WIFI_IFACE_FREQ; then
             FREQ_BAND=5
         else
             FREQ_BAND=2.4
         fi
+        if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+            if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
+            then
+                echo -e "\nmultiple channels supported"
+            else
+                echo -e  "\nmultiple channels not supported",
+                echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
+                CHANNEL=$WIFI_IFACE_CHANNEL
+            fi
+        else
+            echo "channel------------------ ${CHANNEL}"
+        fi
     elif is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 1 ]]; then
         echo "Custom frequency band set with ${FREQ_BAND}Mhz with channel ${CHANNEL}"
     fi
 
-    # If the access point channel is the same as the interface channel, do:
-    # - Make sure that the adapter support multiple channels
-    # - Otherwise fallback to the same interface channel
-    if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-        if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
-        then
-            echo -e "\nmultiple channels supported"
-        else
-            echo -e  "\nmultiple channels not supported",
-            echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
-            CHANNEL=$WIFI_IFACE_CHANNEL
-        fi
-    else
-        echo "channel------------------ ${CHANNEL}"
-    fi
 
     VIRTDIEMSG="Maybe your WiFi adapter does not fully support virtual interfaces.
        Try again with --no-virt."
