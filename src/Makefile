@@ -16,7 +16,7 @@ GLIB_COMPILE_RESOURCES = $(shell $(PKGCONFIG) --variable=glib_compile_resources 
 
 BUILT_SRC = resources.c
 
-_OBJ = main.o ui.o h_prop.o util.o read_config.o about_ui.o $(BUILT_SRC:.c=.o)
+_OBJ = main.o ui.o h_prop.o util.o read_config.o about_ui.o qr_ui.o $(BUILT_SRC:.c=.o)
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 # Determine this makefile's path.
