@@ -71,6 +71,8 @@ void write_accepted_macs(char* filename, char* accepted_macs);
 
 char * read_mac_filter_file(char * filename);
 
+char* generate_qr_image(char* ssid,char* type,char *password);
+
 Node get_connected_devices(char *PID);
 PtrToNode add_device_node(Node l, int number, char *line, int marker[3]);
 

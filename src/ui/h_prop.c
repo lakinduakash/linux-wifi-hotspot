@@ -62,6 +62,8 @@ static char accepted_macs[BUFSIZE];
 static const char* g_ssid=NULL;
 static const char* g_pass=NULL;
 
+static char* qr_image_path;
+
 //config_t cfg;
 
 static int parse_output(const char *cmd) {
@@ -422,6 +424,36 @@ char** get_wifi_interface_list(int *length){
 
     return NULL;
 
+}
+
+char* generate_qr_image(char* ssid,char* type,char *password){
+    char cmd[BUFSIZE];
+
+    qr_image_path = "/tmp/wihotspot_qr.png";
+
+    snprintf(cmd, BUFSIZE, "%s -V -s 10 -d 256 -o %s 'WIFI:S:%s;T:%s;P:%s;;' ","qrencode",qr_image_path, ssid,type,password);
+
+    FILE *fp;
+
+    char temp_buff[1048];
+
+    if ((fp = popen(cmd, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        
+    }
+
+
+    while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
+    
+        printf("%s", temp_buff);
+    }
+
+    if (pclose(fp)) {
+        printf("Error executing qrencode\n");
+        
+    } 
+
+    return qr_image_path;
 }
 
 Node get_connected_devices(char *PID)
