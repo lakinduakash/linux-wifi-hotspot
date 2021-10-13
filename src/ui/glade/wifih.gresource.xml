@@ -8,6 +8,10 @@
     <file preprocess="xml-stripblanks">about.glade</file>
   </gresource>
 
+  <gresource prefix="/org/gtk/wihotspot">
+    <file preprocess="xml-stripblanks">qr.glade</file>
+  </gresource>
+
   <gresource prefix="/css">
     <file>style.css</file>
   </gresource>
