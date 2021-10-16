@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkApplicationWindow" id="window">
@@ -235,7 +235,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="cb_no_haveged">
-                                <property name="label" translatable="false">No Haveged</property>
+                                <property name="label">No Haveged</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -245,7 +245,7 @@
                                 <property name="left_attach">0</property>
                                 <property name="top_attach">9</property>
                               </packing>
-                          </child>
+                            </child>
                             <child>
                               <object class="GtkCheckButton" id="cb_psk">
                                 <property name="label" translatable="yes">Use psk</property>
@@ -488,6 +488,15 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -606,6 +615,24 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -663,6 +690,19 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="padding">48</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_qr">
+                <property name="label" translatable="yes">Open QR</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>

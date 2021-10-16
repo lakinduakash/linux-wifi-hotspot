@@ -1,9 +1,8 @@
 //
 // Created by lakinduakash on 13/04/19.
 //
-
 /*
-Copyright (c) 2019, lakinduaksh
+Copyright (c) 2021, lakinduaksh
         All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,51 +28,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-#ifndef WIHOTSPOT_H_PROP_H
-#define WIHOTSPOT_H_PROP_H
 
 
-#include "read_config.h"
+#include <gtk/gtk.h>
+#include "qr_ui.h"
 
-typedef struct Device *PtrToNode;
-struct Device
-{
-        char HOSTNAME[2048];
-        char IP[2048];
-        char MAC[2048];
-        unsigned int Number;
-        PtrToNode Next;
-}; // Head node is null
-typedef PtrToNode Position;
-typedef PtrToNode Node;
+static GtkBuilder *builder;
+static GError *error = NULL;
 
-static int parse_output(const char *);
+void open_qr(GtkWidget *widget, gpointer root,char* image_path) {
 
-const char *build_wh_start_command(char *, char *, char *, char *);
-const char *build_wh_from_config(void);
+    builder = gtk_builder_new();
+    //Load ui description from built resource - need to generate compiled source with glib-compile-resource
+    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/qr.glade",&error);
 
-int startShell(const char *);
+    root = gtk_builder_get_object(builder, "dialog_qr");
 
-int write_config(char *);
+    GtkImage* qr_image = (GtkImage *) gtk_builder_get_object(builder, "image_qr");
 
-int get_h_running_info(char** a);
-static int init_get_running();
+    gtk_image_set_from_file(qr_image,image_path);
 
-static int init_get_interface_list();
-char** get_interface_list(int*);
-const char* build_kill_create_ap_command(char* pid);
+    GtkDialog* dialog= GTK_DIALOG(root);
+    
+    gtk_dialog_run(GTK_DIALOG(dialog));
 
-const char *build_wh_mkconfig_command(ConfigValues* cv);
+    gtk_widget_destroy(GTK_WIDGET( dialog));
+    
+    g_signal_connect (dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-char** get_wifi_interface_list(int *length);
-
-void write_accepted_macs(char* filename, char* accepted_macs);
-
-char * read_mac_filter_file(char * filename);
-
-char* generate_qr_image(char* ssid,char* type,char *password);
-
-Node get_connected_devices(char *PID);
-PtrToNode add_device_node(Node l, int number, char *line, int marker[3]);
-
-#endif //WIHOTSPOT_H_PROP_H
+}

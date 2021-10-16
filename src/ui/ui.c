@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "read_config.h"
 #include "util.h"
 #include "about_ui.h"
+#include "qr_ui.h"
 
 #define BUFSIZE 512
 #define AP_ENABLED "AP-ENABLED"
@@ -57,6 +58,7 @@ GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
 GtkButton *button_about;
+GtkButton *button_qr;
 GtkButton *button_refresh; 
 
 GtkGrid *grid_devices;
@@ -158,8 +160,14 @@ static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
 }
 
 static void on_about_open_click(GtkWidget *widget, gpointer data){
-
     show_info(widget,data);
+}
+
+static void on_qr_open_click(GtkWidget *widget, gpointer data){
+
+    char* image_path = generate_qr_image(configValues.ssid,"WPA",configValues.pass);
+
+    open_qr(widget,data,image_path);
 }
 
 
@@ -369,6 +377,7 @@ int initUi(int argc, char *argv[]){
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
+    button_qr = (GtkButton *) gtk_builder_get_object(builder, "button_qr");
     button_refresh = (GtkButton *)gtk_builder_get_object(builder, "button_refresh");
 
     grid_devices = (GtkGrid *)gtk_builder_get_object(builder, "grid_devices");
@@ -416,6 +425,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
+    g_signal_connect (button_qr, "clicked", G_CALLBACK(on_qr_open_click), NULL);
     g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL);
     g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_toggle), NULL);
     g_signal_connect (cb_mac, "toggled", G_CALLBACK(on_cb_mac_toggle), NULL); //new
