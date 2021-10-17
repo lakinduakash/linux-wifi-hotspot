@@ -6,6 +6,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
 ### Update
+* Share wifi via QR code
 * UI improvements
 * Fallback to same channel when same wifi interface does not support for multiple channels
 * Show the connected devices
@@ -22,7 +23,7 @@
 * Hide SSID
 * Show the connected devices
 
-![screenshot](docs/sc3.png)
+![screenshot](docs/sc4.png)
 
 
 ### Command line help and documentation
@@ -42,7 +43,6 @@ If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 #### Debian/Ubuntu
 
 Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
-<!-- - [linux-wifi-hotspot_3.5.1_amd64.deb](https://github.com/lakinduakash/linux-wifi-hotspot/releases/download/v3.5.1/linux-wifi-hotspot_3.5.1_amd64.deb) -->
 
 **OR**
 
