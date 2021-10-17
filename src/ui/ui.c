@@ -608,6 +608,7 @@ void lock_running_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
 
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_qr, TRUE);
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
@@ -619,6 +620,7 @@ void lock_running_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, TRUE);
 
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_qr, FALSE);
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
