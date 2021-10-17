@@ -464,7 +464,7 @@ char* generate_qr_image(char* ssid,char* type,char *password){
 Node get_connected_devices(char *PID)
 {
     char cmd[BUFSIZE];
-    snprintf(cmd, BUFSIZE, "%s --list-clients %s", CREATE_AP, PID);
+    snprintf(cmd, BUFSIZE, "%s %s --list-clients %s", SUDO, CREATE_AP, PID);
     FILE *fp;
     Node l = (struct Device *)malloc(sizeof(struct Device));
     Position head = l;
