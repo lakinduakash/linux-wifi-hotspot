@@ -460,7 +460,9 @@ void init_ui_from_config(){
 
     if(read_config_file()==READ_CONFIG_FILE_SUCCESS){
 
-        ConfigValues *values=getConfigValues();
+        configValues=*getConfigValues();
+
+        ConfigValues *values=&configValues;
 
         //TODO do properly
         configValues.accepted_mac_file=values->accepted_mac_file;
