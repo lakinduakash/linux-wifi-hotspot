@@ -166,7 +166,6 @@ static void on_about_open_click(GtkWidget *widget, gpointer data){
 static void on_qr_open_click(GtkWidget *widget, gpointer data){
 
     char* image_path = generate_qr_image(configValues.ssid,"WPA",configValues.pass);
-
     open_qr(widget,data,image_path);
 }
 
@@ -461,7 +460,9 @@ void init_ui_from_config(){
 
     if(read_config_file()==READ_CONFIG_FILE_SUCCESS){
 
-        ConfigValues *values=getConfigValues();
+        configValues=*getConfigValues();
+
+        ConfigValues *values=&configValues;
 
         //TODO do properly
         configValues.accepted_mac_file=values->accepted_mac_file;
@@ -607,6 +608,7 @@ void lock_running_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
 
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_qr, TRUE);
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
@@ -618,6 +620,7 @@ void lock_running_views(gboolean set_lock){
         gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, TRUE);
 
         gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_qr, FALSE);
 
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);

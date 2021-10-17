@@ -87,11 +87,13 @@ install it using your distro's package manager_
 * pkg-config
 * gtk
 * libgtk-3-dev
+* libqrencode-dev (for qr code generation)
+* libpng-dev (for qr code generation)
 
 On Ubuntu or debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd
+sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
 ```
 
 ## Installation
