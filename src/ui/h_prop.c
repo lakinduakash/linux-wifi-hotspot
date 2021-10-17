@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "h_prop.h"
 #include "read_config.h"
+#include "qrgen.h"
 
 
 #define BUFSIZE 2048
@@ -431,28 +432,32 @@ char* generate_qr_image(char* ssid,char* type,char *password){
 
     qr_image_path = "/tmp/wihotspot_qr.png";
 
-    snprintf(cmd, BUFSIZE, "%s -V -s 10 -d 256 -o %s 'WIFI:S:%s;T:%s;P:%s;;' ","qrencode",qr_image_path, ssid,type,password);
+    // snprintf(cmd, BUFSIZE, "%s -s 10 -d 256 -o %s 'WIFI:S:%s;T:%s;P:%s;;' ","qrencode",qr_image_path, ssid,type,password);
 
-    FILE *fp;
+    // FILE *fp;
 
-    char temp_buff[1048];
+    // char temp_buff[1048];
 
-    if ((fp = popen(cmd, "r")) == NULL) {
-        printf("Error opening pipe!\n");
+    // if ((fp = popen(cmd, "r")) == NULL) {
+    //     printf("Error opening pipe!\n");
         
-    }
+    // }
 
 
-    while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
+    // while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
     
-        printf("%s", temp_buff);
-    }
+    //     printf("%s", temp_buff);
+    // }
 
-    if (pclose(fp)) {
-        printf("Error executing qrencode\n");
+    // if (pclose(fp)) {
+    //     printf("Error executing qrencode\n");
         
-    } 
+    // }
 
+    snprintf(cmd, BUFSIZE, "WIFI:S:%s;T:%s;P:%s;;",ssid,type,password);
+
+    qr_to_png(cmd,qr_image_path);
+    
     return qr_image_path;
 }
 

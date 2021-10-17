@@ -166,7 +166,6 @@ static void on_about_open_click(GtkWidget *widget, gpointer data){
 static void on_qr_open_click(GtkWidget *widget, gpointer data){
 
     char* image_path = generate_qr_image(configValues.ssid,"WPA",configValues.pass);
-
     open_qr(widget,data,image_path);
 }
 
