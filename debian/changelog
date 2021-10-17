@@ -1,4 +1,4 @@
-linux-wifi-hotspot (4.3) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.3.0) UNRELEASED; urgency=low
 
   * Add qr code generate support
 
