@@ -1,8 +1,8 @@
-/* Allow users in admin group to run GParted without authentication */
+/* Allow users in admin group to run create_ap without authentication */
 polkit.addRule(function(action, subject) {
     if ( action.id == "org.opensuse.policykit.create-ap" ) {
 
-        if (subject.isInGroup("sudo")) {
+        if (subject.isInGroup("sudo") || subject.isInGroup("wheel")) {
             return polkit.Result.YES;
         } else {
             return polkit.Result.AUTH_ADMIN;
