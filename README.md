@@ -54,7 +54,9 @@ sudo apt install linux-wifi-hotspot
 
 #### Arch based distributions
 
-Linux Wifi Hotspot is available as a package on the [AUR](https://aur.archlinux.org/packages/linux-wifi-hotspot/).
+Linux Wifi Hotspot is available as an [AUR package](https://aur.archlinux.org/packages/linux-wifi-hotspot/). You can install it manually or with your favourite AUR helper.  
+For example, if you use `yay` you can do:  
+`yay -S linux-wifi-hotspot`
 
 ### Dependencies
 
