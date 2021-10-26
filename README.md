@@ -8,20 +8,20 @@
 ### Update
 * Share wifi via QR code
 * UI improvements
-* Fallback to same channel when same wifi interface does not support for multiple channels
 * Show the connected devices
-* Add MAC filter
 
 ### Features
  
 * Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
-* Share access point from any network interface
+* Share a wifi access point from any network interface
+* Share wifi via QR code
 * MAC filter
+* View connected devices
 * Includes Both command line and gui.
 * Support both 2.4GHz and 5GHz (Need to be compatible with your wifi adapter). Ex: You have connected to the 5GHz network and share a connection with 2.4GHz.
-* Select Channel.
+* Customise wifi Channel, Change MAC address, etc.
 * Hide SSID
-* Show the connected devices
+* Enable IEEE 80211n, IEEE 80211ac modes
 
 ![screenshot](docs/sc4.png)
 
