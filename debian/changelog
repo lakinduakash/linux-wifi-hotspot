@@ -1,6 +1,5 @@
-linux-wifi-hotspot (4.3.2) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.3.3) UNRELEASED; urgency=high
 
-  * Add qr code generate support
-  * Fix error when listing connected devices
+  * Minor secrurty fixes
 
- -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 18 Oct 2021 04:12:00 +0530
+ -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 26 Oct 2021 19:07:00 +0530
