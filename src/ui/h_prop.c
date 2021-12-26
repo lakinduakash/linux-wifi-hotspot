@@ -101,9 +101,9 @@ const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid
 
 const char *build_wh_mkconfig_command(ConfigValues* cv){
 
-    const char* a=get_config_file(CONFIG_FILE_NAME);
+    const char* config_ffile_name=get_config_file(CONFIG_FILE_NAME);
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s '%s' '%s' %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,a);
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s '%s' '%s' %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,config_ffile_name);
 
     if(cv->freq!=NULL){
         strcat(cmd_mkconfig," --freq-band ");
@@ -139,6 +139,11 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
     if(cv->mac!=NULL) {
         strcat(cmd_mkconfig, " --mac ");
         strcat(cmd_mkconfig, cv->mac);
+    }
+
+    if(cv->gateway!=NULL) {
+        strcat(cmd_mkconfig, " --gateway ");
+        strcat(cmd_mkconfig, cv->gateway);
     }
 
     if(cv->mac_filter!=NULL && (strcmp(cv->mac_filter,"1") == 0)){
