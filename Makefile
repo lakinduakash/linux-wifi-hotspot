@@ -8,6 +8,10 @@ install:
 	@echo "Installing..."
 	cd src && $(MAKE) install
 
+test:
+	@echo "Testing..."
+	cd test && $(MAKE)
+
 install-cli-only:
 	@echo "Installing command line interface only..."
 	cd src/scripts && $(MAKE) install
@@ -19,7 +23,7 @@ uninstall:
 clean-old:
 	cd src && $(MAKE) clean-old
 
-.PHONY: clean
+.PHONY: clean test
 
 clean:
 	cd src && $(MAKE) clean
