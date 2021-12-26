@@ -14,7 +14,7 @@ test:
 
 install-cli-only:
 	@echo "Installing command line interface only..."
-	cd src/scripts && $(MAKE) install
+	cd src/scripts && $(MAKE) install-cli-only
 
 uninstall:
 	@echo "Uninstalling..."

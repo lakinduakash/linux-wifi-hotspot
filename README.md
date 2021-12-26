@@ -47,6 +47,7 @@ Download the debian package from latest [release](https://github.com/lakinduakas
 **OR**
 
 ```bash
+# For ubuntu only
 sudo add-apt-repository ppa:lakinduakash/lwh
 sudo apt install linux-wifi-hotspot
 
@@ -130,6 +131,12 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
 
 ## Disclaimer
 <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/lakinduakash/linux-wifi-hotspot.svg)](https://starchart.cc/lakinduakash/linux-wifi-hotspot)
+
 
 ## License
 FreeBSD
