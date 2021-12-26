@@ -9,6 +9,7 @@ install:
 	cd src && $(MAKE) install
 
 test:
+	mkdir -p build
 	@echo "Testing..."
 	cd test && $(MAKE)
 
@@ -27,3 +28,4 @@ clean-old:
 
 clean:
 	cd src && $(MAKE) clean
+	cd test && $(MAKE) clean
