@@ -98,25 +98,56 @@ int isValidMacAddress(const char* mac) {
 int isValidAcceptedMacs(const char *macs){
 
     /* Compile regular expression */
-reti = regcomp(&regex, "^(((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*)(^((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*))*)$", REG_EXTENDED);
-if (reti) {
-    //printf( "Could not compile regex\n");
-    return -1;
+    reti = regcomp(&regex, "^(((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*)(^((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*))*)$", REG_EXTENDED);
+    if (reti) {
+        //printf( "Could not compile regex\n");
+        return -1;
+    }
+
+    /* Execute regular expression */
+    reti = regexec(&regex, macs, 0, NULL, 0);
+    if (!reti) {
+        return 0;
+    }
+    else if (reti == REG_NOMATCH) {
+        //puts("Invalid mac addresses");
+        return -1;
+    }
+    else {
+        regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+        //printf("Regex match failed: %s\n", msgbuf);
+        return -1;
+    }
+
 }
 
-/* Execute regular expression */
-reti = regexec(&regex, macs, 0, NULL, 0);
-if (!reti) {
-    return 0;
-}
-else if (reti == REG_NOMATCH) {
-    //puts("Invalid mac addresses");
-    return -1;
-}
-else {
-    regerror(reti, &regex, msgbuf, sizeof(msgbuf));
-    //printf("Regex match failed: %s\n", msgbuf);
-    return -1;
-}
+int isValidIPaddress(const char * ip){
+
+
+     /* Compile regular expression */
+    reti = regcomp(&regex, 
+        "^([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))."
+         "([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))."
+         "([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))."
+         "([0-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|5[0-5]))$", REG_EXTENDED);
+    if (reti) {
+        //printf( "Could not compile regex\n");
+        return -1;
+    }
+
+    /* Execute regular expression */
+    reti = regexec(&regex, ip, 0, NULL, 0);
+    if (!reti) {
+        return 0;
+    }
+    else if (reti == REG_NOMATCH) {
+        //puts("Invalid ip addresses");
+        return -1;
+    }
+    else {
+        regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+        //printf("Regex match failed: %s\n", msgbuf);
+        return -1;
+    }
 
 }
