@@ -92,6 +92,7 @@ typedef struct{
     char *ieee80211n;
     char *ieee80211ac;
     char *no_haveged;
+    char *gateway;
 } ConfigValues;
 
 
