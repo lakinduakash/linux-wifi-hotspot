@@ -9,7 +9,7 @@
     <property name="type_hint">dialog</property>
     <property name="gravity">center</property>
     <property name="program_name">Linux Wifi Hotspot</property>
-    <property name="version">4.3.2</property>
+    <property name="version">4.4.0</property>
     <property name="copyright" translatable="yes">(c) lakinduakash 2021</property>
     <property name="comments" translatable="yes">For more info visit
 https://github.com/lakinduakash/linux-wifi-hotspot</property>
