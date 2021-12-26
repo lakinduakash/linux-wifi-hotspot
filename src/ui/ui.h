@@ -82,6 +82,8 @@ static void on_cb_channel_toggle(GtkWidget *widget, gpointer data);
 
 static void on_cb_mac_filter_toggle(GtkWidget *widget, gpointer data);
 
+static void on_cb_gateway_toggle(GtkWidget *widget, gpointer data);
+
 static void clear_connecetd_devices_list();
 
 #endif //WIHOTSPOT_UI_H

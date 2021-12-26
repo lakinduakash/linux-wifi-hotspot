@@ -52,6 +52,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ERROR_CHANNEL_MSG_2 "Channel must be 1-11"
 #define ERROR_CHANNEL_MSG_5 "Channel must be 1-196"
 #define ERROR_MAC_MSG "Invalid Mac address"
+#define ERROR_GATEWAY_MSG "Invalid gateway IP address"
+
+#define DEFAULT_GATEWAY_IP "192.168.12.1"
 
 GtkBuilder *builder;
 GObject *window;
@@ -72,6 +75,7 @@ GtkEntry *entry_ssd;
 GtkEntry *entry_pass;
 GtkEntry *entry_mac;
 GtkEntry *entry_channel;
+GtkEntry *entry_gateway;
 GtkTextView *tv_mac_filter;
 
 GtkTextBuffer *buffer_mac_filter;
@@ -86,6 +90,7 @@ GtkRadioButton *rb_freq_5;
 GtkCheckButton *cb_hidden;
 GtkCheckButton *cb_no_haveged;
 GtkCheckButton *cb_psk;
+GtkCheckButton *cb_gateway;
 GtkCheckButton *cb_mac;
 GtkCheckButton *cb_novirt;
 GtkCheckButton *cb_channel;
@@ -111,6 +116,7 @@ GtkStyleContext *context_entry_ssid;
 GtkStyleContext *context_entry_channel;
 GtkStyleContext *context_label_input_error;
 GtkStyleContext *context_tv_mac_filter;
+GtkStyleContext *context_entry_gateway;
 
 
 const char** iface_list;
@@ -142,8 +148,11 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
 
     if(validator(&configValues) == FALSE){
-        set_error_text("Check inputs");
+        set_error_text("Some inputes are not valid!");
         return;
+    }
+    else{
+        set_error_text("");
     }
 
 
@@ -187,6 +196,7 @@ static void init_style_contexts(){
     context_entry_channel = gtk_widget_get_style_context((GtkWidget*)entry_channel);
     context_label_input_error = gtk_widget_get_style_context((GtkWidget*)label_input_error);
     context_tv_mac_filter = gtk_widget_get_style_context((GtkWidget*)tv_mac_filter);
+    context_entry_gateway = gtk_widget_get_style_context((GtkWidget*)entry_gateway);
 
 }
 
@@ -343,6 +353,30 @@ static void* tv_mac_filter_warn(){
     return NULL;
 }
 
+static void* entry_gateway_warn(GtkWidget *widget, gpointer data){
+
+    const char *gateway = gtk_entry_get_text(GTK_ENTRY(widget));
+
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_gateway))==TRUE){
+        if (isValidIPaddress(gateway)==-1){
+            gtk_style_context_add_class(context_tv_mac_filter, "entry-error");
+            set_error_text(ERROR_GATEWAY_MSG);
+            return FALSE;
+        }
+        else{
+            set_error_text("");
+            gtk_style_context_remove_class(context_tv_mac_filter,"entry-error");
+            return NULL;
+        }
+        
+    }
+
+    gtk_style_context_remove_class(context_tv_mac_filter,"entry-error");
+    set_error_text("");
+
+    return NULL;
+}
+
 
 static void *update_freq_toggle(){
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_freq_2)))
@@ -386,7 +420,9 @@ int initUi(int argc, char *argv[]){
 
     entry_mac = (GtkEntry *) gtk_builder_get_object(builder, "entry_mac");
     entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
-    tv_mac_filter = (GtkTextView *) gtk_builder_get_object(builder, "tv_mac_filter");
+    entry_gateway = (GtkEntry *) gtk_builder_get_object(builder, "entry_gateway");
+
+    tv_mac_filter = (GtkTextView *) gtk_builder_get_object(builder, "entry_gateway");
 
     buffer_mac_filter = gtk_text_view_get_buffer (GTK_TEXT_VIEW (tv_mac_filter));
 
@@ -399,6 +435,7 @@ int initUi(int argc, char *argv[]){
     cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
     cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
+    cb_gateway = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_gateway");
     cb_open = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_open");
     cb_mac_filter = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac_filter");
     cb_ieee80211n = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211n");
@@ -430,6 +467,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (cb_mac, "toggled", G_CALLBACK(on_cb_mac_toggle), NULL); //new
     g_signal_connect (cb_channel, "toggled", G_CALLBACK(on_cb_channel_toggle), NULL); //new
     g_signal_connect (cb_mac_filter, "toggled", G_CALLBACK(on_cb_mac_filter_toggle), NULL); //new
+    g_signal_connect (cb_gateway, "toggled", G_CALLBACK(on_cb_gateway_toggle), NULL); //new
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
@@ -437,6 +475,8 @@ int initUi(int argc, char *argv[]){
 
     g_signal_connect (entry_channel, "changed", G_CALLBACK(entry_channel_warn), NULL);
     g_signal_connect (buffer_mac_filter, "changed", G_CALLBACK(tv_mac_filter_warn), NULL);
+
+    g_signal_connect (entry_gateway, "changed", G_CALLBACK(entry_gateway_warn), NULL);
 
     g_signal_connect (rb_freq_2, "toggled", G_CALLBACK(update_freq_toggle), NULL);
     g_signal_connect (rb_freq_5, "toggled", G_CALLBACK(update_freq_toggle), NULL);
@@ -543,6 +583,16 @@ void init_ui_from_config(){
 
         if(strcmp(values->no_virt,"1")==0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_novirt,TRUE);
+        }
+
+        // Check if default ip is set as gateway
+        if(strcmp(values->gateway,DEFAULT_GATEWAY_IP)!=0){
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_gateway,TRUE);
+            gtk_entry_set_text(entry_gateway,values->gateway);
+        } else {
+            gtk_widget_set_sensitive((GtkWidget*)entry_gateway, FALSE);
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_gateway,FALSE); // Check this line needed
+            gtk_entry_set_text(entry_gateway,values->gateway);
         }
 
         if(strcmp(values->mac_filter,"1")==0){
@@ -806,6 +856,11 @@ static gboolean validator(ConfigValues *cv){
             return FALSE;
     }
 
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_gateway))==TRUE){
+        if (isValidIPaddress(cv->gateway)==-1)
+            return FALSE;
+    }
+
 
     return TRUE;
 }
@@ -846,7 +901,11 @@ static int init_config_val_input(ConfigValues* cv){
         else
             cv->channel = NULL;
 
-
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_gateway)))
+            cv->gateway = (char*)gtk_entry_get_text(entry_gateway);
+        else
+            cv->gateway = NULL;
+        
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
             cv->mac = (char*)gtk_entry_get_text(entry_mac);
         else
@@ -1023,5 +1082,18 @@ static void on_cb_mac_filter_toggle(GtkWidget *widget, gpointer data)
         gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, TRUE);
     } else {
         gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, FALSE);
+    }
+}
+
+
+/**
+ * When gateway button is not toogled, disable gateway entry
+*/
+static void on_cb_gateway_toggle(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)entry_gateway, TRUE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)entry_gateway, FALSE);
     }
 }
