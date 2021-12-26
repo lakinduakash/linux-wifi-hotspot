@@ -35,5 +35,6 @@ int find_str(char *find, const char **array, int length);
 void rand_str(char *dest, size_t length);
 int isValidMacAddress(const char*);
 int isValidAcceptedMacs(const char*);
+int isValidIPaddress(const char*);
 
 #endif //WIHOTSPOT_UTIL_H
