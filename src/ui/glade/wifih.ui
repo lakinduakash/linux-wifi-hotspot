@@ -363,7 +363,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="cb_gateway1">
+                              <object class="GtkCheckButton" id="cb_gateway">
                                 <property name="label" translatable="yes">Gateway</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
