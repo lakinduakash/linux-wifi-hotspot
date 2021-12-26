@@ -15,7 +15,7 @@
 https://github.com/lakinduakash/linux-wifi-hotspot</property>
     <property name="website">https://github.com/lakinduakash/linux-wifi-hotspot</property>
     <property name="website_label" translatable="yes">Star on Github</property>
-    <property name="license" translatable="yes">Copyright (c) 2020, lakinduaksh
+    <property name="license" translatable="yes">Copyright (c) 2021, lakinduaksh
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
