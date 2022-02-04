@@ -97,6 +97,11 @@ On Ubuntu or debian install dependencies by,
 sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
 ```
 
+On Fedora/CentOS/Red Hat Enterprise Linux/Rocky Linux/Oracle Linux
+```bash
+sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
+```
+
 ## Installation
 
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
