@@ -1030,6 +1030,11 @@ read_config() {
         # Read switches and their values
         opt_name="${line%%=*}"
         opt_val="${line#*=}"
+
+        if [[ $opt_name == "FREQ_BAND" ]] ; then
+            FREQ_BAND_SET=1
+        fi
+
         if is_config_opt "$opt_name" ; then
             eval $opt_name="\$opt_val"
         else
@@ -1040,6 +1045,8 @@ read_config() {
 
 
 ARGS=( "$@" )
+
+FREQ_BAND_SET=0
 
 # Preprocessing for --config before option-parsing starts
 for ((i=0; i<$#; i++)); do
@@ -1058,8 +1065,6 @@ done
 GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
-
-FREQ_BAND_SET=0
 
 while :; do
     case "$1" in
