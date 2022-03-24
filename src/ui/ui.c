@@ -148,7 +148,7 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
 
     if(validator(&configValues) == FALSE){
-        set_error_text("Some inputes are not valid!");
+        set_error_text("Some inputs are not valid!");
         return;
     }
     else{
