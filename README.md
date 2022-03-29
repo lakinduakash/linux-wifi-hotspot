@@ -40,6 +40,10 @@ Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions
 
 If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
+**Unable to allocate IP: firewalld issue**
+
+Please check for potential fixes: #209 #166
+
 ### Installation
 
 #### Debian/Ubuntu
