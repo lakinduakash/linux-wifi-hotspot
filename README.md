@@ -36,15 +36,13 @@ If you only need the command-line without GUI run `make install-cli-only` as roo
 
 ### Notes
 
-Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
+- Sometimes there are troubles with **5Ghz bands** due to some vendor restrictions. If you cannot start hotspot while you are connected to 5Ghz band, Unselect **Auto** and select **2.4Ghz** in frequency selection.
 
-If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
+- If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
-**Unable to allocate IP: firewalld issue**
+- **Unable to allocate IP: firewalld issue:** Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
 
-Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
-
-### Installation
+## Installation
 
 #### Debian/Ubuntu
 
@@ -65,7 +63,7 @@ Linux Wifi Hotspot is available as an [AUR package](https://aur.archlinux.org/pa
 For example, if you use `yay` you can do:  
 `yay -S linux-wifi-hotspot`
 
-### Dependencies
+## Dependencies
 
 #### General
 * bash
