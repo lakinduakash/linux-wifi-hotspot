@@ -42,7 +42,7 @@ If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
 **Unable to allocate IP: firewalld issue**
 
-Please check for potential fixes: #209 #166
+Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
 
 ### Installation
 
