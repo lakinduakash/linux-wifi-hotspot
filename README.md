@@ -42,6 +42,8 @@ If you only need the command-line without GUI run `make install-cli-only` as roo
 
 - **Unable to allocate IP: firewalld issue:** Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
 
+- **dnsmasq: cannot read /tmp/create_ap.wlo1.conf.*****/dnsmasq.conf: Permission denied**, on Manjaro or ArchLinux ; check [#183](https://github.com/lakinduakash/linux-wifi-hotspot/issues/183)
+
 ## Installation
 
 #### Debian/Ubuntu
