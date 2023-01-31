@@ -131,7 +131,7 @@ or using the terminal with:
 
 After connecting to VPN, Open `wihotspot` GUI. Select the virtual interface created by the VPN. In this case it is `tun0`
 
-![image](https://user-images.githubusercontent.com/66936172/215682232-0007ce37-75fa-4716-a416-1f876aab5fa5.png)
+![image](docs/vpn.png)
 
 
 
