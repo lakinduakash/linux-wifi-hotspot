@@ -142,7 +142,7 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
     }
 
     if(cv->gateway!=NULL) {
-        strcat(cmd_mkconfig, " --gateway ");
+        strcat(cmd_mkconfig, " -g ");
         strcat(cmd_mkconfig, cv->gateway);
     }
 
