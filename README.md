@@ -13,6 +13,7 @@
 
 ### Features
  
+* [Create a hotspot with VPN](#vpn-hotspot) - The hotspot has the traffic tunnelled through VPN. Useful for devices with no VPN app support like TV or gaming consoles.
 * Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
 * Share a wifi access point from any network interface
 * Share wifi via QR code
@@ -125,6 +126,15 @@ You can launch the GUI by searching for "Wifi Hotspot" in the Application Menu
 or using the terminal with:
 
     wihotspot
+    
+<h2 id="vpn-hotspot">Create VPN Hotspot</h2>
+
+After connecting to VPN, Open `wihotspot` GUI. Select the virtual interface created by the VPN. In this case it is `tun0`
+
+![image](https://user-images.githubusercontent.com/66936172/215682232-0007ce37-75fa-4716-a416-1f876aab5fa5.png)
+
+
+
 
 ## Run on Startup
 The `wihotspot` GUI uses `create_ap` to create and manage access points. This service and core logic was originally created by
@@ -134,6 +144,10 @@ repository.
 Start the hotspot service on startup (using your saved configuration) with:
 
     systemctl enable create_ap
+    
+
+
+
 
 ## Contributing
 
