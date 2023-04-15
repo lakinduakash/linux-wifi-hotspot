@@ -1048,6 +1048,11 @@ ARGS=( "$@" )
 
 FREQ_BAND_SET=0
 
+# we need to set FREQ_BAND_SET when specifying FREQ_BAND via config file, otherwise the option is ignored.
+if [ "$FREQ_BAND" != "" ]; then
+    FREQ_BAND_SET=1
+fi
+
 # Preprocessing for --config before option-parsing starts
 for ((i=0; i<$#; i++)); do
     if [[ "${ARGS[i]}" = "--config" ]]; then
