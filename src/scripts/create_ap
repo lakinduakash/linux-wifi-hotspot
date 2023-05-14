@@ -1888,7 +1888,6 @@ if [[ "$SHARE_METHOD" != "bridge" ]]; then
       if check $_complain_cmd; then
           # openSUSE's apparmor does not allow dnsmasq to read files.
           # remove restriction.
-          echo "$_complain_cmd"
           $_complain_cmd dnsmasq
       fi
 
