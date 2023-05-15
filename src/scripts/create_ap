@@ -1884,7 +1884,7 @@ if [[ "$SHARE_METHOD" != "bridge" ]]; then
       # remove restriction.
 
       if COMPLAIN_CMD=$(command -v complain || command -v aa-complain); then
-        COMPLAIN_CMD dnsmasq
+        $COMPLAIN_CMD dnsmasq
       fi
 
       umask 0033
