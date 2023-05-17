@@ -1879,10 +1879,12 @@ if [[ "$SHARE_METHOD" != "bridge" ]]; then
     if [[ $NO_DNSMASQ -eq 0 ]]; then
       iptables -w -I INPUT -p udp -m udp --dport 67 -j ACCEPT || die
 
-      if which complain > /dev/null 2>&1; then
-          # openSUSE's apparmor does not allow dnsmasq to read files.
-          # remove restriction.
-          complain dnsmasq
+
+      # apparmor does not allow dnsmasq to read files.
+      # remove restriction.
+
+      if COMPLAIN_CMD=$(command -v complain || command -v aa-complain); then
+        $COMPLAIN_CMD dnsmasq
       fi
 
       umask 0033
