@@ -13,9 +13,9 @@
 
 ### Features
  
-* [Create a hotspot with VPN](#vpn-hotspot) - The hotspot has the traffic tunnelled through VPN. Useful for devices with no VPN app support like TV or gaming consoles.
 * Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
 * Share a wifi access point from any network interface
+* [Create a hotspot with VPN](#vpn-hotspot) - The hotspot has the traffic tunnelled through VPN. Useful for devices with no VPN app support like TV or gaming consoles.
 * Share wifi via QR code
 * MAC filter
 * View connected devices
