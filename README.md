@@ -6,10 +6,10 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
 ### What's new
-* Share wifi via QR code
-* UI improvements
-* Show the connected devices
-* Able to customize gateway address from GUI
+* Use aa-complain instead of complain to fix permission issue for dnsmasq
+* Fix some 5Ghz band not working issue
+
+#### Thank you for all the contributions made while I'm not active on this repository.
 
 ### Features
  
