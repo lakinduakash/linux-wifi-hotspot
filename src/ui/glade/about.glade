@@ -9,13 +9,13 @@
     <property name="type_hint">dialog</property>
     <property name="gravity">center</property>
     <property name="program_name">Linux Wifi Hotspot</property>
-    <property name="version">4.4.0</property>
-    <property name="copyright" translatable="yes">(c) lakinduakash 2021</property>
+    <property name="version">4.5.0</property>
+    <property name="copyright" translatable="yes">(c) lakinduakash 2023</property>
     <property name="comments" translatable="yes">For more info visit
 https://github.com/lakinduakash/linux-wifi-hotspot</property>
     <property name="website">https://github.com/lakinduakash/linux-wifi-hotspot</property>
     <property name="website_label" translatable="yes">Star on Github</property>
-    <property name="license" translatable="yes">Copyright (c) 2021, lakinduaksh
+    <property name="license" translatable="yes">Copyright (c) 2023, lakinduaksh
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
