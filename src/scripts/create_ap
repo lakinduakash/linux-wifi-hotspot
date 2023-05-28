@@ -509,7 +509,7 @@ networkmanager_add_unmanaged() {
     fi
 
     mutex_lock
-    UNMANAGED=$(grep -m1 -Eo '^unmanaged-devices=[[:alnum:]:;,-]*' /etc/NetworkManager/NetworkManager.conf)
+    UNMANAGED=$(grep -m1 -Eo '^unmanaged-devices=[[:alnum:]:;,?*~=-]*' /etc/NetworkManager/NetworkManager.conf)
 
     WAS_EMPTY=0
     [[ -z "$UNMANAGED" ]] && WAS_EMPTY=1
@@ -566,7 +566,7 @@ networkmanager_rm_unmanaged() {
     fi
 
     mutex_lock
-    UNMANAGED=$(grep -m1 -Eo '^unmanaged-devices=[[:alnum:]:;,-]*' /etc/NetworkManager/NetworkManager.conf | sed 's/unmanaged-devices=//' | tr ';,' ' ')
+    UNMANAGED=$(grep -m1 -Eo '^unmanaged-devices=[[:alnum:]:;,?*~=-]*' /etc/NetworkManager/NetworkManager.conf | sed 's/unmanaged-devices=//' | tr ';,' ' ')
 
     if [[ -z "$UNMANAGED" ]]; then
         mutex_unlock
