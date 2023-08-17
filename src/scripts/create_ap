@@ -62,6 +62,7 @@ usage() {
     echo "                          back to managed"
     echo "  --mac <MAC>             Set MAC address"
     echo "  --dhcp-dns <IP1[,IP2]>  Set DNS returned by DHCP"
+    echo "  --dhcp-range <range>    Set the DHCP range. Valid values are between 1 and 254. (example: 150,160)"
     echo "  --daemon                Run create_ap in the background"
     echo "  --pidfile <pidfile>     Save daemon PID to file"
     echo "  --logfile <logfile>     Save daemon messages to file"
