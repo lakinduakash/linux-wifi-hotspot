@@ -632,6 +632,7 @@ WPA_VERSION=2
 ETC_HOSTS=0
 ADDN_HOSTS=
 DHCP_DNS=gateway
+DHCP_RANGE='1,254'
 NO_DNS=0
 NO_DNSMASQ=0
 DNS_PORT=
@@ -658,7 +659,7 @@ USE_PSK=0
 HOSTAPD_DEBUG_ARGS=
 REDIRECT_TO_LOCALHOST=0
 
-CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
+CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS DHCP_RANGE NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE DAEMON_PIDFILE DAEMON_LOGFILE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ADDN_HOSTS)
@@ -1063,7 +1064,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","dhcp-range:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1178,6 +1179,11 @@ while :; do
         --dhcp-dns)
             shift
             DHCP_DNS="$1"
+            shift
+            ;;
+        --dhcp-range)
+            shift
+            DHCP_RANGE="$1"
             shift
             ;;
         --daemon)
@@ -1742,10 +1748,21 @@ elif [[ $NO_DNSMASQ -eq 0 ]]; then
     if [[ "$DHCP_DNS" == "gateway" ]]; then
         DHCP_DNS="$GATEWAY"
     fi
+    
+    DHCP_RANGE_LOWER=1
+    DHCP_RANGE_UPPER=254
+    if [[ $DHCP_RANGE =~ ^[0-9]+,[0-9]+$ ]]; then
+        IFS=',' read -ra DHCP_NUMS <<< "$DHCP_RANGE"
+        if ((DHCP_NUMS[0] >= 1 && DHCP_NUMS[0] <= 254 && DHCP_NUMS[1] >= 1 && DHCP_NUMS[1] <= 254 && DHCP_NUMS[0] < DHCP_NUMS[1])); then
+            DHCP_RANGE_LOWER=${DHCP_NUMS[0]}
+            DHCP_RANGE_UPPER=${DHCP_NUMS[1]}
+        fi
+    fi
+
     cat << EOF > $CONFDIR/dnsmasq.conf
 listen-address=${GATEWAY}
 ${DNSMASQ_BIND}
-dhcp-range=${GATEWAY%.*}.1,${GATEWAY%.*}.254,255.255.255.0,24h
+dhcp-range=${GATEWAY%.*}.${DHCP_RANGE_LOWER},${GATEWAY%.*}.${DHCP_RANGE_UPPER},255.255.255.0,24h
 dhcp-option-force=option:router,${GATEWAY}
 dhcp-option-force=option:dns-server,${DHCP_DNS}
 EOF
