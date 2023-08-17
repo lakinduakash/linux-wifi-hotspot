@@ -14,7 +14,7 @@
 #    dnsmasq
 #    iptables
 
-VERSION=0.4.7
+VERSION=0.4.8
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -1748,7 +1748,7 @@ elif [[ $NO_DNSMASQ -eq 0 ]]; then
     if [[ "$DHCP_DNS" == "gateway" ]]; then
         DHCP_DNS="$GATEWAY"
     fi
-    
+
     DHCP_RANGE_LOWER=1
     DHCP_RANGE_UPPER=254
     if [[ $DHCP_RANGE =~ ^[0-9]+,[0-9]+$ ]]; then
