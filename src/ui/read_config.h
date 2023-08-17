@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WPA_VERSION      "WPA_VERSION"
 #define ETC_HOSTS        "ETC_HOSTS"
 #define DHCP_DNS         "DHCP_DNS"
+#define DHCP_RANGE       "DHCP_DNS"
 #define NO_DNS           "NO_DNS"
 #define NO_DNSMASQ       "NO_DNSMASQ"
 #define HIDDEN           "HIDDEN"
