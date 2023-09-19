@@ -53,9 +53,9 @@ If you only need the command-line without GUI run `make install-cli-only` as roo
 Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
 
 **OR**
-
+Please don't use following for ubuntu since I lost keys and package is outdated. I'll fix it ASAP
 ```bash
-# For ubuntu only
+# For ubuntu - package outdated due to lost GPG keys
 sudo add-apt-repository ppa:lakinduakash/lwh
 sudo apt install linux-wifi-hotspot
 
