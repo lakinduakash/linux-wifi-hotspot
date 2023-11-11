@@ -22,6 +22,7 @@
 * Includes Both command line and gui.
 * Support both 2.4GHz and 5GHz (Need to be compatible with your wifi adapter). Ex: You have connected to the 5GHz network and share a connection with 2.4GHz.
 * Customise wifi Channel, Change MAC address, etc.
+* Customise DHCP IP range
 * Hide SSID
 * customize gateway IP address
 * Enable IEEE 80211n, IEEE 80211ac modes

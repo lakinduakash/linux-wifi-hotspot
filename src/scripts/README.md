@@ -8,6 +8,7 @@
 * Choose the AP Gateway IP (only for 'NATed' and 'None' Internet sharing methods).
 * You can create an AP with the same interface you are getting your Internet connection.
 * You can pass your SSID and password through pipe or through arguments (see examples).
+* Set DHCP IP range
 
 
 ## Dependencies
@@ -73,6 +74,9 @@
 
 ### Client Isolation:
     create_ap --isolate-clients wlan0 eth0 MyAccessPoint MyPassPhrase
+
+### Custom DHCP scope
+    create_ap wlp8s0 MyAccessPoint MyPassPhrase --dhcp-range 150,155
 
 ## Systemd service
 Using the persistent [systemd](https://wiki.archlinux.org/index.php/systemd#Basic_systemctl_usage) service
