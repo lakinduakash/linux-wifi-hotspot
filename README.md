@@ -12,7 +12,7 @@
 #### Thank you for all the contributions made while I'm not active on this repository.
 
 ### Features
- 
+
 * Share your wifi like in Windows - Use wifi and enable hotspot at the same time.
 * Share a wifi access point from any network interface
 * [Create a hotspot with VPN](#vpn-hotspot) - The hotspot has the traffic tunnelled through VPN. Useful for devices with no VPN app support like TV or gaming consoles.
@@ -62,8 +62,8 @@ sudo apt install linux-wifi-hotspot
 
 #### Arch based distributions
 
-Linux Wifi Hotspot is available as an [AUR package](https://aur.archlinux.org/packages/linux-wifi-hotspot/). You can install it manually or with your favourite AUR helper.  
-For example, if you use `yay` you can do:  
+Linux Wifi Hotspot is available as an [AUR package](https://aur.archlinux.org/packages/linux-wifi-hotspot/). You can install it manually or with your favourite AUR helper.
+For example, if you use `yay` you can do:
 `yay -S linux-wifi-hotspot`
 
 ## Dependencies
@@ -117,16 +117,16 @@ sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd 
 
     #install
     sudo make install
-    
+
 ## Uninstallation
     sudo make uninstall
-    
+
 ## Running
 You can launch the GUI by searching for "Wifi Hotspot" in the Application Menu
 or using the terminal with:
 
     wihotspot
-    
+
 <h2 id="vpn-hotspot">Create VPN Hotspot</h2>
 
 After connecting to VPN, Open `wihotspot` GUI. Select the virtual interface created by the VPN. In this case it is `tun0`
@@ -144,7 +144,7 @@ repository.
 Start the hotspot service on startup (using your saved configuration) with:
 
     systemctl enable create_ap
-    
+
 
 
 
@@ -168,7 +168,7 @@ FreeBSD
 
 Copyright (c) 2013, oblique
 
-Copyright (c) 2021, lakinduakash
+Copyright (c) 2023, lakinduakash
 
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_large)
