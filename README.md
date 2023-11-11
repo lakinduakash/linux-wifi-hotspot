@@ -47,7 +47,7 @@ If you only need the command-line without GUI run `make install-cli-only` as roo
 
 ## Installation
 
-#### Debian/Ubuntu
+#### Debian/Ubuntu (Outdated) 
 
 Download the debian package from latest [release](https://github.com/lakinduakash/linux-wifi-hotspot/releases/latest)
 
