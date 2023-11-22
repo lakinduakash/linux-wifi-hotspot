@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SHARE_METHOD     "SHARE_METHOD"
 #define IEEE80211N       "IEEE80211N"
 #define IEEE80211AC      "IEEE80211AC"
+#define IEEE80211AX      "IEEE80211AX"
 #define HT_CAPAB         "HT_CAPAB"
 #define VHT_CAPAB        "VHT_CAPAB"
 #define DRIVER           "DRIVER"
@@ -91,6 +92,7 @@ typedef struct{
     char *accepted_macs;
     char *ieee80211n;
     char *ieee80211ac;
+    char *ieee80211ax;
     char *no_haveged;
     char *gateway;
 } ConfigValues;

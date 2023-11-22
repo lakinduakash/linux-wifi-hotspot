@@ -98,6 +98,7 @@ GtkCheckButton *cb_open;
 GtkCheckButton *cb_mac_filter;
 GtkCheckButton *cb_ieee80211n;
 GtkCheckButton *cb_ieee80211ac;
+GtkCheckButton *cb_ieee80211ax;
 
 GtkProgressBar *progress_bar;
 
@@ -440,6 +441,7 @@ int initUi(int argc, char *argv[]){
     cb_mac_filter = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac_filter");
     cb_ieee80211n = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211n");
     cb_ieee80211ac= (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211ac");
+    cb_ieee80211ax= (GtkCheckButton *) gtk_builder_get_object(builder, "cb_ieee80211ax");
 
     rb_freq_auto = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_auto");
     rb_freq_2 = (GtkRadioButton *) gtk_builder_get_object(builder, "rb_freq_2");
@@ -555,6 +557,11 @@ void init_ui_from_config(){
         if(strcmp(values->ieee80211ac,"1")==0){
             
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ac,TRUE);
+        }
+
+        if(strcmp(values->ieee80211ax,"1")==0){
+            
+            gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ax,TRUE);
         }
 
         if(strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
@@ -942,6 +949,11 @@ static int init_config_val_input(ConfigValues* cv){
             cv->ieee80211ac = "1";
         else
             cv->ieee80211ac =NULL;
+
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_ieee80211ax)))
+            cv->ieee80211ax = "1";
+        else
+            cv->ieee80211ax =NULL;
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))){
 
