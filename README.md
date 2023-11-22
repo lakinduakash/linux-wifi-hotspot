@@ -24,7 +24,7 @@
 * Customise wifi Channel, Change MAC address, etc.
 * Hide SSID
 * customize gateway IP address
-* Enable IEEE 80211n, IEEE 80211ac modes
+* Enable IEEE 80211n, IEEE 80211ac and IEEE 80211ax modes
 
 ![screenshot](docs/sc4.png)
 

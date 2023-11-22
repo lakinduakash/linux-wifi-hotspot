@@ -14,7 +14,7 @@
 #    dnsmasq
 #    iptables
 
-VERSION=0.4.7
+VERSION=0.4.8
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -50,6 +50,7 @@ usage() {
     echo "  --isolate-clients       Disable communication between clients"
     echo "  --ieee80211n            Enable IEEE 802.11n (HT)"
     echo "  --ieee80211ac           Enable IEEE 802.11ac (VHT)"
+    echo "  --ieee80211ax           Enable IEEE 802.11ax (VHT)"
     echo "  --ht_capab <HT>         HT capabilities (default: [HT40+])"
     echo "  --vht_capab <VHT>       VHT capabilities"
     echo "  --country <code>        Set two-letter country code for regularity (example: US)"
@@ -641,6 +642,7 @@ ISOLATE_CLIENTS=0
 SHARE_METHOD=nat
 IEEE80211N=0
 IEEE80211AC=0
+IEEE80211AX=0
 HT_CAPAB='[HT40+]'
 VHT_CAPAB=
 DRIVER=nl80211
@@ -658,7 +660,7 @@ HOSTAPD_DEBUG_ARGS=
 REDIRECT_TO_LOCALHOST=0
 
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
-             SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
+             SHARE_METHOD IEEE80211N IEEE80211AC IEEE80211AX HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE DAEMON_PIDFILE DAEMON_LOGFILE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ADDN_HOSTS)
 
@@ -1062,7 +1064,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1135,6 +1137,10 @@ while :; do
             shift
             IEEE80211AC=1
             ;;
+	--ieee80211ax)
+	    shift
+	    IEEE80211AX=1
+	    ;;
         --ht_capab)
             shift
             HT_CAPAB="$1"
@@ -1701,6 +1707,10 @@ fi
 
 if [[ $IEEE80211AC -eq 1 ]]; then
     echo "ieee80211ac=1" >> $CONFDIR/hostapd.conf
+fi
+
+if [[ $IEEE80211AX -eq 1 ]]; then
+    echo "ieee80211ax=1" >> $CONFDIR/hostapd.conf
 fi
 
 if [[ -n "$VHT_CAPAB" ]]; then
