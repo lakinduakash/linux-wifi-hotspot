@@ -342,15 +342,21 @@ ieee80211_frequency_to_channel() {
     local FREQ_MAYBE_FRACTIONAL=$1
     local FREQ=${FREQ_MAYBE_FRACTIONAL%.*}
 
-    if [[ $FREQ -eq 2484 ]]; then
+    if [[ $FREQ -lt 1000 ]]; then
+        echo 0
+    elif [[ $FREQ -eq 2484 ]]; then
         echo 14
+    elif [[ $FREQ -eq 5935 ]]; then
+        echo 2
     elif [[ $FREQ -lt 2484 ]]; then
         echo $(( ($FREQ - 2407) / 5 ))
     elif [[ $FREQ -ge 4910 && $FREQ -le 4980 ]]; then
         echo $(( ($FREQ - 4000) / 5 ))
-    elif [[ $FREQ -le 45000 ]]; then
+    elif [[ $FREQ -lt 5950 ]]; then
         echo $(( ($FREQ - 5000) / 5 ))
-    elif [[ $FREQ -ge 58320 && $FREQ -le 64800 ]]; then
+    elif [[ $FREQ -le 45000 ]]; then
+        echo $(( ($FREQ - 5950) / 5 ))
+    elif [[ $FREQ -ge 58320 && $FREQ -le 70200 ]]; then
         echo $(( ($FREQ - 56160) / 2160 ))
     else
         echo 0
