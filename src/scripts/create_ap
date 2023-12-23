@@ -321,9 +321,9 @@ can_transmit_to_channel() {
 
     if [[ $USE_IWCONFIG -eq 0 ]]; then
         if [[ $FREQ_BAND == 2.4 ]]; then
-            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " 24[0-9][0-9] MHz \[${CHANNEL_NUM}\]")
+            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " 24[0-9][0-9]\(\.0\+\)\? MHz \[${CHANNEL_NUM}\]")
         else
-            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " \(49[0-9][0-9]\|5[0-9]\{3\}\) MHz \[${CHANNEL_NUM}\]")
+            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " \(49[0-9][0-9]\|5[0-9]\{3\}\)\(\.0\+\)\? MHz \[${CHANNEL_NUM}\]")
         fi
         [[ -z "${CHANNEL_INFO}" ]] && return 1
         [[ "${CHANNEL_INFO}" == *no\ IR* ]] && return 1
@@ -339,7 +339,9 @@ can_transmit_to_channel() {
 
 # taken from iw/util.c
 ieee80211_frequency_to_channel() {
-    local FREQ=$1
+    local FREQ_MAYBE_FRACTIONAL=$1
+    local FREQ=${FREQ_MAYBE_FRACTIONAL%.*}
+
     if [[ $FREQ -eq 2484 ]]; then
         echo 14
     elif [[ $FREQ -lt 2484 ]]; then
@@ -356,7 +358,7 @@ ieee80211_frequency_to_channel() {
 }
 
 is_5ghz_frequency() {
-    [[ $1 =~ ^(49[0-9]{2})|(5[0-9]{3})$ ]]
+    [[ $1 =~ ^(49[0-9]{2})|(5[0-9]{3})(\.0+)?$ ]]
 }
 
 is_wifi_connected() {
