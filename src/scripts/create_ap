@@ -321,9 +321,9 @@ can_transmit_to_channel() {
 
     if [[ $USE_IWCONFIG -eq 0 ]]; then
         if [[ $FREQ_BAND == 2.4 ]]; then
-            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " 24[0-9][0-9] MHz \[${CHANNEL_NUM}\]")
+            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " 24[0-9][0-9]\(\.0\+\)\? MHz \[${CHANNEL_NUM}\]")
         else
-            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " \(49[0-9][0-9]\|5[0-9]\{3\}\) MHz \[${CHANNEL_NUM}\]")
+            CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " \(49[0-9][0-9]\|5[0-9]\{3\}\)\(\.0\+\)\? MHz \[${CHANNEL_NUM}\]")
         fi
         [[ -z "${CHANNEL_INFO}" ]] && return 1
         [[ "${CHANNEL_INFO}" == *no\ IR* ]] && return 1
@@ -339,16 +339,24 @@ can_transmit_to_channel() {
 
 # taken from iw/util.c
 ieee80211_frequency_to_channel() {
-    local FREQ=$1
-    if [[ $FREQ -eq 2484 ]]; then
+    local FREQ_MAYBE_FRACTIONAL=$1
+    local FREQ=${FREQ_MAYBE_FRACTIONAL%.*}
+
+    if [[ $FREQ -lt 1000 ]]; then
+        echo 0
+    elif [[ $FREQ -eq 2484 ]]; then
         echo 14
+    elif [[ $FREQ -eq 5935 ]]; then
+        echo 2
     elif [[ $FREQ -lt 2484 ]]; then
         echo $(( ($FREQ - 2407) / 5 ))
     elif [[ $FREQ -ge 4910 && $FREQ -le 4980 ]]; then
         echo $(( ($FREQ - 4000) / 5 ))
-    elif [[ $FREQ -le 45000 ]]; then
+    elif [[ $FREQ -lt 5950 ]]; then
         echo $(( ($FREQ - 5000) / 5 ))
-    elif [[ $FREQ -ge 58320 && $FREQ -le 64800 ]]; then
+    elif [[ $FREQ -le 45000 ]]; then
+        echo $(( ($FREQ - 5950) / 5 ))
+    elif [[ $FREQ -ge 58320 && $FREQ -le 70200 ]]; then
         echo $(( ($FREQ - 56160) / 2160 ))
     else
         echo 0
@@ -356,7 +364,7 @@ ieee80211_frequency_to_channel() {
 }
 
 is_5ghz_frequency() {
-    [[ $1 =~ ^(49[0-9]{2})|(5[0-9]{3})$ ]]
+    [[ $1 =~ ^(49[0-9]{2})|(5[0-9]{3})(\.0+)?$ ]]
 }
 
 is_wifi_connected() {
@@ -1587,7 +1595,7 @@ if [[ $NO_VIRT -eq 0 ]]; then
     if is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 0 ]]; then
         WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
         WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
-        echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} GHz)"
+        echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
         if is_5ghz_frequency $WIFI_IFACE_FREQ; then
             FREQ_BAND=5
         else
