@@ -133,6 +133,9 @@ static void setConfigValues(const char * key, char *value){
 
     if( !strcmp ( IEEE80211AC, key ))
         configValues.ieee80211ac = value;
+
+    if( !strcmp ( IEEE80211AX, key ))
+        configValues.ieee80211ax = value;
         
     if( !strcmp ( GATEWAY, key ))
         configValues.gateway = value;

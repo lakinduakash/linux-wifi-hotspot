@@ -70,6 +70,12 @@ _create_ap() {
         --ieee80211n)
             # No Options
             ;;
+        --ieee80211ac)
+            # No Options
+            ;;
+        --ieee80211ax)
+            # No Options
+            ;;
         --ht_capab)
             # Refer http://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf
             opts='

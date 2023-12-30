@@ -136,6 +136,10 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
         strcat(cmd_mkconfig," --ieee80211ac ");
     }
 
+    if(cv->ieee80211ax!=NULL && (strcmp(cv->ieee80211ax,"1") == 0)){
+        strcat(cmd_mkconfig," --ieee80211ax ");
+    }
+
     if(cv->mac!=NULL) {
         strcat(cmd_mkconfig, " --mac ");
         strcat(cmd_mkconfig, cv->mac);
