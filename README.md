@@ -168,7 +168,7 @@ FreeBSD
 
 Copyright (c) 2013, oblique
 
-Copyright (c) 2023, lakinduakash
+Copyright (c) 2024, lakinduakash
 
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_large)
