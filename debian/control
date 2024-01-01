@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Lakindu Akash <lakinduakash@users.noreply.github.com>
 Build-Depends: debhelper (>=11~), pkg-config, libgtk-3-dev, libpng-dev, libqrencode-dev
-Standards-Version: 4.1.4
+Standards-Version: 4.7.1
 Homepage: https://github.com/lakinduakash/linux-wifi-hotspot
 
 Package: linux-wifi-hotspot

@@ -1,5 +1,11 @@
-linux-wifi-hotspot (4.4.0) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.7.1) UNRELEASED; urgency=low
 
-  * Minor secrurty fixes
+  * Update frequency parsing for iw 6.7
+  * Add 802.11ax(wifi6) ability
+  * Fix clean-up of unmanaged devices in NetworkManager.conf
+  * [SECURITY] remove insecure TKIP from configurations
+  * Fix FREQ_BAND for config files
+  * Use 'aa-complain' instead of 'complain' to remove dnsmasq restriction 
+  * UI improvements
 
- -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Sat, 26 Oct 2021 19:07:00 +0530
+ -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Mon, 01 Jan 2024 19:07:00 +0530
