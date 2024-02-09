@@ -1730,20 +1730,39 @@ if [[ $IEEE80211N -eq 1 ]] || [[ $IEEE80211AC -eq 1 ]]; then
 fi
 
 if [[ -n "$PASSPHRASE" ]]; then
-    [[ "$WPA_VERSION" == "1+2" ]] && WPA_VERSION=3
+    if [[ "$WPA_VERSION" == "1+2" ]]; then
+        WPA_VERSION=2 # Assuming you want to default to WPA2 for the "1+2" setting
+    fi
     if [[ $USE_PSK -eq 0 ]]; then
         WPA_KEY_TYPE=passphrase
     else
         WPA_KEY_TYPE=psk
     fi
-    cat << EOF >> $CONFDIR/hostapd.conf
+
+    if [[ "$WPA_VERSION" == "3" ]]; then
+        # Configuring for WPA3 Transition Mode
+        # 80211w must be 1 or Apple Devices will not connect. 
+        # 1 is the only valid value for WPA3 Transition Mode
+        cat << EOF >> $CONFDIR/hostapd.conf
+wpa=2
+wpa_${WPA_KEY_TYPE}=${PASSPHRASE}
+wpa_key_mgmt=WPA-PSK SAE
+wpa_pairwise=CCMP
+rsn_pairwise=CCMP
+ieee80211w=1
+EOF
+    else
+        # Original configuration for WPA_VERSION other than 3
+        cat << EOF >> $CONFDIR/hostapd.conf
 wpa=${WPA_VERSION}
 wpa_${WPA_KEY_TYPE}=${PASSPHRASE}
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=CCMP
 rsn_pairwise=CCMP
 EOF
+    fi
 fi
+
 
 if [[ "$SHARE_METHOD" == "bridge" ]]; then
     echo "bridge=${BRIDGE_IFACE}" >> $CONFDIR/hostapd.conf
