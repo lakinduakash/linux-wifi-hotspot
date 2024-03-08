@@ -66,6 +66,7 @@ usage() {
     echo "  --daemon                Run create_ap in the background"
     echo "  --pidfile <pidfile>     Save daemon PID to file"
     echo "  --logfile <logfile>     Save daemon messages to file"
+    echo "  --dns-logfile <logfile> Log DNS queries to file"
     echo "  --stop <id>             Send stop command to an already running create_ap. For an <id>"
     echo "                          you can put the PID of create_ap or the WiFi interface. You can"
     echo "                          get them with --list-running"
@@ -661,6 +662,7 @@ NEW_MACADDR=
 DAEMONIZE=0
 DAEMON_PIDFILE=
 DAEMON_LOGFILE=/dev/null
+DNS_LOGFILE=
 NO_HAVEGED=0
 USE_PSK=0
 
@@ -669,7 +671,7 @@ REDIRECT_TO_LOCALHOST=0
 
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC IEEE80211AX HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
-             NEW_MACADDR DAEMONIZE DAEMON_PIDFILE DAEMON_LOGFILE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
+             NEW_MACADDR DAEMONIZE DAEMON_PIDFILE DAEMON_LOGFILE DNS_LOGFILE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ADDN_HOSTS)
 
 FIX_UNMANAGED=0
@@ -1072,7 +1074,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1205,6 +1207,11 @@ while :; do
         --logfile)
             shift
             DAEMON_LOGFILE="$1"
+            shift
+            ;;
+        --dns-logfile)
+            shift
+            DNS_LOGFILE="$1"
             shift
             ;;
         --stop)
@@ -1770,6 +1777,12 @@ EOF
     [[ -n "$MTU" ]] && echo "dhcp-option-force=option:mtu,${MTU}" >> $CONFDIR/dnsmasq.conf
     [[ $ETC_HOSTS -eq 0 ]] && echo no-hosts >> $CONFDIR/dnsmasq.conf
     [[ -n "$ADDN_HOSTS" ]] && echo "addn-hosts=${ADDN_HOSTS}" >> $CONFDIR/dnsmasq.conf
+    if [[ -n "$DNS_LOGFILE" ]]; then
+        cat << EOF >> $CONFDIR/dnsmasq.conf
+log-queries
+log-facility=${DNS_LOGFILE}
+EOF
+    fi
     if [[ "$SHARE_METHOD" == "none" && "$REDIRECT_TO_LOCALHOST" == "1" ]]; then
         cat << EOF >> $CONFDIR/dnsmasq.conf
 address=/#/$GATEWAY
