@@ -54,6 +54,7 @@ Download the Debian package from the latest [release](https://github.com/lakindu
 Good news! I was able to restore keys, new versions will be available via the PPA
 ```bash
 sudo add-apt-repository ppa:lakinduakash/lwh
+sudo apt update
 sudo apt install linux-wifi-hotspot
 
 ```
