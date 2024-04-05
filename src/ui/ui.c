@@ -62,7 +62,7 @@ GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
 GtkButton *button_about;
 GtkButton *button_qr;
-GtkButton *button_refresh; 
+GtkButton *button_refresh;
 
 GtkGrid *grid_devices;
 GtkWidget *label_cd_hostname;
@@ -345,7 +345,7 @@ static void* tv_mac_filter_warn(){
             gtk_style_context_remove_class(context_tv_mac_filter,"tv-mac-error");
             return NULL;
         }
-        
+
     }
 
     gtk_style_context_remove_class(context_tv_mac_filter,"tv-mac-error");
@@ -369,7 +369,7 @@ static void* entry_gateway_warn(GtkWidget *widget, gpointer data){
             gtk_style_context_remove_class(context_tv_mac_filter,"entry-error");
             return NULL;
         }
-        
+
     }
 
     gtk_style_context_remove_class(context_tv_mac_filter,"entry-error");
@@ -423,7 +423,7 @@ int initUi(int argc, char *argv[]){
     entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
     entry_gateway = (GtkEntry *) gtk_builder_get_object(builder, "entry_gateway");
 
-    tv_mac_filter = (GtkTextView *) gtk_builder_get_object(builder, "entry_gateway");
+    tv_mac_filter = (GtkTextView *) gtk_builder_get_object(builder, "tv_mac_filter");
 
     buffer_mac_filter = gtk_text_view_get_buffer (GTK_TEXT_VIEW (tv_mac_filter));
 
@@ -513,7 +513,7 @@ void init_ui_from_config(){
             gtk_entry_set_text(entry_ssd,values->ssid);
         if(values->pass!=NULL)
             gtk_entry_set_text(entry_pass,values->pass);
-        
+
         if(strcmp(values->pass,"")==0|| values->pass==NULL)
             // This line will trigger on_cb_open_toggle callback and disable the entry_pass
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
@@ -545,22 +545,22 @@ void init_ui_from_config(){
         }
 
         if(strcmp(values->use_psk,"1")==0){
-            
+
             gtk_toggle_button_set_active((GtkToggleButton*) cb_psk,TRUE);
         }
 
         if(strcmp(values->ieee80211n,"1")==0){
-            
+
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211n,TRUE);
         }
-        
+
         if(strcmp(values->ieee80211ac,"1")==0){
-            
+
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ac,TRUE);
         }
 
         if(strcmp(values->ieee80211ax,"1")==0){
-            
+
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ax,TRUE);
         }
 
@@ -912,7 +912,7 @@ static int init_config_val_input(ConfigValues* cv){
             cv->gateway = (char*)gtk_entry_get_text(entry_gateway);
         else
             cv->gateway = NULL;
-        
+
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
             cv->mac = (char*)gtk_entry_get_text(entry_mac);
         else
@@ -944,7 +944,7 @@ static int init_config_val_input(ConfigValues* cv){
             cv->ieee80211n = "1";
         else
             cv->ieee80211n =NULL;
-        
+
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_ieee80211ac)))
             cv->ieee80211ac = "1";
         else
@@ -983,7 +983,7 @@ gchar* get_accepted_macs(){
     gtk_text_buffer_get_start_iter (buffer_mac_filter, &start);
     gtk_text_buffer_get_end_iter (buffer_mac_filter, &end);
     accepted_macs=gtk_text_buffer_get_text (buffer_mac_filter,&start,&end,TRUE);
-    
+
     return accepted_macs;
 
 }
@@ -994,7 +994,7 @@ gchar* get_accepted_macs(){
 static void clear_connecetd_devices_list(){
 
     // Remove all the children widgets
-    GList *children, *iter; 
+    GList *children, *iter;
 
     children = gtk_container_get_children(GTK_CONTAINER(grid_devices));
     for (iter = children; iter != NULL; iter = g_list_next(iter))
@@ -1006,11 +1006,11 @@ static void clear_connecetd_devices_list(){
 
 /**
  * Set connected device list
- * 
+ *
 */
 static void set_connected_devices_label()
 {
-    Position tmp;                              
+    Position tmp;
     device_list = get_connected_devices(running_info[0]); // running_info[0] PID
 
     clear_connecetd_devices_list();
