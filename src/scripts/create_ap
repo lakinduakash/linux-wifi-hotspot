@@ -1802,7 +1802,13 @@ EOF
     [[ -n "$MTU" ]] && echo "dhcp-option-force=option:mtu,${MTU}" >> $CONFDIR/dnsmasq.conf
     [[ $ETC_HOSTS -eq 0 ]] && echo no-hosts >> $CONFDIR/dnsmasq.conf
     [[ -n "$ADDN_HOSTS" ]] && echo "addn-hosts=${ADDN_HOSTS}" >> $CONFDIR/dnsmasq.conf
-    [[ -n "$DHCP_HOSTS" ]] && echo $DHCP_HOSTS >> $CONFDIR/dnsmaq.conf
+    if [[ -n "$DHCP_HOSTS" ]]; then
+        for HOST in $DHCP_HOSTS; do
+            echo "dhcp-host=${HOST}" >> $CONFDIR/dnsmasq.conf
+        done
+    fi
+
+
     if [[ -n "$DNS_LOGFILE" ]]; then
         cat << EOF >> $CONFDIR/dnsmasq.conf
 log-queries
