@@ -1,11 +1,20 @@
-linux-wifi-hotspot (4.7.1) UNRELEASED; urgency=low
+linux-wifi-hotspot (4.7.2) focal; urgency=low
 
-  * Update frequency parsing for iw 6.7
-  * Add 802.11ax(wifi6) ability
-  * Fix clean-up of unmanaged devices in NetworkManager.conf
-  * [SECURITY] remove insecure TKIP from configurations
-  * Fix FREQ_BAND for config files
-  * Use 'aa-complain' instead of 'complain' to remove dnsmasq restriction 
-  * UI improvements
+## What's Changed
+* Update README.md by @lakinduakash in https://github.com/lakinduakash/linux-wifi-hotspot/pull/369
+* Add option to log DNS requests to a file with dnsmasq by @Zedeldi in https://github.com/lakinduakash/linux-wifi-hotspot/pull/375
+* adding support of WPA3 Transition Mode by @Chapoly1305 in https://github.com/lakinduakash/linux-wifi-hotspot/pull/376
+* fix(ui): typo for tv_mac_filter. by @safocl in https://github.com/lakinduakash/linux-wifi-hotspot/pull/391
+* Update README.md by @souhaib100 in https://github.com/lakinduakash/linux-wifi-hotspot/pull/384
+* Set program name to fix wayland icon issue by @Integral-Tech in https://github.com/lakinduakash/linux-wifi-hotspot/pull/409
 
- -- Lakindu Akash <lakinduakash@users.noreply.github.com>  Mon, 01 Jan 2024 19:07:00 +0530
+## New Contributors
+* @Zedeldi made their first contribution in https://github.com/lakinduakash/linux-wifi-hotspot/pull/375
+* @Chapoly1305 made their first contribution in https://github.com/lakinduakash/linux-wifi-hotspot/pull/376
+* @safocl made their first contribution in https://github.com/lakinduakash/linux-wifi-hotspot/pull/391
+* @souhaib100 made their first contribution in https://github.com/lakinduakash/linux-wifi-hotspot/pull/384
+* @Integral-Tech made their first contribution in https://github.com/lakinduakash/linux-wifi-hotspot/pull/409
+
+**Full Changelog**: https://github.com/lakinduakash/linux-wifi-hotspot/compare/v4.7.1...v4.7.2
+
+ -- Lakindu Akash <lakinduakash@gmail.com>  Mon, 08 Jul 2024 19:07:00 +0530
