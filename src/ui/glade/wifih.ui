@@ -413,7 +413,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="cb_ieee80211n">
-                                <property name="label" translatable="yes">IEEE80211n</property>
+                                <property name="label" translatable="yes">IEEE 802.11n</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
@@ -439,7 +439,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="cb_ieee80211ac">
-                                <property name="label" translatable="yes">IEEE80211ac</property>
+                                <property name="label" translatable="yes">IEEE 802.11ac</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
@@ -452,7 +452,7 @@
                             </child>
                             <child>
                               <object class="GtkCheckButton" id="cb_ieee80211ax">
-                                <property name="label" translatable="yes">IEEE80211ax</property>
+                                <property name="label" translatable="yes">IEEE 802.11ax</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
