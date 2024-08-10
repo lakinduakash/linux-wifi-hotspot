@@ -65,6 +65,13 @@ Linux Wifi Hotspot is available as an [AUR package](https://aur.archlinux.org/pa
 For example, if you use `yay` you can do:
 `yay -S linux-wifi-hotspot`
 
+### Fedora based distributions
+copr based repo is available for Fedora 
+```bash
+sudo dnf copr enable zinix01/linux-wifi-hotspot
+sudo dnf install linux-wifi-hotspot 
+```
+
 ## Dependencies
 
 #### General
