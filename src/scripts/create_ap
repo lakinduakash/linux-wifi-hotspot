@@ -1000,7 +1000,26 @@ send_stop() {
 write_config() {
     local i=1
 
-    if ! eval 'echo -n > "$STORE_CONFIG"' > /dev/null 2>&1; then
+    # If using pkexec, evaluate permissions before writing.
+    #   However, the /etc/create_ap.conf
+    #   location is excepted.
+    if [[ "$STORE_CONFIG" != "/etc/create_ap.conf" && $PKEXEC_UID ]]; then
+        if [ -e "$STORE_CONFIG" ]; then
+            if ! pkexec --user "$(id -nu $PKEXEC_UID)" test -w "$STORE_CONFIG"; then
+                echo "ERROR: 1 $(id -nu $PKEXEC_UID) has insufficient permissions to write to config file $STORE_CONFIG"
+                exit 1
+            fi
+        elif ! pkexec --user "$(id -nu $PKEXEC_UID)" test -w "$(dirname "$STORE_CONFIG")"; then
+            echo "ERROR: 2 $(id -nu $PKEXEC_UID) has insufficient permissions to write to config file $STORE_CONFIG"
+            exit 1
+        fi
+        # Assume that the user is making a conf file in a directory they normally
+        # have control over, and keep permissions strictly private. (i.e. they will
+        # need to run create_ap directly with sudo in order to write to, say, /etc/create_ap2.conf)
+        touch "$STORE_CONFIG"
+        chown "$(id -nu $PKEXEC_UID):$(id -ng $PKEXEC_GID)" "$STORE_CONFIG"
+        chmod 600 "$STORE_CONFIG"
+    elif ! eval 'echo -n > "$STORE_CONFIG"' > /dev/null 2>&1; then
         echo "ERROR: Unable to create config file $STORE_CONFIG" >&2
         exit 1
     fi
