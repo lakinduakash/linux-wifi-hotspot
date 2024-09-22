@@ -14,7 +14,7 @@
 #    dnsmasq
 #    iptables
 
-VERSION=0.4.8
+VERSION=0.4.9
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -63,6 +63,11 @@ usage() {
     echo "                          back to managed"
     echo "  --mac <MAC>             Set MAC address"
     echo "  --dhcp-dns <IP1[,IP2]>  Set DNS returned by DHCP"
+    echo "  --dhcp-hosts <H1[,H2]>  Add list of dnsmasq.conf 'dhcp-host=' values"
+    echo "                          If ETC_HOSTS=1, it will use the ip addresses for the named hosts in that /etc/hosts."
+    echo "                          Othwise, the following syntax would work --dhcp-hosts \"host1,192.168.12.2 host2,192.168.12.3\""
+    echo "                          See https://github.com/imp/dnsmasq/blob/770bce967cfc9967273d0acfb3ea018fb7b17522/dnsmasq.conf.example#L238"
+    echo "                          for other valid dnsmasq dhcp-host parameters."
     echo "  --daemon                Run create_ap in the background"
     echo "  --pidfile <pidfile>     Save daemon PID to file"
     echo "  --logfile <logfile>     Save daemon messages to file"
@@ -640,6 +645,7 @@ GATEWAY=192.168.12.1
 WPA_VERSION=2
 ETC_HOSTS=0
 ADDN_HOSTS=
+DHCP_HOSTS=
 DHCP_DNS=gateway
 NO_DNS=0
 NO_DNSMASQ=0
@@ -672,7 +678,7 @@ REDIRECT_TO_LOCALHOST=0
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC IEEE80211AX HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE DAEMON_PIDFILE DAEMON_LOGFILE DNS_LOGFILE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
-             SSID PASSPHRASE USE_PSK ADDN_HOSTS)
+             SSID PASSPHRASE USE_PSK ADDN_HOSTS DHCP_HOSTS)
 
 FIX_UNMANAGED=0
 LIST_RUNNING=0
@@ -1074,7 +1080,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:","dhcp-hosts:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1128,6 +1134,11 @@ while :; do
         -e)
             shift
             ADDN_HOSTS="$1"
+            shift
+            ;;
+        --dhcp-hosts)
+            shift
+            DHCP_HOSTS="$1"
             shift
             ;;
         -n)
@@ -1796,6 +1807,13 @@ EOF
     [[ -n "$MTU" ]] && echo "dhcp-option-force=option:mtu,${MTU}" >> $CONFDIR/dnsmasq.conf
     [[ $ETC_HOSTS -eq 0 ]] && echo no-hosts >> $CONFDIR/dnsmasq.conf
     [[ -n "$ADDN_HOSTS" ]] && echo "addn-hosts=${ADDN_HOSTS}" >> $CONFDIR/dnsmasq.conf
+    if [[ -n "$DHCP_HOSTS" ]]; then
+        for HOST in $DHCP_HOSTS; do
+            echo "dhcp-host=${HOST}" >> $CONFDIR/dnsmasq.conf
+        done
+    fi
+
+
     if [[ -n "$DNS_LOGFILE" ]]; then
         cat << EOF >> $CONFDIR/dnsmasq.conf
 log-queries
