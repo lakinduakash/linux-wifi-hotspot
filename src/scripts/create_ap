@@ -1075,7 +1075,7 @@ read_config() {
         if is_config_opt "$opt_name" ; then
             eval $opt_name="\$opt_val"
         else
-            echo "WARN: Unrecognized configuration entry $opt_name" >&2
+            echo "WARN: Unrecognized configuration entry. Please check your config file." >&2
         fi
     done < "$LOAD_CONFIG"
 }
