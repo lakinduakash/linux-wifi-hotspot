@@ -332,14 +332,30 @@ can_transmit_to_channel() {
         else
             CHANNEL_INFO=$(get_adapter_info ${IFACE} | grep " \(49[0-9][0-9]\|5[0-9]\{3\}\)\(\.0\+\)\? MHz \[${CHANNEL_NUM}\]")
         fi
-        [[ -z "${CHANNEL_INFO}" ]] && return 1
-        [[ "${CHANNEL_INFO}" == *no\ IR* ]] && return 1
-        [[ "${CHANNEL_INFO}" == *disabled* ]] && return 1
+
+        if [[ -z "${CHANNEL_INFO}" || "${CHANNEL_INFO}" == *no\ IR* || "${CHANNEL_INFO}" == *disabled* ]]; then
+            [[ $CHANNEL_NUM -eq $WIFI_IFACE_CHANNEL ]] && return 1
+
+            # Attempt to use the channel of the interface
+            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL."
+            CHANNEL=$WIFI_IFACE_CHANNEL
+            [[ $( ! can_transmit_to_channel "$IFACE" "$CHANNEL") ]] && return 1
+        fi
         return 0
+
     else
         CHANNEL_NUM=$(printf '%02d' ${CHANNEL_NUM})
         CHANNEL_INFO=$(iwlist ${IFACE} channel | grep -E "Channel[[:blank:]]${CHANNEL_NUM}[[:blank:]]?:")
-        [[ -z "${CHANNEL_INFO}" ]] && return 1
+        if [[ -z "${CHANNEL_INFO}" ]]; then
+            [[ $CHANNEL_NUM -eq $WIFI_IFACE_CHANNEL ]] && return 1
+
+            # Attempt to use the channel of the interface
+            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL."
+            CHANNEL=$WIFI_IFACE_CHANNEL
+            [[ $( ! can_transmit_to_channel "$IFACE" "$CHANNEL") ]] && return 1
+        fi
+
+
         return 0
     fi
 }
