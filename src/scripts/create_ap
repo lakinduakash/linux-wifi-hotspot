@@ -337,7 +337,7 @@ can_transmit_to_channel() {
             [[ $CHANNEL_NUM -eq $WIFI_IFACE_CHANNEL ]] && return 1
 
             # Attempt to use the channel of the interface
-            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL."
+            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL." >&2
             CHANNEL=$WIFI_IFACE_CHANNEL
             [[ $( ! can_transmit_to_channel "$IFACE" "$CHANNEL") ]] && return 1
         fi
@@ -350,7 +350,7 @@ can_transmit_to_channel() {
             [[ $CHANNEL_NUM -eq $WIFI_IFACE_CHANNEL ]] && return 1
 
             # Attempt to use the channel of the interface
-            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL."
+            echo "Unable to transmit using channel $CHANNEL_NUM. Attempting $WIFI_IFACE_CHANNEL." >&2
             CHANNEL=$WIFI_IFACE_CHANNEL
             [[ $( ! can_transmit_to_channel "$IFACE" "$CHANNEL") ]] && return 1
         fi
