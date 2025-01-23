@@ -448,7 +448,6 @@ get_new_macaddr() {
 haveged_watchdog() {
     local show_warn=1
     while :; do
-        mutex_lock
         if [[ $(cat /proc/sys/kernel/random/entropy_avail) -lt 1000 ]]; then
             if ! which haveged > /dev/null 2>&1; then
                 if [[ $show_warn -eq 1 ]]; then
@@ -458,10 +457,11 @@ haveged_watchdog() {
             elif ! pidof haveged > /dev/null 2>&1; then
                 echo "Low entropy detected, starting haveged"
                 # boost low-entropy
+                mutex_lock
                 haveged -w 1024 -p $COMMON_CONFDIR/haveged.pid
+                mutex_unlock
             fi
         fi
-        mutex_unlock
         sleep 2
     done
 }
