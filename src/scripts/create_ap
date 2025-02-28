@@ -1040,6 +1040,10 @@ write_config() {
         PASSPHRASE="$4"
     fi
 
+    if [[ $FREQ_BAND_SET -eq 0 ]]; then
+        FREQ_BAND="default"
+    fi
+
     for config_opt in "${CONFIG_OPTS[@]}"; do
         eval echo $config_opt=\$$config_opt
     done >> "$STORE_CONFIG"
@@ -1068,7 +1072,7 @@ read_config() {
         opt_name="${line%%=*}"
         opt_val="${line#*=}"
 
-        if [[ $opt_name == "FREQ_BAND" ]] ; then
+        if [[ $opt_name == "FREQ_BAND" && $opt_val != "default" ]] ; then
             FREQ_BAND_SET=1
         fi
 
@@ -1397,9 +1401,11 @@ elif [[ $RUNNING_AS_DAEMON -eq 1 && -n "$DAEMON_PIDFILE" ]]; then
     echo $$ >$DAEMON_PIDFILE
 fi
 
-if [[ $FREQ_BAND != 2.4 && $FREQ_BAND != 5 ]]; then
-    echo "ERROR: Invalid frequency band" >&2
-    exit 1
+if [[ $FREQ_BAND_SET != 0 ]]; then
+    if [[ $FREQ_BAND != 2.4 && $FREQ_BAND != 5 ]]; then
+        echo "ERROR: Invalid frequency band" >&2
+        exit 1
+    fi
 fi
 
 if [[ $CHANNEL == default ]]; then
