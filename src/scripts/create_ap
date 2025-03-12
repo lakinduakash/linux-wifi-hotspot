@@ -32,7 +32,7 @@ usage() {
     echo "Options:"
     echo "  -h, --help              Show this help"
     echo "  --version               Print version number"
-    echo "  -c <channel>            Channel number (default: 1)"
+    echo "  -c <channel>            Channel number (default: 1 or fallback to currently connected channel)"
     echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, use 1+2 for both (default: 2)"
     echo "  -n                      Disable Internet sharing (if you use this, don't pass"
     echo "                          the <interface-with-internet> argument)"
@@ -1040,6 +1040,10 @@ write_config() {
         PASSPHRASE="$4"
     fi
 
+    if [[ $FREQ_BAND_SET -eq 0 ]]; then
+        FREQ_BAND="default"
+    fi
+
     for config_opt in "${CONFIG_OPTS[@]}"; do
         eval echo $config_opt=\$$config_opt
     done >> "$STORE_CONFIG"
@@ -1068,7 +1072,7 @@ read_config() {
         opt_name="${line%%=*}"
         opt_val="${line#*=}"
 
-        if [[ $opt_name == "FREQ_BAND" ]] ; then
+        if [[ $opt_name == "FREQ_BAND" && $opt_val != "default" ]] ; then
             FREQ_BAND_SET=1
         fi
 
@@ -1397,18 +1401,24 @@ elif [[ $RUNNING_AS_DAEMON -eq 1 && -n "$DAEMON_PIDFILE" ]]; then
     echo $$ >$DAEMON_PIDFILE
 fi
 
-if [[ $FREQ_BAND != 2.4 && $FREQ_BAND != 5 ]]; then
-    echo "ERROR: Invalid frequency band" >&2
-    exit 1
+if [[ $FREQ_BAND_SET != 0 ]]; then
+    if [[ $FREQ_BAND != 2.4 && $FREQ_BAND != 5 ]]; then
+        echo "ERROR: Invalid frequency band" >&2
+        exit 1
+    fi
 fi
 
 if [[ $CHANNEL == default ]]; then
+    USING_DEFAULT_CHANNEL=1
     if [[ $FREQ_BAND == 2.4 ]]; then
         CHANNEL=1
     else
         CHANNEL=36
     fi
+else
+    USING_DEFAULT_CHANNEL=0
 fi
+
 
 if [[ $FREQ_BAND != 5 && $CHANNEL -gt 14 ]]; then
     echo "Channel number is greater than 14, assuming 5GHz frequency band"
@@ -1691,7 +1701,19 @@ if [[ -n "$COUNTRY" && $USE_IWCONFIG -eq 0 ]]; then
     iw reg set "$COUNTRY"
 fi
 
-can_transmit_to_channel ${WIFI_IFACE} ${CHANNEL} || die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
+# Fallback to currently connected channel if the adapter can not transmit to the default channel (1)
+if can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}"; then
+    echo "Transmitting to channel ${CHANNEL}..."
+else
+    if [[ $USING_DEFAULT_CHANNEL -eq 1 && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+        echo -e "Your adapter can not transmit to channel ${CHANNEL}" >&2
+        CHANNEL=$WIFI_IFACE_CHANNEL
+        echo -e "Falling back to channel ${CHANNEL}"
+        can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}" || die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
+    else
+        die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
+    fi
+fi
 
 if networkmanager_exists && ! networkmanager_iface_is_unmanaged ${WIFI_IFACE}; then
     echo -n "Network Manager found, set ${WIFI_IFACE} as unmanaged device... "
