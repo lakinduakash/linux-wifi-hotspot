@@ -5,6 +5,8 @@
 <!--[![Gitter](https://badges.gitter.im/linux-wihotspot/community.svg)](https://gitter.im/linux-wihotspot/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) -->
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Flakinduakash%2Flinux-wifi-hotspot?ref=badge_shield)
 
+#### Note: I've been inactive on this project for a while. If you're interested in contributing or taking a more active role, you're very welcome! Please open an issue to express your interest.
+
 ### What's new
 * Use aa-complain instead of complain to fix the permission issue for dnsmasq
 * Fix some 5Ghz band not working issue
