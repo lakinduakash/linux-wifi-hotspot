@@ -48,7 +48,7 @@ static void* run_create_hp_shell(void *cmd);
 
 void init_interface_list();
 
-void* init_running_info();
+void* init_running_info(void *);
 
 static gboolean update_progress_in_timeout (gpointer pbar);
 
@@ -60,7 +60,7 @@ static guint start_pb_pulse();
 
 static void on_create_hp_clicked(GtkWidget *widget,gpointer data);
 
-static void *stopHp();
+static void *stopHp(void *);
 
 static int init_config_val_input(ConfigValues* cv);
 
