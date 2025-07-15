@@ -130,7 +130,6 @@ guint pb_pulse_id;
 static ConfigValues configValues;
 
 
-
 static void *stopHp(gpointer data) {
     if(running_info[0]!=NULL){
         gtk_label_set_label(label_status,"Stopping ...");
@@ -709,6 +708,7 @@ void clear_running_info(){
         g_free(running_info[0]);
         running_info[0]=NULL;
 }
+
 
 void* init_running_info(gpointer data){
 

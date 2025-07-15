@@ -48,6 +48,7 @@ static void* run_create_hp_shell(void *cmd);
 
 void init_interface_list();
 
+
 void* init_running_info(gpointer data);
 
 static gboolean update_progress_in_timeout (gpointer pbar);
