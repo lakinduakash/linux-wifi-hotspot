@@ -773,6 +773,7 @@ static void *run_create_hp_shell(void *cmd) {
 
         if (strstr(buf, AP_ENABLED) != NULL) {
             init_running_info(NULL);
+            pclose(fp);
             return 0;
         }
     }
