@@ -131,7 +131,7 @@ static ConfigValues configValues;
 
 
 
-static void *stopHp() {
+static void *stopHp(void *) {
     if(running_info[0]!=NULL){
         gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
@@ -710,7 +710,7 @@ void clear_running_info(){
         running_info[0]=NULL;
 }
 
-void* init_running_info(){
+void* init_running_info(void *){
 
     clear_running_info();
     lock_all_views(TRUE);
@@ -772,7 +772,7 @@ static void *run_create_hp_shell(void *cmd) {
         gtk_label_set_label(label_status,buf);
 
         if (strstr(buf, AP_ENABLED) != NULL) {
-            init_running_info();
+            init_running_info(NULL);
             pclose(fp);
             return 0;
         }
@@ -780,11 +780,11 @@ static void *run_create_hp_shell(void *cmd) {
 
     if (pclose(fp)) {
         printf("Command not found or exited with error status\n");
-        init_running_info();
+        init_running_info(NULL);
         return NULL;
     }
 
-    init_running_info();
+    init_running_info(NULL);
     return 0;
 }
 
