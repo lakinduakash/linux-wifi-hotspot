@@ -489,21 +489,19 @@ pub async fn add_connection(
         args.push("ssid".to_string());
         args.push(ssid_val.to_string());
     }
-    let status = Command::new("nmcli").args(&args).status().await?;
-    if !status.success() {
-        anyhow::bail!("nmcli connection add returned {}", status);
-    }
+    let output = Command::new("nmcli").args(&args).output().await?;
+    ensure_success("nmcli connection add", &output)?;
     if conn_type == "802-11-wireless" {
         let hidden_flag = if hidden { "yes" } else { "no" };
-        let status_hidden = Command::new("nmcli")
+        let output_hidden = Command::new("nmcli")
             .args(["connection", "modify", name, "wifi.hidden", hidden_flag])
-            .status()
+            .output()
             .await
             .context("failed to mark wifi connection hidden")?;
-        ensure_success("nmcli connection modify wifi.hidden", &status_hidden)?;
+        ensure_success("nmcli connection modify wifi.hidden", &output_hidden)?;
         match password {
             Some(pass) if !pass.is_empty() => {
-                let status_pw = Command::new("nmcli")
+                let output_pw = Command::new("nmcli")
                     .args([
                         "connection",
                         "modify",
@@ -513,22 +511,22 @@ pub async fn add_connection(
                         "wifi-sec.psk",
                         pass,
                     ])
-                    .status()
+                    .output()
                     .await
                     .context("failed to set wifi password")?;
-                ensure_success("nmcli connection modify wifi-sec.psk", &status_pw)?;
+                ensure_success("nmcli connection modify wifi-sec.psk", &output_pw)?;
             }
             _ => {
-                let status_clear = Command::new("nmcli")
+                let output_clear = Command::new("nmcli")
                     .args(["connection", "modify", name, "wifi-sec.key-mgmt", "none"])
-                    .status()
+                    .output()
                     .await
                     .context("failed to clear wifi key management")?;
-                ensure_success("nmcli connection modify wifi-sec.key-mgmt", &status_clear)?;
+                ensure_success("nmcli connection modify wifi-sec.key-mgmt", &output_clear)?;
             }
         }
     }
-    let auto_status = Command::new("nmcli")
+    let auto_output = Command::new("nmcli")
         .args([
             "connection",
             "modify",
@@ -536,10 +534,10 @@ pub async fn add_connection(
             "autoconnect",
             if autoconnect { "yes" } else { "no" },
         ])
-        .status()
+        .output()
         .await
         .context("failed to set connection autoconnect")?;
-    ensure_success("nmcli connection modify autoconnect", &auto_status)?;
+    ensure_success("nmcli connection modify autoconnect", &auto_output)?;
     Ok(())
 }
 
@@ -562,12 +560,12 @@ pub async fn connect_wifi(
     }
     if !autoconnect {
         // turn off autoconnect on the newly created/updated profile
-        let status = Command::new("nmcli")
+        let output = Command::new("nmcli")
             .args(["connection", "modify", ssid, "autoconnect", "no"])
-            .status()
+            .output()
             .await
             .context("failed to disable autoconnect on wifi profile")?;
-        ensure_success("nmcli connection modify autoconnect", &status)?;
+        ensure_success("nmcli connection modify autoconnect", &output)?;
     }
     Ok(())
 }

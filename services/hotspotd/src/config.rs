@@ -1,7 +1,6 @@
 use anyhow::{ensure, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
