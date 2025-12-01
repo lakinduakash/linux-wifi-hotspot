@@ -35,6 +35,7 @@ Thanks for being part of the community and keeping Linux-WiFi-Hotspot going!
 * Hide SSID
 * customize gateway IP address
 * Enable IEEE 80211n, IEEE 80211ac and IEEE 80211ax modes
+* Experimental headless web dashboard powered by `hotspotd` + Svelte UI
 
 ![screenshot](docs/sc4.png)
 
@@ -110,6 +111,7 @@ install it using your distro's package manager_
 * libgtk-3-dev
 * libqrencode-dev (for qr code generation)
 * libpng-dev (for qr code generation)
+* Rust toolchain (cargo) for the new `hotspotd` helper
 
 On Ubuntu or Debian install dependencies by,
 
@@ -122,6 +124,8 @@ On Fedora/CentOS/Red Hat Enterprise Linux/Rocky Linux/Oracle Linux
 sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
 ```
 
+> Note: if `cargo` is installed in your user profile (e.g., `~/.cargo/bin`), make sure it is available when running `sudo make install`, e.g., `CARGO="$(which cargo)" sudo -E make install`.
+
 ## Installation
 
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
@@ -131,6 +135,8 @@ sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd 
     make
 
     #install
+    # install (requires Rust/cargo for hotspotd build)
+    # Example: CARGO="$(which cargo)" sudo -E make install
     sudo make install
 
 ## Uninstallation
@@ -160,6 +166,53 @@ Start the hotspot service on startup (using your saved configuration) with:
 
     systemctl enable create_ap
 
+## Headless Web Management (Experimental)
+
+Work is in progress to add a Rust-based helper daemon (`hotspotd`) and a
+lightweight web UI so that linux-wifi-hotspot can be configured without the GTK
+app. The helper exposes authenticated APIs for editing `/etc/create_ap.conf`,
+starting/stopping the hotspot service, and talking to NetworkManager to select
+the upstream Wi-Fi network when a single dongle acts as both client and AP. It
+can also stream `create_ap` logs and list connected station details so the web
+dashboard can provide live status.
+
+When the kit boots for the first time, `hotspotd` can seed `/etc/create_ap.conf`
+with a default SSID/passphrase defined via environment variables (see
+`docs/web-service.md`) so you have predictable credentials before opening the
+web UI.
+
+If you expose the helper over HTTP (instead of the default UNIX socket), set a
+`HOTSPOTD_API_TOKEN` value so the web dashboard must present
+`Authorization: Bearer <token>` for every request.
+To allow the browser-based web UI to reach the daemon, also set
+`HTTP_LISTEN=127.0.0.1:8085` (or any host:port) inside
+`/etc/linux-wifi-hotspot/hotspotd.env` before restarting `hotspotd.service`.
+The API token you configure here is what the web dashboard prompts for on load.
+
+For development you can run the Svelte dashboard directly:
+
+```
+cd webui
+npm install
+npm run dev -- --host 127.0.0.1 --port 5181
+```
+
+Then browse to `http://127.0.0.1:5181/`, paste the API token, and you can edit
+hotspot settings, monitor `create_ap` logs, and manage NetworkManager profiles
+(including creating hidden SSID entries) entirely from the browser. For
+production, `npm run build` emits static assets under `webui/dist` that you can
+serve from any HTTP server or bundle into a future `hotspotd` release.
+You can build the dashboard without installing it by running `make webui-build`
+in the repo root (requires Node/npm).
+
+See [docs/web-service.md](docs/web-service.md) for the architecture and planned
+API surface.
+
+`sudo make install` builds and installs both the legacy GUI binaries and the new
+`hotspotd` helper (plus its systemd unit) under `/usr/lib/linux-wifi-hotspot/`.
+Configure `/etc/linux-wifi-hotspot/hotspotd.env` to set default SSIDs, the API
+token, and optional managed services (e.g., dragonsync) that the future web UI
+can start/stop via the REST API.
 
 
 
