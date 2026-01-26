@@ -99,6 +99,7 @@ GtkCheckButton *cb_mac_filter;
 GtkCheckButton *cb_ieee80211n;
 GtkCheckButton *cb_ieee80211ac;
 GtkCheckButton *cb_ieee80211ax;
+GtkCheckButton *cb_otp = NULL;
 
 GtkProgressBar *progress_bar;
 
@@ -129,6 +130,9 @@ char* running_info[3];
 guint pb_pulse_id;
 static ConfigValues configValues;
 
+static gchar *saved_static_pass = NULL;
+
+
 
 
 static void *stopHp(void *) {
@@ -156,10 +160,33 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
         set_error_text("");
     }
 
+    gboolean otp_enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_otp));
 
-    startShell(build_wh_mkconfig_command(&configValues));
+    char otp_pass[32];                          /* max 31 chars + NUL */
+    if (otp_enabled) {
+        if (saved_static_pass) g_free(saved_static_pass);
+        saved_static_pass = g_strdup(gtk_entry_get_text(entry_pass));
+        rand_str(otp_pass, 12);                 /* crypt-safe random */
+        gtk_entry_set_text(entry_pass, otp_pass);   /* show it (read-only) */
 
-    g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
+        char *otp_dyn = g_strdup(otp_pass);
+
+        /* Direct call – bypass config file */
+        const char *cmd = build_wh_start_command(
+            configValues.iface_wifi,
+            configValues.iface_inet,
+            configValues.ssid,
+            otp_dyn);
+
+        g_free(otp_dyn);
+        
+        g_thread_new("shell_create_hp", run_create_hp_shell, (void*)cmd);
+    } else {
+        /* Legacy path – write config file and launch as before */
+        startShell(build_wh_mkconfig_command(&configValues));
+        g_thread_new("shell_create_hp", run_create_hp_shell,
+                     (void*)build_wh_from_config());
+    }
 
 
 }
@@ -394,6 +421,8 @@ static void *update_freq_toggle(){
 
 int initUi(int argc, char *argv[]){
 
+    srand((unsigned) time(NULL) ^ getpid());
+    
     XInitThreads();
     gtk_init(&argc, &argv);
 
@@ -418,6 +447,8 @@ int initUi(int argc, char *argv[]){
 
     entry_ssd = (GtkEntry *) gtk_builder_get_object(builder, "entry_ssid");
     entry_pass = (GtkEntry *) gtk_builder_get_object(builder, "entry_pass");
+
+    cb_otp = (GtkCheckButton *) gtk_builder_get_object(builder, "check_otp");
 
     entry_mac = (GtkEntry *) gtk_builder_get_object(builder, "entry_mac");
     entry_channel = (GtkEntry *) gtk_builder_get_object(builder, "entry_channel");
@@ -470,6 +501,8 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (cb_channel, "toggled", G_CALLBACK(on_cb_channel_toggle), NULL); //new
     g_signal_connect (cb_mac_filter, "toggled", G_CALLBACK(on_cb_mac_filter_toggle), NULL); //new
     g_signal_connect (cb_gateway, "toggled", G_CALLBACK(on_cb_gateway_toggle), NULL); //new
+
+    g_signal_connect (cb_otp, "toggled", G_CALLBACK(on_otp_toggled), NULL);
 
     g_signal_connect (entry_mac, "changed", G_CALLBACK(entry_mac_warn), NULL);
     g_signal_connect (entry_ssd, "changed", G_CALLBACK(entry_ssid_warn), NULL);
@@ -791,13 +824,14 @@ static void *run_create_hp_shell(void *cmd) {
 
 static gboolean validator(ConfigValues *cv){
 
+    gboolean otp_enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_otp));
 
-    if(cv->pass !=NULL)
+
+    if (!otp_enabled && cv->pass != NULL)
     {
         size_t len = strlen(cv->pass);
-
-        if(len<8){
-            if(len>0)
+        if (len < 8 && len > 0) {
+            set_error_text(ERROR_PASS_MSG);
             return FALSE;
         }
     }
@@ -1108,5 +1142,15 @@ static void on_cb_gateway_toggle(GtkWidget *widget, gpointer data)
         gtk_widget_set_sensitive((GtkWidget*)entry_gateway, TRUE);
     } else {
         gtk_widget_set_sensitive((GtkWidget*)entry_gateway, FALSE);
+    }
+}
+
+static void on_otp_toggled(GtkToggleButton *btn, gpointer data)
+{
+    gboolean active = gtk_toggle_button_get_active(btn);
+    /* Disable the password entry when OTP is on */
+    gtk_widget_set_sensitive(GTK_WIDGET(entry_pass), !active);
+    if (!active && saved_static_pass && *saved_static_pass) {
+        gtk_entry_set_text(entry_pass, saved_static_pass);
     }
 }
