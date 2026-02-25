@@ -1,14 +1,16 @@
-CC=gcc
-PKGCONFIG = $(shell which pkg-config)
+CC?=cc
+PKGCONFIG?=pkg-config
 
-CFLAGS=`pkg-config --cflags gtk+-3.0`
-LIBS=`pkg-config --libs gtk+-3.0 --libs x11` -lstdc++ -lpng -lqrencode
+EXTRA_CFLAGS?=
+EXTRA_LIBS?=
 
-APP_NAME="wihotspot"
-APP_GUI_BINARY="wihotspot-gui"
+CFLAGS=$(shell $(PKGCONFIG) --cflags gtk+-3.0) $(EXTRA_CFLAGS)
+LIBS=$(shell $(PKGCONFIG) --libs gtk+-3.0 --libs x11) -lstdc++ -lpng -lqrencode $(EXTRA_LIBS)
 
-PREFIX=/usr
-BINDIR=$(PREFIX)/bin
+APP_NAME=wihotspot
+APP_GUI_BINARY=wihotspot-gui
+
+DESTDIR?=/usr
 
 ODIR=../build
 
@@ -41,33 +43,33 @@ wihotspot-gui: $(OBJ)
 	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LIBS)
 
 install: $(ODIR)/wihotspot-gui
-	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
-	install -Dm644 desktop/icons/hotspot@48.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/wihotspot.png
-	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/wihotspot.png
-	install -Dm644 desktop/icons/hotspot@256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/wihotspot.png
-	install -Dm644 desktop/icons/hotspot@512.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/512x512/apps/wihotspot.png
-	install -Dm644 desktop/icons/hotspot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
-	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
-	install -Dm644 scripts/policies/polkit.rules $(DESTDIR)$(PREFIX)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
-	install -Dm644 scripts/policies/polkit.policy $(DESTDIR)$(PREFIX)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
-	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
+	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)/share/pixmaps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@48.png $(DESTDIR)/share/icons/hicolor/48x48/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)/share/icons/hicolor/64x64/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@256.png $(DESTDIR)/share/icons/hicolor/256x256/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot@512.png $(DESTDIR)/share/icons/hicolor/512x512/apps/wihotspot.png
+	install -Dm644 desktop/icons/hotspot.svg $(DESTDIR)/share/icons/hicolor/scalable/apps/wihotspot.svg
+	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)/share/applications/$(APP_NAME).desktop
+	install -Dm644 scripts/policies/polkit.rules $(DESTDIR)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
+	install -Dm644 scripts/policies/polkit.policy $(DESTDIR)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
+	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)/bin/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) install
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/48x48/apps/wihotspot.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/64x64/apps/wihotspot.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/wihotspot.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/512x512/apps/wihotspot.png
-	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
-	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
-	rm -f $(DESTDIR)$(PREFIX)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
-	rm -f $(DESTDIR)$(PREFIX)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
-	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
+	rm -f $(DESTDIR)/share/pixmaps/wihotspot.png
+	rm -f $(DESTDIR)/share/icons/hicolor/48x48/apps/wihotspot.png
+	rm -f $(DESTDIR)/share/icons/hicolor/64x64/apps/wihotspot.png
+	rm -f $(DESTDIR)/share/icons/hicolor/256x256/apps/wihotspot.png
+	rm -f $(DESTDIR)/share/icons/hicolor/512x512/apps/wihotspot.png
+	rm -f $(DESTDIR)/share/icons/hicolor/scalable/apps/wihotspot.svg
+	rm -f $(DESTDIR)/share/applications/$(APP_NAME).desktop
+	rm -f $(DESTDIR)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
+	rm -f $(DESTDIR)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
+	rm -f $(DESTDIR)/bin/$(APP_GUI_BINARY)
 	cd scripts && $(MAKE) uninstall
 
 clean-old:
-	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
+	rm -f $(DESTDIR)/share/pixmaps/wihotspot.png
 
 clean:
 	rm -f $(ODIR)/*.o
