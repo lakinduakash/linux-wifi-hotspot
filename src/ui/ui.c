@@ -514,7 +514,7 @@ void init_ui_from_config(){
         if(values->pass!=NULL)
             gtk_entry_set_text(entry_pass,values->pass);
 
-        if(strcmp(values->pass,"")==0|| values->pass==NULL)
+        if(values->pass==NULL || strcmp(values->pass,"")==0)
             // This line will trigger on_cb_open_toggle callback and disable the entry_pass
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
 
