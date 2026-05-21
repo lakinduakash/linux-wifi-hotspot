@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "read_config.h"
 
-#define CONFIG_KEY_COUNT 30
+#define CONFIG_KEY_COUNT 64
 #define STRING_MAX_LENGTH 100
 #define BUFSIZE 150
 
@@ -56,7 +56,7 @@ int read_config_file() {
         std::string line;
 
         int i=0;
-        while (getline(cFile, line)) {
+        while (getline(cFile, line) && i < CONFIG_KEY_COUNT) {
             auto delimiterPos = line.find('=');
             if (!(line.find("SSID") < delimiterPos) && !(line.find("PASSPHRASE") < delimiterPos)) {
                 line.erase(std::remove_if(line.begin(), line.end(), isspace),
@@ -68,7 +68,10 @@ int read_config_file() {
             auto name = line.substr(0, delimiterPos);
             auto value = line.substr(delimiterPos + 1);
 
-            strcpy(configs[i],value.c_str());
+            if (value.size() >= STRING_MAX_LENGTH)
+                value.resize(STRING_MAX_LENGTH - 1);
+            memcpy(configs[i], value.c_str(), value.size());
+            configs[i][value.size()] = '\0';
             setConfigValues(name.c_str(),configs[i]);
             //std::cout << name << " " << value << '\n';
             ++i;
