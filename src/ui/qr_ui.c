@@ -31,29 +31,44 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include <gtk/gtk.h>
+#include <unistd.h>
 #include "qr_ui.h"
 
-static GtkBuilder *builder;
-static GError *error = NULL;
+void open_qr(GtkWidget *widget, gpointer data, char *image_path) {
+    GtkBuilder *builder;
+    GtkWidget *dialog;
+    GtkImage *qr_image;
+    GError *error = NULL;
+    GtkWidget *toplevel;
 
-void open_qr(GtkWidget *widget, gpointer root,char* image_path) {
+    (void)data;
+
+    if (image_path == NULL || access(image_path, R_OK) != 0)
+        return;
 
     builder = gtk_builder_new();
-    //Load ui description from built resource - need to generate compiled source with glib-compile-resource
-    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/qr.glade",&error);
+    if (!gtk_builder_add_from_resource(builder, "/org/gtk/wihotspot/qr.glade", &error)) {
+        g_warning("Failed to load QR dialog: %s", error ? error->message : "unknown");
+        g_clear_error(&error);
+        g_object_unref(builder);
+        return;
+    }
 
-    root = gtk_builder_get_object(builder, "dialog_qr");
+    dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_qr"));
+    qr_image = GTK_IMAGE(gtk_builder_get_object(builder, "image_qr"));
+    if (dialog == NULL || qr_image == NULL) {
+        g_object_unref(builder);
+        return;
+    }
 
-    GtkImage* qr_image = (GtkImage *) gtk_builder_get_object(builder, "image_qr");
+    if (widget != NULL) {
+        toplevel = gtk_widget_get_toplevel(widget);
+        if (GTK_IS_WINDOW(toplevel))
+            gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(toplevel));
+    }
 
-    gtk_image_set_from_file(qr_image,image_path);
-
-    GtkDialog* dialog= GTK_DIALOG(root);
-    
+    gtk_image_set_from_file(qr_image, image_path);
     gtk_dialog_run(GTK_DIALOG(dialog));
-
-    gtk_widget_destroy(GTK_WIDGET( dialog));
-    
-    g_signal_connect (dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
+    gtk_widget_destroy(dialog);
+    g_object_unref(builder);
 }

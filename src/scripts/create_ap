@@ -75,6 +75,7 @@ usage() {
     echo "  --stop <id>             Send stop command to an already running create_ap. For an <id>"
     echo "                          you can put the PID of create_ap or the WiFi interface. You can"
     echo "                          get them with --list-running"
+    echo "  --show-info <id>        Show SSID, security and other details for a running hotspot"
     echo "  --list-running          Show the create_ap processes that are already running"
     echo "  --list-clients <id>     List the clients connected to create_ap instance associated with <id>."
     echo "                          For an <id> you can put the PID of create_ap or the WiFi interface."
@@ -321,6 +322,45 @@ can_be_ap() {
     return 1
 }
 
+can_use_multiple_channels_with_ap() {
+    [[ $USE_IWCONFIG -eq 1 ]] && return 1
+    get_adapter_info "$1" | grep -E '\{[^}]*AP[^}]*\}[^#]*#channels <= [2-9]' > /dev/null 2>&1 && return 0
+    return 1
+}
+
+sync_channel_with_wifi_connection() {
+    local iface=$1
+    local connected_freq connected_channel
+
+    is_wifi_connected ${iface} || return 0
+
+    connected_freq=$(iw dev ${iface} link | grep -i freq | awk '{print $2}')
+    connected_channel=$(ieee80211_frequency_to_channel ${connected_freq})
+    WIFI_IFACE_CHANNEL=$connected_channel
+
+    if [[ $FREQ_BAND_SET -eq 0 ]]; then
+        if is_5ghz_frequency $connected_freq; then
+            FREQ_BAND=5
+        else
+            FREQ_BAND=2.4
+        fi
+    fi
+
+    if [[ $connected_channel -eq $CHANNEL ]]; then
+        echo "${iface} is already associated with channel ${connected_channel} (${connected_freq} MHz)"
+        return 0
+    fi
+
+    if can_use_multiple_channels_with_ap ${iface}; then
+        echo "${iface} is associated with channel ${connected_channel}; using channel ${CHANNEL} (multi-channel supported)"
+        return 0
+    fi
+
+    echo "${iface} is already associated with channel ${connected_channel} (${connected_freq} MHz)"
+    echo "Falling back to channel ${connected_channel}"
+    CHANNEL=$connected_channel
+}
+
 can_transmit_to_channel() {
     local IFACE CHANNEL_NUM CHANNEL_INFO
     IFACE=$1
@@ -442,6 +482,152 @@ get_new_macaddr() {
     done
     mutex_unlock
     echo $NEWMAC
+}
+
+get_running_pid_for_wifi_iface() {
+    local wifi_iface=$1
+    local pid iface rest
+
+    while read -r pid iface rest; do
+        [[ -z "$pid" ]] && continue
+        [[ "$iface" == "$wifi_iface" ]] && echo "$pid" && return 0
+    done < <(list_running)
+
+    return 1
+}
+
+remove_ap_interfaces_on_phy() {
+    local wifi_iface=$1
+    local target_phy iface iface_phy iface_type pid
+
+    [[ $USE_IWCONFIG -eq 1 ]] && return 0
+    target_phy=$(get_phy_device "$wifi_iface") || return 0
+
+    while read -r iface; do
+        [[ -z "$iface" ]] && continue
+        is_wifi_interface "$iface" || continue
+        iface_type=$(iw dev "$iface" info 2>/dev/null | awk '/type/ {print $2; exit}')
+        [[ "$iface_type" == "AP" ]] || continue
+        iface_phy=$(get_phy_device "$iface" 2>/dev/null) || continue
+        [[ "$iface_phy" == "$target_phy" ]] || continue
+
+        pid=$(get_pid_from_wifi_iface "$iface")
+        [[ -z "$pid" ]] && pid=$(get_running_pid_for_wifi_iface "$wifi_iface" || true)
+        if [[ -n "$pid" ]] && is_running_pid "$pid"; then
+            continue
+        fi
+
+        echo "Removing AP interface $iface..."
+        ip link set dev "$iface" down 2>/dev/null
+        iw dev "$iface" del 2>/dev/null
+        dealloc_iface "$iface" 2>/dev/null
+    done < <(iw dev | awk '/Interface/ {print $2}')
+}
+
+cleanup_stale_ap_interfaces() {
+    local wifi_iface=$1
+    local target_phy iface iface_phy iface_type pid
+
+    [[ $USE_IWCONFIG -eq 1 ]] && return 0
+    target_phy=$(get_phy_device "$wifi_iface") || return 0
+
+    while read -r iface; do
+        [[ -z "$iface" ]] && continue
+        is_wifi_interface "$iface" || continue
+        iface_type=$(iw dev "$iface" info 2>/dev/null | awk '/type/ {print $2; exit}')
+        [[ "$iface_type" == "AP" ]] || continue
+        iface_phy=$(get_phy_device "$iface" 2>/dev/null) || continue
+        [[ "$iface_phy" == "$target_phy" ]] || continue
+
+        pid=$(get_pid_from_wifi_iface "$iface")
+        if [[ -n "$pid" ]] && is_running_pid "$pid"; then
+            die "Hotspot already running on $iface (PID $pid). Stop it first: create_ap --stop $wifi_iface"
+        fi
+
+        echo "Removing stale AP interface $iface..."
+        ip link set dev "$iface" down 2>/dev/null
+        iw dev "$iface" del 2>/dev/null
+        dealloc_iface "$iface" 2>/dev/null
+    done < <(iw dev | awk '/Interface/ {print $2}')
+}
+
+find_create_ap_confdirs_for_iface() {
+    local wifi_iface=$1
+    local x
+
+    for x in /tmp/create_ap.${wifi_iface}.conf.*; do
+        [[ -d "$x" ]] && echo "$x"
+    done
+}
+
+cleanup_orphaned_create_ap_confdir() {
+    local confdir=$1
+    local pid y
+
+    [[ -d "$confdir" ]] || return 0
+    if [[ -f "$confdir/pid" ]]; then
+        pid=$(cat "$confdir/pid" 2>/dev/null)
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            return 0
+        fi
+    fi
+
+    echo "Cleaning orphaned hotspot data from $confdir..."
+    for y in "$confdir"/*.pid; do
+        [[ -f "$y" ]] && kill -9 $(cat "$y") 2>/dev/null
+    done
+    pkill -f "dnsmasq -C ${confdir}/dnsmasq.conf" 2>/dev/null || true
+    rm -rf "$confdir"
+}
+
+cleanup_orphaned_create_ap_for_iface() {
+    local wifi_iface=$1
+    local x
+
+    for x in $(find_create_ap_confdirs_for_iface "$wifi_iface"); do
+        cleanup_orphaned_create_ap_confdir "$x"
+    done
+}
+
+gateway_subnet_conflicts() {
+    local gw=$1
+    local gw_prefix="${gw%.*}"
+    local cidr ip
+
+    if ip route show default 2>/dev/null | grep -Eq "[[:space:]]via ${gw}[[:space:]]"; then
+        return 0
+    fi
+
+    while read -r cidr; do
+        ip="${cidr%%/*}"
+        [[ "${ip%.*}" == "$gw_prefix" ]] && return 0
+    done < <(ip -4 -o addr show scope global | awk '{print $4}')
+
+    return 1
+}
+
+pick_alternate_gateway() {
+    local candidate
+
+    for candidate in 192.168.43.1 10.42.0.1 192.168.4.1 172.16.42.1; do
+        if ! gateway_subnet_conflicts "$candidate"; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    echo "10.42.0.1"
+}
+
+adjust_gateway_for_conflicts() {
+    local new_gw
+
+    if gateway_subnet_conflicts "$GATEWAY"; then
+        new_gw=$(pick_alternate_gateway)
+        echo "WARN: Gateway ${GATEWAY} conflicts with an existing network connection." >&2
+        echo "WARN: Using alternate gateway ${new_gw} instead." >&2
+        GATEWAY=$new_gw
+    fi
 }
 
 # start haveged when needed
@@ -683,6 +869,7 @@ CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HI
 FIX_UNMANAGED=0
 LIST_RUNNING=0
 STOP_ID=
+SHOW_INFO_ID=
 LIST_CLIENTS_ID=
 
 STORE_CONFIG=
@@ -701,6 +888,11 @@ HAVEGED_WATCHDOG_PID=
 
 _cleanup() {
     local PID x
+    local ap_iface saved_wifi_iface
+
+    [[ -f "$CONFDIR/wifi_iface" ]] && ap_iface=$(cat "$CONFDIR/wifi_iface")
+    saved_wifi_iface=$PHYS_WIFI_IFACE
+    [[ -z "$saved_wifi_iface" ]] && saved_wifi_iface=$WIFI_IFACE
 
     trap "" SIGINT SIGUSR1 SIGUSR2 EXIT
     mutex_lock
@@ -813,13 +1005,15 @@ _cleanup() {
     fi
 
     if [[ $NO_VIRT -eq 0 ]]; then
-        if [[ -n "$VWIFI_IFACE" ]]; then
-            ip link set down dev ${VWIFI_IFACE}
-            ip addr flush ${VWIFI_IFACE}
+        [[ -z "$VWIFI_IFACE" && -n "$ap_iface" ]] && VWIFI_IFACE=$ap_iface
+        if [[ -n "$VWIFI_IFACE" ]] && is_interface "$VWIFI_IFACE"; then
+            ip link set down dev ${VWIFI_IFACE} 2>/dev/null
+            ip addr flush ${VWIFI_IFACE} 2>/dev/null
             networkmanager_rm_unmanaged_if_needed ${VWIFI_IFACE} ${OLD_MACADDR}
-            iw dev ${VWIFI_IFACE} del
+            iw dev ${VWIFI_IFACE} del 2>/dev/null
             dealloc_iface $VWIFI_IFACE
         fi
+        [[ -n "$saved_wifi_iface" ]] && remove_ap_interfaces_on_phy "$saved_wifi_iface"
     else
         ip link set down dev ${WIFI_IFACE}
         ip addr flush ${WIFI_IFACE}
@@ -838,10 +1032,9 @@ _cleanup() {
 }
 
 cleanup() {
-    echo
-    echo -n "Doing cleanup.. "
+    { echo; echo -n "Doing cleanup.. "; } 2>/dev/null || true
     _cleanup > /dev/null 2>&1
-    echo "done"
+    { echo "done"; } 2>/dev/null || true
 }
 
 die() {
@@ -975,7 +1168,7 @@ has_running_instance() {
             fi
         fi
     done
-    mutex_lock
+    mutex_unlock
 
     return 1
 }
@@ -985,21 +1178,179 @@ is_running_pid() {
 }
 
 send_stop() {
-    local x
+    local id=$1
+    local x pid wifi_iface confdir
+    local stopped=0
 
-    mutex_lock
-    # send stop signal to specific pid
-    if is_running_pid $1; then
-        kill -USR1 $1
-        mutex_unlock
-        return
+    if [[ "$id" =~ ^[1-9][0-9]*$ ]] && is_running_pid "$id"; then
+        pid=$id
+        wifi_iface=$(get_wifi_iface_from_pid "$pid" 2>/dev/null)
+    else
+        wifi_iface=$id
+        pid=$(get_running_pid_for_wifi_iface "$wifi_iface" || true)
+        [[ -z "$pid" ]] && pid=$(get_pid_from_wifi_iface "$wifi_iface" 2>/dev/null)
     fi
 
-    # send stop signal to specific interface
-    for x in $(list_running | grep -E " \(?${1}( |\)?\$)" | cut -f1 -d' '); do
-        kill -USR1 $x
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+        kill -USR1 "$pid" 2>/dev/null
+        for x in $(seq 1 15); do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 0.2
+        done
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "Force stopping create_ap (PID $pid)..."
+            kill -9 "$pid" 2>/dev/null
+            sleep 0.3
+        fi
+        stopped=1
+    fi
+
+    if [[ -n "$pid" ]]; then
+        confdir=$(get_confdir_from_pid "$pid" 2>/dev/null)
+        if [[ -z "$confdir" ]]; then
+            for x in $(find_create_ap_confdirs_for_iface "$wifi_iface"); do
+                if [[ -f "$x/pid" && $(cat "$x/pid" 2>/dev/null) == "$pid" ]]; then
+                    confdir=$x
+                    break
+                fi
+            done
+        fi
+        if [[ -n "$confdir" && -d "$confdir" ]]; then
+            for y in "$confdir"/*.pid; do
+                [[ -f "$y" ]] && kill -9 $(cat "$y") 2>/dev/null
+            done
+            rm -rf "$confdir"
+            stopped=1
+        fi
+    fi
+
+    if [[ -n "$wifi_iface" ]]; then
+        cleanup_orphaned_create_ap_for_iface "$wifi_iface"
+    elif [[ -n "$id" ]]; then
+        cleanup_orphaned_create_ap_for_iface "$id"
+        [[ -z "$wifi_iface" ]] && wifi_iface=$id
+    fi
+
+    [[ -n "$wifi_iface" ]] && remove_ap_interfaces_on_phy "$wifi_iface"
+    [[ -z "$wifi_iface" && -n "$id" ]] && remove_ap_interfaces_on_phy "$id"
+
+    if [[ $stopped -eq 1 ]]; then
+        echo "Hotspot stopped on ${wifi_iface:-$id}."
+    elif [[ -n "$wifi_iface" || -n "$id" ]]; then
+        echo "Forced cleanup completed for ${wifi_iface:-$id}."
+    else
+        echo "No running hotspot found for $id." >&2
+    fi
+}
+
+find_running_confdir_for_id() {
+    local id=$1
+    local x pid iface
+
+    if [[ "$id" =~ ^[1-9][0-9]*$ ]]; then
+        for x in /tmp/create_ap.*; do
+            [[ -d "$x" && -f "$x/pid" ]] || continue
+            pid=$(cat "$x/pid" 2>/dev/null)
+            [[ "$pid" == "$id" && -d "/proc/$pid" ]] || continue
+            echo "$x"
+            return 0
+        done
+        return 1
+    fi
+
+    iface=$id
+    for x in /tmp/create_ap.${iface}.conf.*; do
+        [[ -d "$x" && -f "$x/pid" ]] || continue
+        pid=$(cat "$x/pid" 2>/dev/null)
+        [[ -n "$pid" && -d "/proc/$pid" ]] || continue
+        echo "$x"
+        return 0
     done
-    mutex_unlock
+
+    return 1
+}
+
+make_confdir_info_readable() {
+    [[ -f "$CONFDIR/hostapd.conf" ]] && chmod 444 "$CONFDIR/hostapd.conf"
+    [[ -f "$CONFDIR/dnsmasq.conf" ]] && chmod 444 "$CONFDIR/dnsmasq.conf"
+    [[ -f "$CONFDIR/nat_internet_iface" ]] && chmod 444 "$CONFDIR/nat_internet_iface"
+}
+
+show_hotspot_info() {
+    local id=$1
+    local confdir pid phy_iface ap_iface internet_iface="none"
+    local ssid="" channel="" hw_mode="" hidden="0"
+    local wpa="" key_mgmt="" passphrase="" psk="" gateway="" encryption="" band=""
+
+    confdir=$(find_running_confdir_for_id "$id") || die "No running hotspot found for $id"
+
+    [[ -f "$confdir/pid" ]] && pid=$(cat "$confdir/pid")
+    [[ -f "$confdir/wifi_iface" ]] && ap_iface=$(cat "$confdir/wifi_iface")
+    [[ -f "$confdir/nat_internet_iface" ]] && internet_iface=$(cat "$confdir/nat_internet_iface")
+
+    phy_iface=${confdir#/tmp/create_ap.}
+    phy_iface=${phy_iface%%.conf.*}
+
+    if [[ -f "$confdir/hostapd.conf" ]]; then
+        while IFS= read -r line; do
+            case "$line" in
+                ssid=*) ssid="${line#ssid=}" ;;
+                channel=*) channel="${line#channel=}" ;;
+                hw_mode=*) hw_mode="${line#hw_mode=}" ;;
+                ignore_broadcast_ssid=*) hidden="${line#ignore_broadcast_ssid=}" ;;
+                wpa=*) wpa="${line#wpa=}" ;;
+                wpa_key_mgmt=*) key_mgmt="${line#wpa_key_mgmt=}" ;;
+                wpa_passphrase=*) passphrase="${line#wpa_passphrase=}" ;;
+                wpa_psk=*) psk="${line#wpa_psk=}" ;;
+            esac
+        done < "$confdir/hostapd.conf"
+    fi
+
+    if [[ -f "$confdir/dnsmasq.conf" ]]; then
+        gateway=$(grep -m1 '^listen-address=' "$confdir/dnsmasq.conf" | cut -d= -f2-)
+    fi
+
+    if [[ -z "$passphrase" && -n "$psk" ]]; then
+        passphrase=$psk
+    fi
+
+    if [[ -z "$passphrase" && -z "$psk" ]]; then
+        encryption="Open"
+    elif [[ "$key_mgmt" == *SAE* ]]; then
+        encryption="WPA2/WPA3"
+    elif [[ "$wpa" == "3" ]]; then
+        encryption="WPA3"
+    elif [[ "$wpa" == "2" ]]; then
+        encryption="WPA2-PSK"
+    elif [[ "$wpa" == "1" ]]; then
+        encryption="WPA-PSK"
+    elif [[ -n "$psk" ]]; then
+        encryption="WPA-PSK (hex)"
+    else
+        encryption="WPA-PSK"
+    fi
+
+    if [[ "$hw_mode" == "a" ]]; then
+        band="5 GHz"
+    elif [[ "$hw_mode" == "g" ]]; then
+        band="2.4 GHz"
+    fi
+
+    echo "PID=${pid:-}"
+    echo "PHY_IFACE=${phy_iface:-}"
+    echo "AP_IFACE=${ap_iface:-}"
+    echo "INTERNET_IFACE=${internet_iface:-none}"
+    echo "SSID=${ssid:-}"
+    echo "PASSPHRASE=${passphrase:-}"
+    echo "ENCRYPTION=${encryption:-}"
+    echo "GATEWAY=${gateway:-}"
+    echo "CHANNEL=${channel:-}"
+    echo "BAND=${band:-}"
+    if [[ "$hidden" == "1" ]]; then
+        echo "HIDDEN=Yes"
+    else
+        echo "HIDDEN=No"
+    fi
 }
 
 # Storing configs
@@ -1103,7 +1454,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:","dhcp-hosts:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","show-info:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:","dhcp-hosts:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1253,6 +1604,11 @@ while :; do
             STOP_ID="$1"
             shift
             ;;
+        --show-info)
+            shift
+            SHOW_INFO_ID="$1"
+            shift
+            ;;
         --list)
             shift
             LIST_RUNNING=1
@@ -1334,7 +1690,7 @@ if [[ -n "$LOAD_CONFIG" && $# -eq 0 ]]; then
 fi
 
 # Check if required number of positional args are present
-if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" &&
+if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && -z "$SHOW_INFO_ID" &&
       $LIST_RUNNING -eq 0 && -z "$LIST_CLIENTS_ID" ]]; then
     usage >&2
     exit 1
@@ -1382,6 +1738,11 @@ if [[ -n "$STOP_ID" ]]; then
     exit 0
 fi
 
+if [[ -n "$SHOW_INFO_ID" ]]; then
+    show_hotspot_info "$SHOW_INFO_ID"
+    exit 0
+fi
+
 if [[ $FIX_UNMANAGED -eq 1 ]]; then
     echo "Trying to fix unmanaged status in NetworkManager..."
     networkmanager_fix_unmanaged
@@ -1412,8 +1773,10 @@ if [[ $CHANNEL == default ]]; then
     USING_DEFAULT_CHANNEL=1
     if [[ $FREQ_BAND == 2.4 ]]; then
         CHANNEL=1
-    else
+    elif [[ $FREQ_BAND == 5 ]]; then
         CHANNEL=36
+    else
+        CHANNEL=1
     fi
 else
     USING_DEFAULT_CHANNEL=0
@@ -1426,6 +1789,7 @@ if [[ $FREQ_BAND != 5 && $CHANNEL -gt 14 ]]; then
 fi
 
 WIFI_IFACE=$1
+PHYS_WIFI_IFACE=$WIFI_IFACE
 
 if ! is_wifi_interface ${WIFI_IFACE}; then
     echo "ERROR: '${WIFI_IFACE}' is not a WiFi interface" >&2
@@ -1593,6 +1957,15 @@ if [[ $NO_VIRT -eq 1 && "$WIFI_IFACE" == "$INTERNET_IFACE" ]]; then
     exit 1
 fi
 
+cleanup_orphaned_create_ap_for_iface ${WIFI_IFACE}
+
+existing_pid=$(get_running_pid_for_wifi_iface ${WIFI_IFACE} || true)
+if [[ -n "$existing_pid" ]]; then
+    echo "ERROR: Hotspot already running on ${WIFI_IFACE} (PID ${existing_pid})." >&2
+    echo "Stop it first: create_ap --stop ${WIFI_IFACE}" >&2
+    exit 1
+fi
+
 mutex_lock
 trap "cleanup" EXIT
 CONFDIR=$(mktemp -d /tmp/create_ap.${WIFI_IFACE}.conf.XXXXXXXX)
@@ -1610,6 +1983,7 @@ mkdir -p $COMMON_CONFDIR
 
 if [[ "$SHARE_METHOD" == "nat" ]]; then
     echo $INTERNET_IFACE > $CONFDIR/nat_internet_iface
+    chmod 444 $CONFDIR/nat_internet_iface
     cp_n /proc/sys/net/ipv4/conf/$INTERNET_IFACE/forwarding \
        $COMMON_CONFDIR/${INTERNET_IFACE}_forwarding
 fi
@@ -1632,6 +2006,7 @@ if [[ $USE_IWCONFIG -eq 0 ]]; then
 fi
 
 if [[ $NO_VIRT -eq 0 ]]; then
+    cleanup_stale_ap_interfaces ${WIFI_IFACE}
     VWIFI_IFACE=$(alloc_new_iface ap)
 
     # in NetworkManager 0.9.9 and above we can set the interface as unmanaged without
@@ -1645,34 +2020,9 @@ if [[ $NO_VIRT -eq 0 ]]; then
     fi
 
 
-    if is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 0 ]]; then
-        WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
-        WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
-        echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
-        if is_5ghz_frequency $WIFI_IFACE_FREQ; then
-            FREQ_BAND=5
-        else
-            FREQ_BAND=2.4
-        fi
-        if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-            if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
-            then
-                echo -e "\nmultiple channels supported"
-            else
-                echo -e  "\nmultiple channels not supported",
-                echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
-                CHANNEL=$WIFI_IFACE_CHANNEL
-            fi
-        else
-            echo "channel------------------ ${CHANNEL}"
-        fi
-    elif is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 1 ]]; then
-        echo "Custom frequency band set with ${FREQ_BAND}Ghz with channel ${CHANNEL}"
-    fi
-
-
-    VIRTDIEMSG="Maybe your WiFi adapter does not fully support virtual interfaces.
-       Try again with --no-virt."
+    VIRTDIEMSG="Maybe your WiFi adapter does not fully support virtual interfaces,
+       or another AP interface is already active on this adapter.
+       Stop any running hotspot first, or try again with --no-virt."
     echo -n "Creating a virtual WiFi interface... "
 
     if iw dev ${WIFI_IFACE} interface add ${VWIFI_IFACE} type __ap; then
@@ -1692,6 +2042,8 @@ else
     OLD_MACADDR=$(get_macaddr ${WIFI_IFACE})
 fi
 
+sync_channel_with_wifi_connection ${PHYS_WIFI_IFACE}
+
 mutex_lock
 echo $WIFI_IFACE > $CONFDIR/wifi_iface
 chmod 444 $CONFDIR/wifi_iface
@@ -1705,7 +2057,7 @@ fi
 if can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}"; then
     echo "Transmitting to channel ${CHANNEL}..."
 else
-    if [[ $USING_DEFAULT_CHANNEL -eq 1 && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+    if [[ $USING_DEFAULT_CHANNEL -eq 1 && -n "$WIFI_IFACE_CHANNEL" && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
         echo -e "Your adapter can not transmit to channel ${CHANNEL}" >&2
         CHANNEL=$WIFI_IFACE_CHANNEL
         echo -e "Falling back to channel ${CHANNEL}"
@@ -1823,6 +2175,10 @@ EOF
 fi
 
 
+if [[ "$SHARE_METHOD" != "bridge" ]]; then
+    adjust_gateway_for_conflicts
+fi
+
 if [[ "$SHARE_METHOD" == "bridge" ]]; then
     echo "bridge=${BRIDGE_IFACE}" >> $CONFDIR/hostapd.conf
 elif [[ $NO_DNSMASQ -eq 0 ]]; then
@@ -1867,6 +2223,8 @@ address=/#/$GATEWAY
 EOF
     fi
 fi
+
+make_confdir_info_readable
 
 # initialize WiFi interface
 if [[ $NO_VIRT -eq 0 && -n "$NEW_MACADDR" ]]; then
@@ -2015,23 +2373,35 @@ STDBUF_PATH=`which stdbuf`
 if [ $? -eq 0 ]; then
     STDBUF_PATH=$STDBUF_PATH" -oL"
 fi
-$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf &
+# Keep hostapd off create_ap stdout so GUI/caller pipes are not closed early (SIGPIPE).
+$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf >> "$CONFDIR/hostapd.log" 2>&1 &
 HOSTAPD_PID=$!
 echo $HOSTAPD_PID > $CONFDIR/hostapd.pid
 
-if ! wait $HOSTAPD_PID; then
-    echo -e "\nError: Failed to run hostapd, maybe a program is interfering." >&2
-    if networkmanager_is_running; then
-        echo "If an error like 'n80211: Could not configure driver mode' was thrown" >&2
-        echo "try running the following before starting create_ap:" >&2
-        if [[ $NM_OLDER_VERSION -eq 1 ]]; then
-            echo "    nmcli nm wifi off" >&2
-        else
-            echo "    nmcli r wifi off" >&2
+sleep 1
+if ! kill -0 $HOSTAPD_PID 2>/dev/null; then
+    if ! wait $HOSTAPD_PID; then
+        echo -e "\nError: Failed to run hostapd, maybe a program is interfering." >&2
+        if networkmanager_is_running; then
+            echo "If an error like 'n80211: Could not configure driver mode' was thrown" >&2
+            echo "try running the following before starting create_ap:" >&2
+            if [[ $NM_OLDER_VERSION -eq 1 ]]; then
+                echo "    nmcli nm wifi off" >&2
+            else
+                echo "    nmcli r wifi off" >&2
+            fi
+            echo "    rfkill unblock wlan" >&2
         fi
-        echo "    rfkill unblock wlan" >&2
+        echo "See $CONFDIR/hostapd.log for details." >&2
+        die
     fi
-    die
+fi
+
+{ printf 'AP-ENABLED\n'; } 2>/dev/null || true
+exec >/dev/null 2>&1
+
+if ! wait $HOSTAPD_PID; then
+    exit 1
 fi
 
 clean_exit

@@ -41,7 +41,7 @@ extern "C" {
 
 static int writePNG(QRcode *qrcode, const char *outfile);
 
-void qr_to_png(const char *qrstring,const char *outfile);
+int qr_to_png(const char *qrstring,const char *outfile);
 
 #ifdef __cplusplus
 }

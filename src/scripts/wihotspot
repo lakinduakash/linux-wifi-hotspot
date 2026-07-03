@@ -1,4 +1,13 @@
 #!/bin/sh
 
-# Start wihotspot-gui
-/usr/bin/wihotspot-gui
+# GUI apps should run as the desktop user; only create_ap needs root (via pkexec).
+if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    SUDO_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+    exec sudo -u "$SUDO_USER" env \
+        DISPLAY="${DISPLAY:-:0}" \
+        XAUTHORITY="${XAUTHORITY:-$SUDO_HOME/.Xauthority}" \
+        DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u "$SUDO_USER")/bus}" \
+        /usr/bin/wihotspot-gui "$@"
+fi
+
+exec /usr/bin/wihotspot-gui "$@"
