@@ -47,6 +47,26 @@ struct Device
 typedef PtrToNode Position;
 typedef PtrToNode Node;
 
+typedef struct {
+    char pid[32];
+    char phy_iface[32];
+    char ap_iface[64];
+} RunningHotspot;
+
+typedef struct {
+    char pid[32];
+    char phy_iface[32];
+    char ap_iface[64];
+    char internet_iface[32];
+    char ssid[64];
+    char passphrase[128];
+    char encryption[64];
+    char gateway[32];
+    char channel[16];
+    char band[16];
+    char hidden[16];
+} HotspotDetails;
+
 static int parse_output(const char *);
 
 const char *build_wh_start_command(char *, char *, char *, char *);
@@ -57,6 +77,9 @@ int startShell(const char *);
 int write_config(char *);
 
 int get_h_running_info(char** a);
+int get_running_hotspots(RunningHotspot **hotspots, int *count);
+void free_running_hotspots(RunningHotspot *hotspots);
+int get_hotspot_details(const char *id, HotspotDetails *details);
 static int init_get_running();
 
 static int init_get_interface_list();

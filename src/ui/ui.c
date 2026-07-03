@@ -53,6 +53,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ERROR_CHANNEL_MSG_5 "Channel must be 1-196"
 #define ERROR_MAC_MSG "Invalid Mac address"
 #define ERROR_GATEWAY_MSG "Invalid gateway IP address"
+#define ERROR_IFACE_MSG "Please select WiFi and Internet interfaces"
+#define ERROR_ALREADY_RUNNING_MSG "Hotspot already running on this WiFi interface. Stop it first."
 
 #define DEFAULT_GATEWAY_IP "192.168.12.1"
 
@@ -105,6 +107,9 @@ GtkProgressBar *progress_bar;
 GtkLabel *label_status;
 GtkLabel *label_input_error;
 
+GtkWidget *hotspot_scrolled;
+GtkWidget *hotspot_listbox;
+
 GtkCssProvider* provider;
 GdkDisplay *display;
 GdkScreen *screen;
@@ -129,36 +134,417 @@ char* running_info[3];
 guint pb_pulse_id;
 static ConfigValues configValues;
 
+static char *get_selected_hotspot_pid(void);
+static void on_hotspot_stop_clicked(GtkButton *button, gpointer user_data);
+static void on_hotspot_qr_clicked(GtkButton *button, gpointer user_data);
+static gboolean wifi_iface_has_running_hotspot(const char *iface);
+static void update_create_button_state(void);
+static void on_combo_wifi_changed(GtkWidget *widget, gpointer data);
+static gboolean idle_refresh_running_info(gpointer data);
+static gboolean idle_apply_running_info(gpointer data);
+static gboolean idle_set_status_label(gpointer data);
+static void *run_stop_shell(void *data);
+static void *fetch_running_info_thread(void *data);
+static void *detach_pclose_thread(void *data);
+static void show_hotspot_info_dialog(GtkWidget *parent, const char *id);
+static gboolean on_hotspot_list_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data);
+
+static void ensure_interface_selection(void) {
+    if (gtk_combo_box_get_active(combo_wifi) < 0 && wifi_iface_list_length > 0)
+        gtk_combo_box_set_active(combo_wifi, 0);
+
+    if (gtk_combo_box_get_active(combo_internet) < 0 && iface_list_length > 0)
+        gtk_combo_box_set_active(combo_internet, 0);
+}
+
+static void clear_hotspot_list(void) {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(hotspot_listbox));
+    GList *iter;
+
+    for (iter = children; iter != NULL; iter = g_list_next(iter))
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
+
+    g_list_free(children);
+}
+
+static void init_hotspot_list_ui(void) {
+    GtkWidget *status_box = gtk_widget_get_parent(GTK_WIDGET(label_status));
+    GtkWidget *list_label = gtk_label_new(NULL);
+
+    gtk_label_set_markup(GTK_LABEL(list_label), "<b>Active Hotspots</b>  <small><i>(right-click for details)</i></small>");
+    gtk_label_set_xalign(GTK_LABEL(list_label), 0.0);
+    gtk_widget_set_margin_start(list_label, 5);
+
+    hotspot_listbox = gtk_list_box_new();
+    gtk_list_box_set_selection_mode(GTK_LIST_BOX(hotspot_listbox), GTK_SELECTION_SINGLE);
+    gtk_widget_set_margin_start(hotspot_listbox, 5);
+    gtk_widget_set_margin_end(hotspot_listbox, 5);
+
+    hotspot_scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(hotspot_scrolled),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(hotspot_scrolled), 90);
+    gtk_container_add(GTK_CONTAINER(hotspot_scrolled), hotspot_listbox);
+
+    gtk_box_pack_start(GTK_BOX(status_box), list_label, FALSE, FALSE, 2);
+    gtk_box_pack_start(GTK_BOX(status_box), hotspot_scrolled, FALSE, FALSE, 2);
+    gtk_box_reorder_child(GTK_BOX(status_box), list_label, 0);
+    gtk_box_reorder_child(GTK_BOX(status_box), hotspot_scrolled, 1);
+
+    gtk_widget_add_events(hotspot_listbox, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(hotspot_listbox, "button-press-event",
+                      G_CALLBACK(on_hotspot_list_button_press), NULL);
+
+    gtk_widget_show_all(status_box);
+}
+
+static void show_hotspot_info_dialog(GtkWidget *parent, const char *id) {
+    HotspotDetails details;
+    GtkWidget *dialog;
+    GtkWidget *content;
+    GtkWidget *toplevel;
+    char body[4096];
+
+    if (get_hotspot_details(id, &details) != 0) {
+        toplevel = parent != NULL ? gtk_widget_get_toplevel(parent) : NULL;
+        dialog = gtk_message_dialog_new(GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL,
+                                        GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_WARNING,
+                                        GTK_BUTTONS_OK,
+                                        "Could not read hotspot details");
+        gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+            "Hotspot data may be unavailable for %s.", id ? id : "selection");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        return;
+    }
+
+    snprintf(body, sizeof(body),
+             "SSID: %s\n"
+             "Password: %s\n"
+             "Security: %s\n"
+             "Hidden: %s\n"
+             "Channel: %s\n"
+             "Band: %s\n"
+             "Gateway: %s\n"
+             "WiFi interface: %s\n"
+             "AP interface: %s\n"
+             "Internet sharing: %s\n"
+             "PID: %s",
+             details.ssid[0] ? details.ssid : "(unknown)",
+             details.passphrase,
+             details.encryption,
+             details.hidden,
+             details.channel[0] ? details.channel : "(unknown)",
+             details.band,
+             details.gateway[0] ? details.gateway : "(unknown)",
+             details.phy_iface[0] ? details.phy_iface : "(unknown)",
+             details.ap_iface[0] ? details.ap_iface : "(unknown)",
+             details.internet_iface,
+             details.pid);
+
+    toplevel = parent != NULL ? gtk_widget_get_toplevel(parent) : NULL;
+    dialog = gtk_message_dialog_new(GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL,
+                                    GTK_DIALOG_MODAL,
+                                    GTK_MESSAGE_INFO,
+                                    GTK_BUTTONS_OK,
+                                    "Hotspot: %s",
+                                    details.ssid[0] ? details.ssid : id);
+    content = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(dialog));
+    gtk_container_set_border_width(GTK_CONTAINER(content), 12);
+    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", body);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}
+
+static gboolean on_hotspot_list_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    GtkListBoxRow *row;
+    GtkWidget *row_box;
+    const char *stop_id;
+
+    (void)data;
+
+    if (event->type != GDK_BUTTON_PRESS || event->button != 3)
+        return FALSE;
+
+    row = gtk_list_box_get_row_at_y(GTK_LIST_BOX(widget), (gint) event->y);
+    if (row == NULL)
+        return FALSE;
+
+    gtk_list_box_select_row(GTK_LIST_BOX(widget), row);
+    row_box = gtk_bin_get_child(GTK_BIN(row));
+    stop_id = g_object_get_data(G_OBJECT(row_box), "hotspot-iface");
+    if (stop_id == NULL)
+        stop_id = g_object_get_data(G_OBJECT(row_box), "hotspot-pid");
+    if (stop_id == NULL)
+        return FALSE;
+
+    show_hotspot_info_dialog(widget, stop_id);
+    return TRUE;
+}
+
+static gboolean wifi_iface_has_running_hotspot(const char *iface) {
+    RunningHotspot *hotspots = NULL;
+    int count = 0;
+    int i;
+    gboolean found = FALSE;
+
+    if (iface == NULL || iface[0] == '\0')
+        return FALSE;
+
+    if (get_running_hotspots(&hotspots, &count) != 0) {
+        free_running_hotspots(hotspots);
+        return FALSE;
+    }
+
+    for (i = 0; i < count; i++) {
+        if (strcmp(hotspots[i].phy_iface, iface) == 0) {
+            found = TRUE;
+            break;
+        }
+    }
+
+    free_running_hotspots(hotspots);
+    return found;
+}
+
+static void update_create_button_state(void) {
+    gchar *wifi = NULL;
+    gboolean can_create = FALSE;
+
+    if (gtk_combo_box_get_active(combo_wifi) >= 0) {
+        wifi = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(combo_wifi));
+        if (wifi != NULL && wifi[0] != '\0' && !wifi_iface_has_running_hotspot(wifi))
+            can_create = TRUE;
+    }
+
+    gtk_widget_set_sensitive(GTK_WIDGET(button_create_hp), can_create);
+    g_free(wifi);
+}
+
+static void on_combo_wifi_changed(GtkWidget *widget, gpointer data) {
+    (void)widget;
+    (void)data;
+    update_create_button_state();
+}
+
+static char *get_stop_target_id(void) {
+    GtkListBoxRow *row = gtk_list_box_get_selected_row(GTK_LIST_BOX(hotspot_listbox));
+
+    if (row == NULL)
+        return NULL;
+
+    GtkWidget *row_box = gtk_bin_get_child(GTK_BIN(row));
+    const char *iface = g_object_get_data(G_OBJECT(row_box), "hotspot-iface");
+    const char *pid = g_object_get_data(G_OBJECT(row_box), "hotspot-pid");
+
+    if (iface != NULL && iface[0] != '\0')
+        return g_strdup(iface);
+    if (pid != NULL && pid[0] != '\0')
+        return g_strdup(pid);
+
+    return NULL;
+}
+
+static void begin_stop_hotspot(const char *stop_id) {
+    char *stop_id_copy;
+
+    if (stop_id == NULL || stop_id[0] == '\0') {
+        set_error_text("Select a hotspot in the Active Hotspots list to stop");
+        return;
+    }
+
+    stop_id_copy = g_strdup(stop_id);
+    gtk_label_set_label(label_status, "Stopping ...");
+    set_error_text("");
+    start_pb_pulse();
+    lock_all_views(TRUE);
+    g_thread_new("stop_hp", run_stop_shell, stop_id_copy);
+}
+
+static char *get_selected_hotspot_pid(void) {
+    return get_stop_target_id();
+}
+
+static void on_hotspot_stop_clicked(GtkButton *button, gpointer user_data) {
+    const char *stop_id = g_object_get_data(G_OBJECT(button), "hotspot-iface");
+
+    (void)user_data;
+
+    if (stop_id == NULL)
+        stop_id = g_object_get_data(G_OBJECT(button), "hotspot-pid");
+    begin_stop_hotspot(stop_id);
+}
+
+static void show_qr_for_hotspot(GtkWidget *widget, const char *hotspot_id) {
+    HotspotDetails details;
+    const char *qr_type;
+    const char *pass;
+    char *image_path;
+
+    if (hotspot_id == NULL || hotspot_id[0] == '\0') {
+        set_error_text("No hotspot selected for QR code");
+        return;
+    }
+
+    if (get_hotspot_details(hotspot_id, &details) != 0) {
+        set_error_text("Could not read hotspot details for QR code");
+        return;
+    }
+
+    if (details.ssid[0] == '\0') {
+        set_error_text("SSID is required to generate QR code");
+        return;
+    }
+
+    if (strcmp(details.encryption, "Open") == 0
+        || strcmp(details.passphrase, "(none)") == 0
+        || details.passphrase[0] == '\0') {
+        pass = "";
+        qr_type = "nopass";
+    } else {
+        pass = details.passphrase;
+        qr_type = "WPA";
+    }
+
+    image_path = generate_qr_image((char *) details.ssid, (char *) qr_type, (char *) pass);
+    if (image_path == NULL) {
+        set_error_text("Failed to generate QR code");
+        return;
+    }
+
+    set_error_text("");
+    open_qr(widget, NULL, image_path);
+}
+
+static void on_hotspot_qr_clicked(GtkButton *button, gpointer user_data) {
+    const char *hotspot_id = g_object_get_data(G_OBJECT(button), "hotspot-iface");
+
+    (void)user_data;
+
+    if (hotspot_id == NULL)
+        hotspot_id = g_object_get_data(G_OBJECT(button), "hotspot-pid");
+    show_qr_for_hotspot(GTK_WIDGET(button), hotspot_id);
+}
+
+static void *run_stop_shell(void *data) {
+    char *stop_id = data;
+
+    startShell(build_kill_create_ap_command(stop_id));
+    g_free(stop_id);
+    g_idle_add(idle_refresh_running_info, NULL);
+    return NULL;
+}
+
+static void add_hotspot_row(const RunningHotspot *hotspot) {
+    GtkWidget *row_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    GtkWidget *info = gtk_label_new(NULL);
+    GtkWidget *qr_btn = gtk_button_new_with_label("QR");
+    GtkWidget *stop_btn = gtk_button_new_with_label("Stop");
+    char text[BUFSIZE];
+    char *pid_copy = g_strdup(hotspot->pid);
+    char *iface_copy = g_strdup(hotspot->phy_iface);
+
+    snprintf(text, BUFSIZE, "PID %s   |   WiFi: %s   |   AP: %s",
+             hotspot->pid, hotspot->phy_iface, hotspot->ap_iface);
+    gtk_label_set_text(GTK_LABEL(info), text);
+    gtk_label_set_xalign(GTK_LABEL(info), 0.0);
+    gtk_widget_set_hexpand(info, TRUE);
+
+    g_object_set_data_full(G_OBJECT(row_box), "hotspot-pid", pid_copy, g_free);
+    g_object_set_data(G_OBJECT(row_box), "hotspot-iface", iface_copy);
+    g_object_set_data(G_OBJECT(qr_btn), "hotspot-pid", pid_copy);
+    g_object_set_data(G_OBJECT(qr_btn), "hotspot-iface", iface_copy);
+    g_object_set_data(G_OBJECT(stop_btn), "hotspot-pid", pid_copy);
+    g_object_set_data_full(G_OBJECT(stop_btn), "hotspot-iface", iface_copy, g_free);
+
+    g_signal_connect(qr_btn, "clicked", G_CALLBACK(on_hotspot_qr_clicked), NULL);
+    g_signal_connect(stop_btn, "clicked", G_CALLBACK(on_hotspot_stop_clicked), NULL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(stop_btn), "stop_button");
+
+    gtk_box_pack_start(GTK_BOX(row_box), info, TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(row_box), stop_btn, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(row_box), qr_btn, FALSE, FALSE, 0);
+
+    gtk_widget_show_all(row_box);
+    gtk_list_box_insert(GTK_LIST_BOX(hotspot_listbox), row_box, -1);
+}
+
+static void update_hotspot_list_view_from(RunningHotspot *hotspots, int count) {
+    int i;
+
+    clear_hotspot_list();
+
+    for (i = 0; i < count; i++)
+        add_hotspot_row(&hotspots[i]);
+
+    if (count > 0) {
+        GtkListBoxRow *first = gtk_list_box_get_row_at_index(GTK_LIST_BOX(hotspot_listbox), 0);
+        if (first != NULL)
+            gtk_list_box_select_row(GTK_LIST_BOX(hotspot_listbox), first);
+    }
+}
+
+static void update_hotspot_list_view(void) {
+    RunningHotspot *hotspots = NULL;
+    int count = 0;
+
+    if (get_running_hotspots(&hotspots, &count) == 0 && count > 0)
+        update_hotspot_list_view_from(hotspots, count);
+    else
+        clear_hotspot_list();
+
+    free_running_hotspots(hotspots);
+}
 
 
 static void *stopHp(void *) {
-    if(running_info[0]!=NULL){
-        gtk_label_set_label(label_status,"Stopping ...");
-        start_pb_pulse();
-        lock_all_views(TRUE);
-        startShell(build_kill_create_ap_command(running_info[0]));
-        g_thread_new("init_running",init_running_info,NULL);
-    }
-    return 0;
+    char *stop_id = get_stop_target_id();
+
+    begin_stop_hotspot(stop_id);
+    g_free(stop_id);
+    return NULL;
 }
 
 static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
-
-    init_config_val_input(&configValues);
-
+    if (init_config_val_input(&configValues) != 0) {
+        set_error_text(ERROR_IFACE_MSG);
+        return;
+    }
 
     if(validator(&configValues) == FALSE){
-        set_error_text("Some inputs are not valid!");
+        const char *err = gtk_label_get_text(label_input_error);
+        if (err == NULL || err[0] == '\0')
+            set_error_text("Some inputs are not valid!");
         return;
     }
     else{
         set_error_text("");
     }
 
+    {
+        RunningHotspot *hotspots = NULL;
+        int running_count = 0;
+        int i;
+
+        if (get_running_hotspots(&hotspots, &running_count) == 0) {
+            for (i = 0; i < running_count; i++) {
+                if (strcmp(hotspots[i].phy_iface, configValues.iface_wifi) == 0) {
+                    set_error_text(ERROR_ALREADY_RUNNING_MSG);
+                    free_running_hotspots(hotspots);
+                    return;
+                }
+            }
+        }
+        free_running_hotspots(hotspots);
+    }
+
 
     startShell(build_wh_mkconfig_command(&configValues));
 
+    start_pb_pulse();
+    lock_all_views(TRUE);
     g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
 
 
@@ -174,9 +560,16 @@ static void on_about_open_click(GtkWidget *widget, gpointer data){
 }
 
 static void on_qr_open_click(GtkWidget *widget, gpointer data){
+    const char *hotspot_id = get_stop_target_id();
 
-    char* image_path = generate_qr_image(configValues.ssid,"WPA",configValues.pass);
-    open_qr(widget,data,image_path);
+    if (hotspot_id != NULL) {
+        show_qr_for_hotspot(widget, hotspot_id);
+        g_free((gpointer) hotspot_id);
+        return;
+    }
+
+    (void)data;
+    set_error_text("No active hotspot for QR code");
 }
 
 
@@ -413,6 +806,7 @@ int initUi(int argc, char *argv[]){
     button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
     button_qr = (GtkButton *) gtk_builder_get_object(builder, "button_qr");
     button_refresh = (GtkButton *)gtk_builder_get_object(builder, "button_refresh");
+    gtk_widget_hide(GTK_WIDGET(button_qr));
 
     grid_devices = (GtkGrid *)gtk_builder_get_object(builder, "grid_devices");
 
@@ -452,6 +846,8 @@ int initUi(int argc, char *argv[]){
 
     progress_bar = (GtkProgressBar *) gtk_builder_get_object(builder, "progress_bar");
 
+    init_hotspot_list_ui();
+
     loadStyles();
     init_style_contexts();
 
@@ -480,12 +876,13 @@ int initUi(int argc, char *argv[]){
 
     g_signal_connect (entry_gateway, "changed", G_CALLBACK(entry_gateway_warn), NULL);
 
+    g_signal_connect(combo_wifi, "changed", G_CALLBACK(on_combo_wifi_changed), NULL);
+
     g_signal_connect (rb_freq_2, "toggled", G_CALLBACK(update_freq_toggle), NULL);
     g_signal_connect (rb_freq_5, "toggled", G_CALLBACK(update_freq_toggle), NULL);
     g_signal_connect (rb_freq_auto, "toggled", G_CALLBACK(update_freq_toggle), NULL);
 
 
-    start_pb_pulse();
     g_thread_new("init_running",init_running_info,NULL);
 
     init_interface_list();
@@ -514,7 +911,7 @@ void init_ui_from_config(){
         if(values->pass!=NULL)
             gtk_entry_set_text(entry_pass,values->pass);
 
-        if(strcmp(values->pass,"")==0|| values->pass==NULL)
+        if(values->pass==NULL || strcmp(values->pass,"")==0)
             // This line will trigger on_cb_open_toggle callback and disable the entry_pass
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
 
@@ -609,11 +1006,13 @@ void init_ui_from_config(){
         }
 
         char *macs =read_mac_filter_file(values->accepted_mac_file);
-        if (macs!=NULL && !strlen(macs)<1){
+        if (macs!=NULL && strlen(macs) > 0){
             gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
         }
 
     }
+
+    ensure_interface_selection();
 }
 
 void init_interface_list(){
@@ -632,6 +1031,7 @@ void init_interface_list(){
         gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo_wifi), wifi_iface_list[i]);
     }
 
+    ensure_interface_selection();
 }
 
 
@@ -640,7 +1040,7 @@ void lock_all_views(gboolean set_lock){
         gtk_editable_set_editable( (GtkEditable*)entry_ssd,FALSE);
         gtk_editable_set_editable( (GtkEditable*)entry_pass,FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
-        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
+        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
         gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, FALSE);
@@ -659,41 +1059,32 @@ void lock_all_views(gboolean set_lock){
 
 
 void lock_running_views(gboolean set_lock){
-    if(set_lock){
-        gtk_editable_set_editable( (GtkEditable*)entry_ssd,FALSE);
-        gtk_editable_set_editable( (GtkEditable*)entry_pass,FALSE);
-        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, FALSE);
+    gtk_editable_set_editable(GTK_EDITABLE(entry_ssd), TRUE);
+    gtk_editable_set_editable(GTK_EDITABLE(entry_pass), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(combo_internet), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(combo_wifi), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(button_stop_hp), set_lock);
 
-        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, TRUE);
-        gtk_widget_set_sensitive ((GtkWidget*)button_qr, TRUE);
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter)))
+        gtk_widget_set_sensitive(GTK_WIDGET(tv_mac_filter), TRUE);
+    else
+        gtk_widget_set_sensitive(GTK_WIDGET(tv_mac_filter), FALSE);
 
-        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, FALSE);
-        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, FALSE);
-
-        gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, FALSE);
-    } else{
-        gtk_editable_set_editable( (GtkEditable*)entry_ssd,TRUE);
-        gtk_editable_set_editable( (GtkEditable*)entry_pass,TRUE);
-        gtk_widget_set_sensitive ((GtkWidget*)button_create_hp, TRUE);
-
-        gtk_widget_set_sensitive ((GtkWidget*)button_stop_hp, FALSE);
-        gtk_widget_set_sensitive ((GtkWidget*)button_qr, FALSE);
-
-        gtk_widget_set_sensitive ((GtkWidget*)combo_internet, TRUE);
-        gtk_widget_set_sensitive ((GtkWidget*)combo_wifi, TRUE);
-
-        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter)))
-            gtk_widget_set_sensitive ((GtkWidget*)tv_mac_filter, TRUE);
-    }
+    update_create_button_state();
 }
 
 static guint start_pb_pulse(){
+    if (pb_pulse_id > 0)
+        g_source_remove(pb_pulse_id);
     gtk_widget_set_visible((GtkWidget*)progress_bar,TRUE);
-    return pb_pulse_id= g_timeout_add (100, update_progress_in_timeout, progress_bar);
+    return pb_pulse_id = g_timeout_add(100, update_progress_in_timeout, progress_bar);
 }
 
 static void stop_pb_pulse(){
-    g_source_remove(pb_pulse_id);
+    if (pb_pulse_id > 0) {
+        g_source_remove(pb_pulse_id);
+        pb_pulse_id = 0;
+    }
     gtk_widget_set_visible((GtkWidget*)progress_bar,FALSE);
 }
 
@@ -710,41 +1101,79 @@ void clear_running_info(){
         running_info[0]=NULL;
 }
 
-void* init_running_info(void *){
+typedef struct {
+    RunningHotspot *hotspots;
+    int count;
+    int fetch_ok;
+} RunningInfoData;
+
+static gboolean idle_set_status_label(gpointer data) {
+    gtk_label_set_label(label_status, (const char *) data);
+    g_free(data);
+    return G_SOURCE_REMOVE;
+}
+
+static gboolean idle_apply_running_info(gpointer data) {
+    RunningInfoData *info = data;
+    char status[BUFSIZE];
 
     clear_running_info();
-    lock_all_views(TRUE);
 
-    gtk_label_set_label(label_status,"Getting running info...");
-
-    get_h_running_info(running_info);
-
-    if(running_info[0]!=NULL){
-
-        char a[BUFSIZE];
-        snprintf(a,BUFSIZE,"Running as PID: %s",running_info[0]);
-        gtk_label_set_label(label_status,a);
-
+    if (info->fetch_ok == 0 && info->count > 0) {
+        update_hotspot_list_view_from(info->hotspots, info->count);
+        running_info[0] = g_strdup(info->hotspots[0].pid);
+        snprintf(status, BUFSIZE, "%d active hotspot(s) — pick a free WiFi interface to create another", info->count);
+        gtk_label_set_label(label_status, status);
         lock_all_views(FALSE);
         lock_running_views(TRUE);
-
-
-    } else{
-
-        gtk_label_set_label(label_status,"Not running");
+        set_connected_devices_label();
+    } else {
+        clear_hotspot_list();
+        gtk_label_set_label(label_status, "Not running");
         lock_all_views(FALSE);
         lock_running_views(FALSE);
+        clear_connecetd_devices_list();
     }
 
+    free_running_hotspots(info->hotspots);
+    g_free(info);
     stop_pb_pulse();
+    return G_SOURCE_REMOVE;
+}
+
+static void *fetch_running_info_thread(void *data) {
+    RunningInfoData *info = data;
+
+    info->fetch_ok = get_running_hotspots(&info->hotspots, &info->count);
+    g_idle_add(idle_apply_running_info, info);
+    return NULL;
+}
+
+static void *detach_pclose_thread(void *data) {
+    pclose((FILE *) data);
+    return NULL;
+}
+
+void* init_running_info(void *){
+    RunningInfoData *info = g_malloc0(sizeof(RunningInfoData));
+
+    gtk_label_set_label(label_status, "Getting running info...");
+    lock_all_views(TRUE);
+    start_pb_pulse();
+
+    g_thread_new("fetch_running", fetch_running_info_thread, info);
     return 0;
+}
+
+static gboolean idle_refresh_running_info(gpointer data) {
+    init_running_info(data);
+    return G_SOURCE_REMOVE;
 }
 
 
 static void *run_create_hp_shell(void *cmd) {
 
     char buf[BUFSIZE];
-    char buf2[BUFSIZE];
     FILE *fp;
 
     if(configValues.freq){
@@ -753,67 +1182,51 @@ static void *run_create_hp_shell(void *cmd) {
 
         if ((fp = popen(cmd, "r")) == NULL) {
             printf("Error opening pipe!\n");
+            g_idle_add(idle_refresh_running_info, NULL);
             return NULL;
         }
     }
     else{
         if ((fp = popen(cmd, "r")) == NULL) {
             printf("Error opening pipe!\n");
+            g_idle_add(idle_refresh_running_info, NULL);
             return NULL;
         }
     }
 
-
-
-    start_pb_pulse();
-
     while (fgets(buf, BUFSIZE, fp) != NULL) {
         buf[strcspn(buf, "\n")] = 0;
-        gtk_label_set_label(label_status,buf);
+        g_idle_add(idle_set_status_label, g_strdup(buf));
 
         if (strstr(buf, AP_ENABLED) != NULL) {
-            init_running_info(NULL);
-            pclose(fp);
-            return 0;
+            g_idle_add(idle_refresh_running_info, NULL);
+            g_thread_new("create_ap_reap", detach_pclose_thread, fp);
+            return NULL;
         }
     }
 
-    if (pclose(fp)) {
-        printf("Command not found or exited with error status\n");
-        init_running_info(NULL);
-        return NULL;
-    }
-
-    init_running_info(NULL);
+    pclose(fp);
+    g_idle_add(idle_refresh_running_info, NULL);
     return 0;
 }
 
 
 static gboolean validator(ConfigValues *cv){
 
+    if(cv->ssid ==NULL || strlen(cv->ssid) < 1)
+    {
+        set_error_text(ERROR_SSID_MSG);
+        return FALSE;
+    }
 
     if(cv->pass !=NULL)
     {
         size_t len = strlen(cv->pass);
 
-        if(len<8){
-            if(len>0)
+        if(len > 0 && len < 8){
+            set_error_text(ERROR_PASS_MSG);
             return FALSE;
         }
-    }
-
-    if(cv->ssid !=NULL)
-    {
-        size_t len = strlen(cv->ssid);
-
-        if(len<1){
-            return FALSE;
-        }
-    }
-
-    if(cv->ssid ==NULL)
-    {
-        return FALSE;
     }
 
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))==TRUE) {
@@ -828,45 +1241,58 @@ static gboolean validator(ConfigValues *cv){
 
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_channel))==TRUE){
 
-        if(cv->channel==NULL)
+        if(cv->channel==NULL || cv->channel[0] == '\0') {
+            set_error_text(ERROR_CHANNEL_MSG);
             return FALSE;
+        }
 
         char *end;
         long li;
         char *c=strdup(cv->channel);
         li = strtol(c,&end,10);
 
-        if (end == c) {
-            fprintf(stderr, "%s: not a decimal number\n", c);
-            return FALSE;
-        } else if ('\0' != *end) {
-            fprintf(stderr, "%s: extra characters at end of input: %s\n", c, end);
+        if (end == c || '\0' != *end) {
+            set_error_text(ERROR_CHANNEL_MSG);
+            free(c);
             return FALSE;
         }
-
 
         if(cv->freq==NULL){
-            if(!(li<=196 && li>0))
+            if(!(li<=196 && li>0)) {
+                set_error_text(ERROR_CHANNEL_MSG);
+                free(c);
                 return FALSE;
+            }
         }
         else if(strcmp(cv->freq,"2.4")==0){
-            if(!(li<=11 && li>0))
+            if(!(li<=11 && li>0)) {
+                set_error_text(ERROR_CHANNEL_MSG_2);
+                free(c);
                 return FALSE;
+            }
         } else if(strcmp(cv->freq,"5")==0){
-            if(!(li<=196 && li>0))
+            if(!(li<=196 && li>0)) {
+                set_error_text(ERROR_CHANNEL_MSG_5);
+                free(c);
                 return FALSE;
+            }
         }
+        free(c);
 
     }
 
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac_filter))==TRUE){
-        if (isValidAcceptedMacs(get_accepted_macs())==-1)
+        if (isValidAcceptedMacs(get_accepted_macs())==-1) {
+            set_error_text(ERROR_MAC_MSG);
             return FALSE;
+        }
     }
 
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_gateway))==TRUE){
-        if (isValidIPaddress(cv->gateway)==-1)
+        if (cv->gateway == NULL || isValidIPaddress(cv->gateway)==-1) {
+            set_error_text(ERROR_GATEWAY_MSG);
             return FALSE;
+        }
     }
 
 
@@ -1037,16 +1463,18 @@ static void set_connected_devices_label()
 }
 
 /**
- * When conncetd devices refresh button clicked
-*/
+ * When connected devices refresh button clicked
+ */
 static void on_refresh_clicked(GtkWidget *widget, gpointer data)
 {
-    if (running_info[0] != NULL)
-    {
+    (void)widget;
+    (void)data;
+
+    if (running_info[0] != NULL && running_info[0][0] != '\0') {
         set_connected_devices_label();
-    }
-    else {
+    } else {
         clear_connecetd_devices_list();
+        gtk_label_set_label(label_status, "No active hotspot — connect devices list is empty");
     }
 }
 
