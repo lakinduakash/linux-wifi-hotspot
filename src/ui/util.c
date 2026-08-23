@@ -96,6 +96,8 @@ int isValidMacAddress(const char* mac) {
 
 
 int isValidAcceptedMacs(const char *macs){
+    if (macs == NULL)
+        return -1;
 
     /* Compile regular expression */
     reti = regcomp(&regex, "^(((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*)(^((([0-9A-Fa-f]{2}):){5}[0-9A-Fa-f]{2}\\s*))*)$", REG_EXTENDED);
@@ -122,6 +124,8 @@ int isValidAcceptedMacs(const char *macs){
 }
 
 int isValidIPaddress(const char * ip){
+    if (ip == NULL)
+        return -1;
 
 
      /* Compile regular expression */
@@ -148,4 +152,4 @@ int isValidIPaddress(const char * ip){
         return -1;
     }
 
-}
+}

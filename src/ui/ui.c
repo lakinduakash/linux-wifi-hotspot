@@ -131,7 +131,7 @@ static ConfigValues configValues;
 
 
 
-static void *stopHp(void *) {
+static void *stopHp() {
     if(running_info[0]!=NULL){
         gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
@@ -514,7 +514,7 @@ void init_ui_from_config(){
         if(values->pass!=NULL)
             gtk_entry_set_text(entry_pass,values->pass);
 
-        if(strcmp(values->pass,"")==0|| values->pass==NULL)
+        if(values->pass==NULL || strcmp(values->pass,"")==0)
             // This line will trigger on_cb_open_toggle callback and disable the entry_pass
             gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cb_open),TRUE);
 
@@ -534,44 +534,44 @@ void init_ui_from_config(){
             }
         }
 
-        if(strcmp(values->hidden,"1")==0){
+        if(values->hidden!=NULL && strcmp(values->hidden,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_hidden,TRUE);
         }
 
-        if(strcmp(values->no_haveged,"1")==0){
+        if(values->no_haveged!=NULL && strcmp(values->no_haveged,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_no_haveged,TRUE);
         }
 
-        if(strcmp(values->use_psk,"1")==0){
+        if(values->use_psk!=NULL && strcmp(values->use_psk,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_psk,TRUE);
         }
 
-        if(strcmp(values->ieee80211n,"1")==0){
+        if(values->ieee80211n!=NULL && strcmp(values->ieee80211n,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211n,TRUE);
         }
 
-        if(strcmp(values->ieee80211ac,"1")==0){
+        if(values->ieee80211ac!=NULL && strcmp(values->ieee80211ac,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ac,TRUE);
         }
 
-        if(strcmp(values->ieee80211ax,"1")==0){
+        if(values->ieee80211ax!=NULL && strcmp(values->ieee80211ax,"1")==0){
 
             gtk_toggle_button_set_active((GtkToggleButton*) cb_ieee80211ax,TRUE);
         }
 
-        if(strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
+        if(values->channel!=NULL && strcmp(values->channel,"")!=0 && strcmp(values->channel,"default")!=0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_channel,TRUE);
             gtk_entry_set_text(entry_channel,values->channel);
         } else {
             gtk_widget_set_sensitive((GtkWidget*)entry_channel, FALSE);
         }
 
-        if(strcmp(values->freq,"2.4")==0 || strcmp(values->freq,"5")==0 ){
+        if(values->freq!=NULL && (strcmp(values->freq,"2.4")==0 || strcmp(values->freq,"5")==0)){
 
             if(strcmp(values->freq,"2.4")==0){
                 gtk_toggle_button_set_active((GtkToggleButton*) rb_freq_2,TRUE);
@@ -581,19 +581,19 @@ void init_ui_from_config(){
             }
         }
 
-        if(strcmp(values->mac,"")!=0){
+        if(values->mac!=NULL && strcmp(values->mac,"")!=0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_mac,TRUE);
             gtk_entry_set_text(entry_mac,values->mac);
         } else {
             gtk_widget_set_sensitive((GtkWidget*)entry_mac, FALSE);
         }
 
-        if(strcmp(values->no_virt,"1")==0){
+        if(values->no_virt!=NULL && strcmp(values->no_virt,"1")==0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_novirt,TRUE);
         }
 
         // Check if default ip is set as gateway
-        if(strcmp(values->gateway,DEFAULT_GATEWAY_IP)!=0){
+        if(values->gateway!=NULL && strcmp(values->gateway,DEFAULT_GATEWAY_IP)!=0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_gateway,TRUE);
             gtk_entry_set_text(entry_gateway,values->gateway);
         } else {
@@ -602,7 +602,7 @@ void init_ui_from_config(){
             gtk_entry_set_text(entry_gateway,values->gateway);
         }
 
-        if(strcmp(values->mac_filter,"1")==0){
+        if(values->mac_filter!=NULL && strcmp(values->mac_filter,"1")==0){
             gtk_toggle_button_set_active((GtkToggleButton*) cb_mac_filter,TRUE);
         } else {
             gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, FALSE);
@@ -710,7 +710,7 @@ void clear_running_info(){
         running_info[0]=NULL;
 }
 
-void* init_running_info(void *){
+void* init_running_info(){
 
     clear_running_info();
     lock_all_views(TRUE);
@@ -772,19 +772,18 @@ static void *run_create_hp_shell(void *cmd) {
         gtk_label_set_label(label_status,buf);
 
         if (strstr(buf, AP_ENABLED) != NULL) {
-            init_running_info(NULL);
-            pclose(fp);
+            init_running_info();
             return 0;
         }
     }
 
     if (pclose(fp)) {
         printf("Command not found or exited with error status\n");
-        init_running_info(NULL);
+        init_running_info();
         return NULL;
     }
 
-    init_running_info(NULL);
+    init_running_info();
     return 0;
 }
 
