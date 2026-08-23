@@ -625,7 +625,7 @@ networkmanager_rm_unmanaged_if_needed() {
 }
 
 networkmanager_wait_until_unmanaged() {
-    local RES
+    local RES n=0
     networkmanager_is_running || return 1
     while :; do
         networkmanager_iface_is_unmanaged "$1"
@@ -633,6 +633,15 @@ networkmanager_wait_until_unmanaged() {
         [[ $RES -eq 0 ]] && break
         [[ $RES -eq 2 ]] && die "Interface '${1}' does not exist.
        It's probably renamed by a udev rule."
+        # Some NetworkManager versions ignore 'unmanaged-devices' from the
+        # config for interfaces created at runtime; the device then never
+        # reports state 'unmanaged' and this loop would spin forever.
+        # Give NM a couple of polls to honor the config, then force it
+        # at device level (idempotent, supported by all nmcli versions).
+        if [[ $n -ge 2 ]]; then
+            nmcli device set "$1" managed no 2>/dev/null
+        fi
+        ((n++))
         sleep 1
     done
     sleep 2
