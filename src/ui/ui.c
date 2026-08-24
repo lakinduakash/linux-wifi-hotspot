@@ -131,7 +131,7 @@ static ConfigValues configValues;
 
 
 
-static void *stopHp() {
+static void *stopHp(void *) {
     if(running_info[0]!=NULL){
         gtk_label_set_label(label_status,"Stopping ...");
         start_pb_pulse();
@@ -599,7 +599,7 @@ void init_ui_from_config(){
         } else {
             gtk_widget_set_sensitive((GtkWidget*)entry_gateway, FALSE);
             gtk_toggle_button_set_active((GtkToggleButton*) cb_gateway,FALSE); // Check this line needed
-            gtk_entry_set_text(entry_gateway,values->gateway);
+            gtk_entry_set_text(entry_gateway, values->gateway ? values->gateway : DEFAULT_GATEWAY_IP);
         }
 
         if(values->mac_filter!=NULL && strcmp(values->mac_filter,"1")==0){
@@ -608,9 +608,11 @@ void init_ui_from_config(){
             gtk_widget_set_sensitive((GtkWidget*)tv_mac_filter, FALSE);
         }
 
-        char *macs =read_mac_filter_file(values->accepted_mac_file);
-        if (macs!=NULL && !strlen(macs)<1){
-            gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
+        if(values->accepted_mac_file!=NULL){
+            char *macs =read_mac_filter_file(values->accepted_mac_file);
+            if (macs!=NULL && strlen(macs)>0){
+                gtk_text_buffer_set_text(buffer_mac_filter,macs,strlen(macs));
+            }
         }
 
     }
@@ -710,7 +712,7 @@ void clear_running_info(){
         running_info[0]=NULL;
 }
 
-void* init_running_info(){
+void* init_running_info(void *){
 
     clear_running_info();
     lock_all_views(TRUE);
@@ -765,25 +767,29 @@ static void *run_create_hp_shell(void *cmd) {
 
 
 
+    int ap_enabled = 0;
+
     start_pb_pulse();
 
+    /* keep draining until create_ap exits: returning early would leak the
+       popen() handle and can block the child on a full pipe buffer */
     while (fgets(buf, BUFSIZE, fp) != NULL) {
         buf[strcspn(buf, "\n")] = 0;
         gtk_label_set_label(label_status,buf);
 
-        if (strstr(buf, AP_ENABLED) != NULL) {
-            init_running_info();
-            return 0;
+        if (!ap_enabled && strstr(buf, AP_ENABLED) != NULL) {
+            ap_enabled = 1;
+            init_running_info(NULL);
         }
     }
 
     if (pclose(fp)) {
         printf("Command not found or exited with error status\n");
-        init_running_info();
+        init_running_info(NULL);
         return NULL;
     }
 
-    init_running_info();
+    init_running_info(NULL);
     return 0;
 }
 
