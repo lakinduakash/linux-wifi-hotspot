@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "read_config.h"
 
-#define CONFIG_KEY_COUNT 30
+#define CONFIG_KEY_COUNT 64
 #define STRING_MAX_LENGTH 100
 #define BUFSIZE 150
 
@@ -68,6 +68,10 @@ int read_config_file() {
             auto name = line.substr(0, delimiterPos);
             auto value = line.substr(delimiterPos + 1);
 
+            if (i >= CONFIG_KEY_COUNT) {
+                std::cerr << "create_ap-gui: too many entries in config file, ignoring the rest.\n";
+                break;
+            }
             strcpy(configs[i],value.c_str());
             setConfigValues(name.c_str(),configs[i]);
             //std::cout << name << " " << value << '\n';
