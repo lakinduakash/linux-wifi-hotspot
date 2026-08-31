@@ -100,6 +100,24 @@
                 <property name="position">3</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkCheckButton" id="check_otp">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="label" translatable="yes">One-time password</property>
+                <property name="tooltip_text" translatable="yes">
+                  Generate a random password valid only for this hotspot session
+                </property>
+                <property name="receives_default">False</property>
+                <signal name="toggled" handler="on_otp_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="padding">2</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
