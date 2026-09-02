@@ -65,21 +65,76 @@ static const char* g_pass=NULL;
 
 static char* qr_image_path;
 
+static char last_shell_error[BUFSIZE];
+static char last_shell_line[BUFSIZE];
+
 //config_t cfg;
+
+void clear_last_shell_error(void){
+    last_shell_error[0] = '\0';
+    last_shell_line[0] = '\0';
+}
+
+const char* get_last_shell_error(void){
+
+    if(last_shell_error[0] != '\0')
+        return last_shell_error;
+
+    return last_shell_line[0] != '\0' ? last_shell_line : NULL;
+}
+
+void record_shell_error_line(const char *line){
+
+    while (*line == ' ')
+        line++;
+
+    if(*line == '\0')
+        return;
+
+    // Not every failure is tagged: the root check, hostapd and pkexec all
+    // print plain text, so keep the last real line as a fallback
+    if(strncmp(line, "Doing cleanup", 13) != 0 && strcmp(line, "done") != 0)
+        snprintf(last_shell_line, BUFSIZE, "%s", line);
+
+    // The first ERROR: line names the actual cause, later ones are fallout
+    if(last_shell_error[0] != '\0')
+        return;
+
+    if(strncmp(line, "ERROR:", 6) == 0){
+        const char *msg = line + 6;
+        while (*msg == ' ')
+            msg++;
+        snprintf(last_shell_error, BUFSIZE, "%s", msg);
+    }
+    else if(strstr(line, "Not authorized") != NULL || strstr(line, "dismissed") != NULL){
+        snprintf(last_shell_error, BUFSIZE, "Authorization failed or was cancelled");
+    }
+}
 
 static int parse_output(const char *cmd) {
 
     char buf[BUFSIZE];
+    char cmd_line[BUFSIZE + 8];
     FILE *fp;
 
-    if ((fp = popen(cmd, "r")) == NULL) {
+    clear_last_shell_error();
+
+    // create_ap reports every failure on stderr, so fold it into the pipe -
+    // otherwise the caller has no way to tell the user what went wrong.
+    // The braces keep the redirect applied to the whole command.
+    snprintf(cmd_line, sizeof(cmd_line), "{ %s ; } 2>&1", cmd);
+
+    if ((fp = popen(cmd_line, "r")) == NULL) {
         printf("Error opening pipe!\n");
+        snprintf(last_shell_error, BUFSIZE, "Could not run %s", CREATE_AP);
         return -1;
     }
 
     while (fgets(buf, BUFSIZE, fp) != NULL) {
         // Do whatever you want here...
         printf("%s", buf);
+        buf[strcspn(buf, "\n")] = '\0';
+        record_shell_error_line(buf);
     }
 
     if (pclose(fp)) {
@@ -365,6 +420,29 @@ char** get_interface_list(int *length){
 
     return NULL;
 
+}
+
+
+// Interface carrying the default route, i.e. the one that actually has
+// Internet. Returns NULL when there is no default route.
+const char* get_default_route_interface(){
+
+    static char iface[64];
+    FILE *fp;
+
+    iface[0] = '\0';
+
+    if ((fp = popen("ip -o route show default 2>/dev/null | awk '{print $5; exit}'", "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        return NULL;
+    }
+
+    if (fgets(iface, sizeof(iface), fp) != NULL)
+        iface[strcspn(iface, "\n")] = '\0';
+
+    pclose(fp);
+
+    return iface[0] != '\0' ? iface : NULL;
 }
 
 
