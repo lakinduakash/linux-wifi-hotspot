@@ -1681,7 +1681,7 @@ if [[ $NO_VIRT -eq 0 ]]; then
             FREQ_BAND=2.4
         fi
         if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-            if ( get_adapter_info ${IFACE} | grep "#channels <= 2" -q )
+            if ( get_adapter_info ${WIFI_IFACE} | grep "#channels <= 2" -q )
             then
                 echo -e "\nmultiple channels supported"
             else
