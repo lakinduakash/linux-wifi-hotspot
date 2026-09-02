@@ -153,6 +153,22 @@ const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid
     return cmd_start;
 }
 
+static char *get_current_wifi_channel()
+{
+    static char channel[8] = {0};
+    FILE *fp = popen("nmcli -t -f ACTIVE,CHAN dev wifi | awk -F: '$1==\"yes\"{print $2}'", "r");
+    if (!fp)
+    {
+        return NULL;
+    }
+    if (fgets(channel, sizeof(channel), fp) != NULL)
+    {
+        channel[strcspn(channel, "\n")] = '\0';
+    }
+    pclose(fp);
+
+    return strlen(channel) ? channel : NULL;
+}
 
 const char *build_wh_mkconfig_command(ConfigValues* cv){
 
@@ -177,12 +193,25 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
     if(cv->no_haveged!=NULL && (strcmp(cv->no_haveged,"1") == 0))
         strcat(cmd_mkconfig," --no-haveged ");
 
-    if(cv->channel!=NULL && (strcmp(cv->channel,"default") != 0) && (cv->freq==NULL||(strcmp(cv->freq,"2.4") == 0)|| (strcmp(cv->freq,"5") == 0))){
+    if (cv->freq == NULL || strcmp(cv->freq, "2.4") == 0 || strcmp(cv->freq, "5") == 0)
+    {
+        const char *channel = NULL;
 
-            strcat(cmd_mkconfig," -c ");
-            strcat(cmd_mkconfig,cv->channel);
+        if (cv->channel != NULL && strcmp(cv->channel, "default") != 0)
+        {
+            channel = cv->channel;
+        }
+        else
+        {
+            channel = get_current_wifi_channel();
+        }
+
+        if (channel != NULL && strlen(channel) > 0)
+        {
+            strcat(cmd_mkconfig, " -c ");
+            strcat(cmd_mkconfig, channel);
+        }
     }
-
     if(cv->ieee80211n!=NULL && (strcmp(cv->ieee80211n,"1") == 0)){
         strcat(cmd_mkconfig," --ieee80211n ");
     }
