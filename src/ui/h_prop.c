@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 //#include <libconfig.h>
 
 #include "h_prop.h"
@@ -63,7 +64,20 @@ static char accepted_macs[BUFSIZE];
 static const char* g_ssid=NULL;
 static const char* g_pass=NULL;
 
-static char* qr_image_path;
+static char qr_image_path[128];
+
+static char create_ap_invocation[64];
+
+// The GUI normally runs unprivileged and elevates per command, but it can be
+// started as root, in which case pkexec is unnecessary and often unavailable.
+static const char *get_create_ap_invocation(void) {
+    if (geteuid() == 0)
+        snprintf(create_ap_invocation, sizeof(create_ap_invocation), "%s", CREATE_AP);
+    else
+        snprintf(create_ap_invocation, sizeof(create_ap_invocation), "%s %s", SUDO, CREATE_AP);
+
+    return create_ap_invocation;
+}
 
 static char last_shell_error[BUFSIZE];
 static char last_shell_line[BUFSIZE];
@@ -148,7 +162,8 @@ static int parse_output(const char *cmd) {
 
 const char *build_wh_start_command(char *iface_src, char *iface_dest, char *ssid, char *pass) {
 
-    snprintf(cmd_start, BUFSIZE, "%s %s %s %s %s %s", SUDO, CREATE_AP, iface_src, iface_dest, ssid, pass);
+    snprintf(cmd_start, BUFSIZE, "%s %s %s %s %s", get_create_ap_invocation(),
+             iface_src, iface_dest, ssid, pass);
 
     return cmd_start;
 }
@@ -158,7 +173,9 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
 
     const char* config_ffile_name=get_config_file(CONFIG_FILE_NAME);
 
-    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s %s '%s' '%s' %s %s",SUDO, CREATE_AP, cv->iface_wifi, cv->iface_inet, cv->ssid, cv->pass,MKCONFIG,config_ffile_name);
+    snprintf(cmd_mkconfig, BUFSIZE, "%s %s %s '%s' '%s' %s %s",
+             get_create_ap_invocation(), cv->iface_wifi, cv->iface_inet,
+             cv->ssid, cv->pass, MKCONFIG, config_ffile_name);
 
     if(cv->freq!=NULL){
         strcat(cmd_mkconfig," --freq-band ");
@@ -218,7 +235,8 @@ const char *build_wh_mkconfig_command(ConfigValues* cv){
 
 const char *build_wh_from_config(){
 
-    snprintf(cmd_config, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,LOAD_CONFIG,get_config_file(CONFIG_FILE_NAME));
+    snprintf(cmd_config, BUFSIZE, "%s %s %s", get_create_ap_invocation(),
+             LOAD_CONFIG, get_config_file(CONFIG_FILE_NAME));
     return cmd_config;
 
 }
@@ -229,7 +247,7 @@ int startShell(const char *cmd) {
 
 
 const char* build_kill_create_ap_command(char* pid){
-    snprintf(cmd_kill, BUFSIZE, "%s %s %s %s", SUDO, CREATE_AP,STOP,pid);
+    snprintf(cmd_kill, BUFSIZE, "%s %s %s", get_create_ap_invocation(), STOP, pid);
     return cmd_kill;
 }
 
@@ -237,7 +255,10 @@ void write_accepted_macs(char* filename, char* accepted_macs){
 
     printf("mac filter file %s \n",filename);
 
-    snprintf(cmd_write_mac,BUFSIZE,"%s '%s' %s %s","echo", accepted_macs, "| pkexec -u root tee", filename);
+    if (geteuid() == 0)
+        snprintf(cmd_write_mac, BUFSIZE, "echo '%s' | tee %s", accepted_macs, filename);
+    else
+        snprintf(cmd_write_mac, BUFSIZE, "%s '%s' %s %s", "echo", accepted_macs, "| pkexec -u root tee", filename);
     int r=system(cmd_write_mac);
 
 }
@@ -298,7 +319,7 @@ char * read_mac_filter_file(char * filename){
 static int init_get_running(){
 
     char cmd[BUFSIZE];
-    snprintf(cmd, BUFSIZE, "%s %s --list-running",SUDO, CREATE_AP);
+    snprintf(cmd, BUFSIZE, "%s --list-running", get_create_ap_invocation());
 
     FILE *fp;
 
@@ -517,34 +538,26 @@ char** get_wifi_interface_list(int *length){
 char* generate_qr_image(char* ssid,char* type,char *password){
     char cmd[BUFSIZE];
 
-    qr_image_path = "/tmp/wihotspot_qr.png";
+    const char *ssid_safe = ssid ? ssid : "";
+    const char *type_safe = type ? type : "WPA";
+    const char *pass_safe = password ? password : "";
 
-    // snprintf(cmd, BUFSIZE, "%s -s 10 -d 256 -o %s 'WIFI:S:%s;T:%s;P:%s;;' ","qrencode",qr_image_path, ssid,type,password);
+    // one file per user, so two accounts on the same machine can't collide
+    snprintf(qr_image_path, sizeof(qr_image_path), "/tmp/wihotspot_qr_%d.png", getuid());
+    unlink(qr_image_path);
 
-    // FILE *fp;
+    if (ssid_safe[0] == '\0')
+        return NULL;
 
-    // char temp_buff[1048];
+    // an open network must be advertised as nopass, without a P: field
+    if (strcmp(type_safe, "nopass") == 0)
+        snprintf(cmd, BUFSIZE, "WIFI:T:nopass;S:%s;;", ssid_safe);
+    else
+        snprintf(cmd, BUFSIZE, "WIFI:T:%s;S:%s;P:%s;;", type_safe, ssid_safe, pass_safe);
 
-    // if ((fp = popen(cmd, "r")) == NULL) {
-    //     printf("Error opening pipe!\n");
-        
-    // }
+    if (qr_to_png(cmd, qr_image_path) != 0)
+        return NULL;
 
-
-    // while (fgets(temp_buff, sizeof(temp_buff), fp) != NULL) {
-    
-    //     printf("%s", temp_buff);
-    // }
-
-    // if (pclose(fp)) {
-    //     printf("Error executing qrencode\n");
-        
-    // }
-
-    snprintf(cmd, BUFSIZE, "WIFI:S:%s;T:%s;P:%s;;",ssid,type,password);
-
-    qr_to_png(cmd,qr_image_path);
-    
     return qr_image_path;
 }
 
