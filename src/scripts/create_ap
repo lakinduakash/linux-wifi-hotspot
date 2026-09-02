@@ -566,6 +566,47 @@ cleanup_orphaned_create_ap_for_iface() {
     done
 }
 
+gateway_subnet_conflicts() {
+    local gw=$1
+    local gw_prefix="${gw%.*}"
+    local cidr ip
+
+    if ip route show default 2>/dev/null | grep -Eq "[[:space:]]via ${gw}[[:space:]]"; then
+        return 0
+    fi
+
+    while read -r cidr; do
+        ip="${cidr%%/*}"
+        [[ "${ip%.*}" == "$gw_prefix" ]] && return 0
+    done < <(ip -4 -o addr show scope global | awk '{print $4}')
+
+    return 1
+}
+
+pick_alternate_gateway() {
+    local candidate
+
+    for candidate in 192.168.43.1 10.42.0.1 192.168.4.1 172.16.42.1; do
+        if ! gateway_subnet_conflicts "$candidate"; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+
+    echo "10.42.0.1"
+}
+
+adjust_gateway_for_conflicts() {
+    local new_gw
+
+    if gateway_subnet_conflicts "$GATEWAY"; then
+        new_gw=$(pick_alternate_gateway)
+        echo "WARN: Gateway ${GATEWAY} conflicts with an existing network connection." >&2
+        echo "WARN: Using alternate gateway ${new_gw} instead." >&2
+        GATEWAY=$new_gw
+    fi
+}
+
 # start haveged when needed
 haveged_watchdog() {
     local show_warn=1
@@ -1598,8 +1639,10 @@ if [[ $CHANNEL == default ]]; then
     USING_DEFAULT_CHANNEL=1
     if [[ $FREQ_BAND == 2.4 ]]; then
         CHANNEL=1
-    else
+    elif [[ $FREQ_BAND == 5 ]]; then
         CHANNEL=36
+    else
+        CHANNEL=1
     fi
 else
     USING_DEFAULT_CHANNEL=0
@@ -1903,7 +1946,7 @@ fi
 if can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}"; then
     echo "Transmitting to channel ${CHANNEL}..."
 else
-    if [[ $USING_DEFAULT_CHANNEL -eq 1 && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+    if [[ $USING_DEFAULT_CHANNEL -eq 1 && -n "$WIFI_IFACE_CHANNEL" && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
         echo -e "Your adapter can not transmit to channel ${CHANNEL}" >&2
         CHANNEL=$WIFI_IFACE_CHANNEL
         echo -e "Falling back to channel ${CHANNEL}"
@@ -2020,6 +2063,10 @@ EOF
     fi
 fi
 
+
+if [[ "$SHARE_METHOD" != "bridge" ]]; then
+    adjust_gateway_for_conflicts
+fi
 
 if [[ "$SHARE_METHOD" == "bridge" ]]; then
     echo "bridge=${BRIDGE_IFACE}" >> $CONFDIR/hostapd.conf
