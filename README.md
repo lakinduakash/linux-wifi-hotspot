@@ -7,6 +7,9 @@
 
 
 ### What's new
+* Errors from `create_ap` are now shown in the GUI instead of failing silently ([#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525))
+* WiFi and Internet interfaces are preselected, so hotspot creation works out of the box ([#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525))
+* Virtual interfaces are no longer refused on PCIe/USB `brcmfmac` adapters ([#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525))
 * Use aa-complain instead of complain to fix the permission issue for dnsmasq
 * Fix some 5Ghz band not working issue
 * Compatible with iw 6.7
@@ -52,6 +55,8 @@ If you only need the command line without GUI run `make install-cli-only` as the
 - If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
 - **Unable to allocate IP: firewalld issue:** Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
+
+- **Clients see the hotspot but cannot connect:** if devices keep associating and disconnecting, your adapter's firmware may not support AP mode with encryption. `create_ap` now warns when it detects this. Broadcom adapters in T2 Macs are known to be affected, and no `create_ap` option works around it - a USB WiFi adapter is needed. See [#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525).
 
 ## Installation
 

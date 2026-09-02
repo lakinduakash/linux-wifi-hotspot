@@ -67,6 +67,12 @@ const char *build_wh_mkconfig_command(ConfigValues* cv);
 
 char** get_wifi_interface_list(int *length);
 
+const char* get_default_route_interface(void);
+
+void clear_last_shell_error(void);
+const char* get_last_shell_error(void);
+void record_shell_error_line(const char *line);
+
 void write_accepted_macs(char* filename, char* accepted_macs);
 
 char * read_mac_filter_file(char * filename);

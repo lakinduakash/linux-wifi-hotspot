@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "qr_ui.h"
 
 #define BUFSIZE 512
+#define CMD_BUFSIZE 2304
 #define AP_ENABLED "AP-ENABLED"
 
 #define INSTALL_PATH_PREFIX "/usr/share/wihotspot"
@@ -53,6 +54,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ERROR_CHANNEL_MSG_5 "Channel must be 1-196"
 #define ERROR_MAC_MSG "Invalid Mac address"
 #define ERROR_GATEWAY_MSG "Invalid gateway IP address"
+#define ERROR_IFACE_MSG "Please select WiFi and Internet interfaces"
+#define ERROR_START_MSG "Could not start the hotspot. Run wihotspot from a terminal for details."
+#define ERROR_CONFIG_MSG "Could not write the configuration file"
 
 #define DEFAULT_GATEWAY_IP "192.168.12.1"
 
@@ -145,7 +149,10 @@ static void *stopHp(void *) {
 static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
 
 
-    init_config_val_input(&configValues);
+    if(init_config_val_input(&configValues) != 0){
+        set_error_text(ERROR_IFACE_MSG);
+        return;
+    }
 
 
     if(validator(&configValues) == FALSE){
@@ -157,7 +164,10 @@ static void on_create_hp_clicked(GtkWidget *widget, gpointer data) {
     }
 
 
-    startShell(build_wh_mkconfig_command(&configValues));
+    if(startShell(build_wh_mkconfig_command(&configValues)) != 0){
+        show_shell_error(ERROR_CONFIG_MSG);
+        return;
+    }
 
     g_thread_new("shell_create_hp", run_create_hp_shell, (void*)build_wh_from_config());
 
@@ -201,8 +211,15 @@ static void init_style_contexts(){
 
 }
 
-static void set_error_text(char * text){
+static void set_error_text(const char * text){
     gtk_label_set_label(label_input_error,text);
+}
+
+/* Show whatever create_ap complained about, falling back to a generic hint
+   when it died without a recognisable message. */
+static void show_shell_error(const char *fallback){
+    const char *err = get_last_shell_error();
+    set_error_text(err != NULL ? err : fallback);
 }
 
 static void* entry_mac_warn(GtkWidget *widget, gpointer data){
@@ -490,6 +507,7 @@ int initUi(int argc, char *argv[]){
 
     init_interface_list();
     init_ui_from_config();
+    select_default_interfaces();
 
 
     gtk_main();
@@ -637,6 +655,35 @@ void init_interface_list(){
 }
 
 
+/* The shipped config names wlan0/eth0, which exist on hardly any machine, so
+   neither combo ends up selected and Create silently does nothing. Fall back
+   to the interfaces this machine actually has. */
+void select_default_interfaces(){
+
+    if(gtk_combo_box_get_active(combo_wifi) < 0 && wifi_iface_list_length > 0)
+        gtk_combo_box_set_active(combo_wifi, 0);
+
+    if(gtk_combo_box_get_active(combo_internet) < 0 && iface_list_length > 0){
+
+        const char *route_iface = get_default_route_interface();
+        int id = -1;
+
+        // the interface holding the default route is the one with Internet
+        if(route_iface != NULL)
+            id = find_str((char*)route_iface, iface_list, iface_list_length);
+
+        // no default route: anything but loopback is a better guess than lo
+        for (int i = 0; id == -1 && i < iface_list_length; i++){
+            if(strcmp(iface_list[i], "lo") != 0)
+                id = i;
+        }
+
+        if(id != -1)
+            gtk_combo_box_set_active(combo_internet, id);
+    }
+}
+
+
 void lock_all_views(gboolean set_lock){
     if(set_lock){
         gtk_editable_set_editable( (GtkEditable*)entry_ssd,FALSE);
@@ -746,26 +793,24 @@ void* init_running_info(void *){
 static void *run_create_hp_shell(void *cmd) {
 
     char buf[BUFSIZE];
-    char buf2[BUFSIZE];
+    char cmd_line[CMD_BUFSIZE];
     FILE *fp;
 
-    if(configValues.freq){
-        cmd = strcat( cmd, " --freq-band ");
-        cmd = strcat(cmd, configValues.freq);
+    clear_last_shell_error();
 
-        if ((fp = popen(cmd, "r")) == NULL) {
-            printf("Error opening pipe!\n");
-            return NULL;
-        }
+    /* create_ap reports every failure on stderr, so fold it into the pipe -
+       without it a failed start leaves the user with no reason at all */
+    if(configValues.freq)
+        snprintf(cmd_line, CMD_BUFSIZE, "{ %s --freq-band %s ; } 2>&1", (char*)cmd, configValues.freq);
+    else
+        snprintf(cmd_line, CMD_BUFSIZE, "{ %s ; } 2>&1", (char*)cmd);
+
+    if ((fp = popen(cmd_line, "r")) == NULL) {
+        printf("Error opening pipe!\n");
+        set_error_text(ERROR_START_MSG);
+        init_running_info(NULL);
+        return NULL;
     }
-    else{
-        if ((fp = popen(cmd, "r")) == NULL) {
-            printf("Error opening pipe!\n");
-            return NULL;
-        }
-    }
-
-
 
     int ap_enabled = 0;
 
@@ -775,7 +820,9 @@ static void *run_create_hp_shell(void *cmd) {
        popen() handle and can block the child on a full pipe buffer */
     while (fgets(buf, BUFSIZE, fp) != NULL) {
         buf[strcspn(buf, "\n")] = 0;
+        printf("%s\n", buf);
         gtk_label_set_label(label_status,buf);
+        record_shell_error_line(buf);
 
         if (!ap_enabled && strstr(buf, AP_ENABLED) != NULL) {
             ap_enabled = 1;
@@ -785,6 +832,7 @@ static void *run_create_hp_shell(void *cmd) {
 
     if (pclose(fp)) {
         printf("Command not found or exited with error status\n");
+        show_shell_error(ERROR_START_MSG);
         init_running_info(NULL);
         return NULL;
     }
