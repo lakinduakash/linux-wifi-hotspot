@@ -299,15 +299,32 @@ get_adapter_kernel_module() {
     echo ${MODULE##*/}
 }
 
+# Bus the adapter is attached to (pci, sdio, usb, ...). Empty if unknown.
+get_adapter_bus() {
+    local SUBSYSTEM
+    SUBSYSTEM=$(readlink -f "/sys/class/net/$1/device/subsystem" 2>/dev/null)
+    echo ${SUBSYSTEM##*/}
+}
+
 can_be_sta_and_ap() {
     # iwconfig does not provide this information, assume false
     [[ $USE_IWCONFIG -eq 1 ]] && return 1
     if [[ "$(get_adapter_kernel_module "$1")" == "brcmfmac" ]]; then
-        echo "WARN: brmfmac driver doesn't work properly with virtual interfaces and" >&2
-        echo "      it can cause kernel panic. For this reason we disallow virtual" >&2
-        echo "      interfaces for your adapter." >&2
-        echo "      For more info: https://github.com/oblique/create_ap/issues/203" >&2
-        return 1
+        # Adding a virtual interface panics the kernel on SDIO-attached
+        # brcmfmac chips, so those stay disallowed unconditionally:
+        # https://github.com/oblique/create_ap/issues/203
+        # That report is specific to SDIO. PCIe and USB parts are not
+        # affected, so for those we trust the interface combinations the
+        # driver advertises, exactly as we do for every other driver.
+        if [[ "$(get_adapter_bus "$1")" == "sdio" ]]; then
+            echo "WARN: brcmfmac driver doesn't work properly with virtual interfaces and" >&2
+            echo "      it can cause kernel panic. For this reason we disallow virtual" >&2
+            echo "      interfaces for your SDIO adapter." >&2
+            echo "      For more info: https://github.com/oblique/create_ap/issues/203" >&2
+            return 1
+        fi
+        echo "WARN: virtual interface support varies between brcmfmac chips. If the" >&2
+        echo "      AP fails to start or the adapter stops working, try --no-virt." >&2
     fi
     get_adapter_info "$1" | grep -E '{.* managed.* AP.*}' > /dev/null 2>&1 && return 0
     get_adapter_info "$1" | grep -E '{.* AP.* managed.*}' > /dev/null 2>&1 && return 0
