@@ -2036,12 +2036,43 @@ if [[ $NO_HAVEGED -eq 0 ]]; then
     HAVEGED_WATCHDOG_PID=$!
 fi
 
+# Pass hostapd's output through unchanged, but watch it for clients that
+# associate and are dropped again without ever completing the WPA handshake.
+# Some adapters beacon happily while their firmware rejects AP-mode key
+# setup, so the AP looks up and every client silently fails to connect.
+handshake_watchdog() {
+    local line assoc=0 checked=0
+
+    while IFS= read -r line; do
+        echo "$line"
+
+        [[ $checked -eq 1 ]] && continue
+
+        case "$line" in
+            *AP-STA-CONNECTED*|*"pairwise key handshake completed"*)
+                # a client got through, nothing to warn about
+                checked=1
+                ;;
+            *"IEEE 802.11: associated"*)
+                assoc=$((assoc + 1))
+                if [[ $assoc -ge 3 ]]; then
+                    checked=1
+                    echo "WARN: clients keep associating and disconnecting without completing the" >&2
+                    echo "      WPA handshake. Your adapter's firmware may not support AP mode with" >&2
+                    echo "      encryption. Check 'dmesg' for driver errors, and try an open network" >&2
+                    echo "      (empty passphrase) to see whether encryption is the problem." >&2
+                fi
+                ;;
+        esac
+    done
+}
+
 # start hostapd (use stdbuf when available for no delayed output in programs that redirect stdout)
 STDBUF_PATH=`which stdbuf`
 if [ $? -eq 0 ]; then
     STDBUF_PATH=$STDBUF_PATH" -oL"
 fi
-$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf &
+$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf > >(handshake_watchdog) &
 HOSTAPD_PID=$!
 echo $HOSTAPD_PID > $CONFDIR/hostapd.pid
 
