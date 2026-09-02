@@ -75,6 +75,7 @@ usage() {
     echo "  --stop <id>             Send stop command to an already running create_ap. For an <id>"
     echo "                          you can put the PID of create_ap or the WiFi interface. You can"
     echo "                          get them with --list-running"
+    echo "  --show-info <id>        Show SSID, security and other details for a running hotspot"
     echo "  --list-running          Show the create_ap processes that are already running"
     echo "  --list-clients <id>     List the clients connected to create_ap instance associated with <id>."
     echo "                          For an <id> you can put the PID of create_ap or the WiFi interface."
@@ -551,7 +552,7 @@ cleanup_orphaned_create_ap_confdir() {
 
     echo "Cleaning orphaned hotspot data from $confdir..."
     for y in "$confdir"/*.pid; do
-        [[ -f "$y" ]] && kill -9 $(cat "$y") 2>/dev/null
+        [[ -f "$y" ]] && kill -9 "$(cat "$y")" 2>/dev/null
     done
     pkill -f "dnsmasq -C ${confdir}/dnsmasq.conf" 2>/dev/null || true
     rm -rf "$confdir"
@@ -855,6 +856,7 @@ CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HI
 FIX_UNMANAGED=0
 LIST_RUNNING=0
 STOP_ID=
+SHOW_INFO_ID=
 LIST_CLIENTS_ID=
 
 STORE_CONFIG=
@@ -1229,6 +1231,110 @@ send_stop() {
     fi
 }
 
+find_running_confdir_for_id() {
+    local id=$1
+    local x pid iface
+
+    if [[ "$id" =~ ^[1-9][0-9]*$ ]]; then
+        for x in /tmp/create_ap.*; do
+            [[ -d "$x" && -f "$x/pid" ]] || continue
+            pid=$(cat "$x/pid" 2>/dev/null)
+            [[ "$pid" == "$id" && -d "/proc/$pid" ]] || continue
+            echo "$x"
+            return 0
+        done
+        return 1
+    fi
+
+    iface=$id
+    for x in /tmp/create_ap.${iface}.conf.*; do
+        [[ -d "$x" && -f "$x/pid" ]] || continue
+        pid=$(cat "$x/pid" 2>/dev/null)
+        [[ -n "$pid" && -d "/proc/$pid" ]] || continue
+        echo "$x"
+        return 0
+    done
+
+    return 1
+}
+
+show_hotspot_info() {
+    local id=$1
+    local confdir pid phy_iface ap_iface internet_iface="none"
+    local ssid="" channel="" hw_mode="" hidden="0"
+    local wpa="" key_mgmt="" passphrase="" psk="" gateway="" encryption="" band=""
+
+    confdir=$(find_running_confdir_for_id "$id") || die "No running hotspot found for $id"
+
+    [[ -f "$confdir/pid" ]] && pid=$(cat "$confdir/pid")
+    [[ -f "$confdir/wifi_iface" ]] && ap_iface=$(cat "$confdir/wifi_iface")
+    [[ -f "$confdir/nat_internet_iface" ]] && internet_iface=$(cat "$confdir/nat_internet_iface")
+
+    phy_iface=${confdir#/tmp/create_ap.}
+    phy_iface=${phy_iface%%.conf.*}
+
+    if [[ -f "$confdir/hostapd.conf" ]]; then
+        while IFS= read -r line; do
+            case "$line" in
+                ssid=*) ssid="${line#ssid=}" ;;
+                channel=*) channel="${line#channel=}" ;;
+                hw_mode=*) hw_mode="${line#hw_mode=}" ;;
+                ignore_broadcast_ssid=*) hidden="${line#ignore_broadcast_ssid=}" ;;
+                wpa=*) wpa="${line#wpa=}" ;;
+                wpa_key_mgmt=*) key_mgmt="${line#wpa_key_mgmt=}" ;;
+                wpa_passphrase=*) passphrase="${line#wpa_passphrase=}" ;;
+                wpa_psk=*) psk="${line#wpa_psk=}" ;;
+            esac
+        done < "$confdir/hostapd.conf"
+    fi
+
+    if [[ -f "$confdir/dnsmasq.conf" ]]; then
+        gateway=$(grep -m1 '^listen-address=' "$confdir/dnsmasq.conf" | cut -d= -f2-)
+    fi
+
+    if [[ -z "$passphrase" && -n "$psk" ]]; then
+        passphrase=$psk
+    fi
+
+    if [[ -z "$passphrase" && -z "$psk" ]]; then
+        encryption="Open"
+    elif [[ "$key_mgmt" == *SAE* ]]; then
+        encryption="WPA2/WPA3"
+    elif [[ "$wpa" == "3" ]]; then
+        encryption="WPA3"
+    elif [[ "$wpa" == "2" ]]; then
+        encryption="WPA2-PSK"
+    elif [[ "$wpa" == "1" ]]; then
+        encryption="WPA-PSK"
+    elif [[ -n "$psk" ]]; then
+        encryption="WPA-PSK (hex)"
+    else
+        encryption="WPA-PSK"
+    fi
+
+    if [[ "$hw_mode" == "a" ]]; then
+        band="5 GHz"
+    elif [[ "$hw_mode" == "g" ]]; then
+        band="2.4 GHz"
+    fi
+
+    echo "PID=${pid:-}"
+    echo "PHY_IFACE=${phy_iface:-}"
+    echo "AP_IFACE=${ap_iface:-}"
+    echo "INTERNET_IFACE=${internet_iface:-none}"
+    echo "SSID=${ssid:-}"
+    echo "PASSPHRASE=${passphrase:-}"
+    echo "ENCRYPTION=${encryption:-}"
+    echo "GATEWAY=${gateway:-}"
+    echo "CHANNEL=${channel:-}"
+    echo "BAND=${band:-}"
+    if [[ "$hidden" == "1" ]]; then
+        echo "HIDDEN=Yes"
+    else
+        echo "HIDDEN=No"
+    fi
+}
+
 # Storing configs
 write_config() {
     local i=1
@@ -1330,7 +1436,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:","dhcp-hosts:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "help","hidden","hostapd-debug:","hostapd-timestamps","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ieee80211ax","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","pidfile:","logfile:","dns-logfile:","stop:","show-info:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:","dhcp-hosts:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1480,6 +1586,11 @@ while :; do
             STOP_ID="$1"
             shift
             ;;
+        --show-info)
+            shift
+            SHOW_INFO_ID="$1"
+            shift
+            ;;
         --list)
             shift
             LIST_RUNNING=1
@@ -1561,7 +1672,7 @@ if [[ -n "$LOAD_CONFIG" && $# -eq 0 ]]; then
 fi
 
 # Check if required number of positional args are present
-if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" &&
+if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && -z "$SHOW_INFO_ID" &&
       $LIST_RUNNING -eq 0 && -z "$LIST_CLIENTS_ID" ]]; then
     usage >&2
     exit 1
@@ -1606,6 +1717,11 @@ fi
 if [[ -n "$STOP_ID" ]]; then
     echo "Trying to kill $PROGNAME instance associated with $STOP_ID..."
     send_stop "$STOP_ID"
+    exit 0
+fi
+
+if [[ -n "$SHOW_INFO_ID" ]]; then
+    show_hotspot_info "$SHOW_INFO_ID"
     exit 0
 fi
 
