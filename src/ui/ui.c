@@ -185,7 +185,16 @@ static void on_about_open_click(GtkWidget *widget, gpointer data){
 
 static void on_qr_open_click(GtkWidget *widget, gpointer data){
 
-    char* image_path = generate_qr_image(configValues.ssid,"WPA",configValues.pass);
+    // an open network has to be encoded as nopass, otherwise phones reject the code
+    char *type = (configValues.pass == NULL || configValues.pass[0] == '\0') ? "nopass" : "WPA";
+
+    char* image_path = generate_qr_image(configValues.ssid, type, configValues.pass);
+
+    if (image_path == NULL) {
+        set_error_text("Could not generate the QR code");
+        return;
+    }
+
     open_qr(widget,data,image_path);
 }
 

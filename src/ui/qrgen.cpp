@@ -69,12 +69,23 @@ static unsigned int bg_color[4] = {255, 255, 255, 255};
 // return 0;
 // }
 
-void qr_to_png(const char *qrstring,const char *outfile){
-
+int qr_to_png(const char *qrstring,const char *outfile){
     QRcode *myqrcode;
-        myqrcode = QRcode_encodeString(qrstring, 4, QR_ECLEVEL_H, QR_MODE_8,1);
-        writePNG(myqrcode,outfile);
+
+    if (qrstring == NULL || outfile == NULL)
+        return -1;
+
+    myqrcode = QRcode_encodeString(qrstring, 4, QR_ECLEVEL_H, QR_MODE_8, 1);
+    if (myqrcode == NULL)
+        return -1;
+
+    if (writePNG(myqrcode, outfile) != 0) {
         QRcode_free(myqrcode);
+        return -1;
+    }
+
+    QRcode_free(myqrcode);
+    return 0;
 }
 
 
@@ -91,11 +102,14 @@ static int writePNG(QRcode *qrcode, const char *outfile)
     int x, y, xx, yy, bit;
     int realwidth;
 
+    if (qrcode == NULL || outfile == NULL)
+        return -1;
+
     realwidth = (qrcode->width + margin * 2) * size;
     row = (unsigned char *)malloc((realwidth + 7) / 8);
     if(row == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
-        exit(EXIT_FAILURE);
+        return -1;
     }
 
     if(outfile[0] == '-' && outfile[1] == '\0') {
@@ -105,32 +119,47 @@ static int writePNG(QRcode *qrcode, const char *outfile)
         if(fp == NULL) {
             fprintf(stderr, "Failed to create file: %s\n", outfile);
             perror(NULL);
-            exit(EXIT_FAILURE);
+            free(row);
+            return -1;
         }
     }
 
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if(png_ptr == NULL) {
         fprintf(stderr, "Failed to initialize PNG writer.\n");
-        exit(EXIT_FAILURE);
+        if (fp != stdout)
+            fclose(fp);
+        free(row);
+        return -1;
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if(info_ptr == NULL) {
         fprintf(stderr, "Failed to initialize PNG write.\n");
-        exit(EXIT_FAILURE);
+        png_destroy_write_struct(&png_ptr, NULL);
+        if (fp != stdout)
+            fclose(fp);
+        free(row);
+        return -1;
     }
 
     if(setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
+        if (fp != stdout)
+            fclose(fp);
+        free(row);
         fprintf(stderr, "Failed to write PNG image.\n");
-        exit(EXIT_FAILURE);
+        return -1;
     }
 
     palette = (png_colorp) malloc(sizeof(png_color) * 2);
     if(palette == NULL) {
         fprintf(stderr, "Failed to allocate memory.\n");
-        exit(EXIT_FAILURE);
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        if (fp != stdout)
+            fclose(fp);
+        free(row);
+        return -1;
     }
     palette[0].red   = fg_color[0];
     palette[0].green = fg_color[1];
@@ -195,7 +224,8 @@ for(y=0; y<margin * size; y++) {
 png_write_end(png_ptr, info_ptr);
 png_destroy_write_struct(&png_ptr, &info_ptr);
 
-fclose(fp);
+if (fp != stdout)
+    fclose(fp);
 free(row);
 free(palette);
 
