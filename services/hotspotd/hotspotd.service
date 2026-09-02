@@ -1,0 +1,18 @@
+[Unit]
+Description=linux-wifi-hotspot helper API
+After=network.target
+
+[Service]
+EnvironmentFile=-/etc/linux-wifi-hotspot/hotspotd.env
+ExecStart=/bin/sh -c '/usr/lib/linux-wifi-hotspot/hotspotd --config-path /etc/create_ap.conf --runtime-dir /run/hotspotd ${HTTP_LISTEN:+--http-listen $HTTP_LISTEN}'
+User=root
+Group=root
+RuntimeDirectory=hotspotd
+# Socket permissions let unprivileged web server talk to the helper.
+RuntimeDirectoryMode=0770
+# hotspotd.env can set HOTSPOTD_DEFAULT_* variables for initial SSID/password.
+Restart=on-failure
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+[Install]
+WantedBy=multi-user.target
