@@ -331,6 +331,51 @@ can_be_sta_and_ap() {
     return 1
 }
 
+# Largest number of distinct channels the adapter allows in an interface
+# combination that actually contains an AP. Drivers commonly advertise several
+# combinations and only some of them permit AP mode, so the AP ones have to be
+# picked out before reading "#channels" - a plain grep over the whole block
+# happily matches a multi-channel combination that can not hold an AP at all.
+# Prints nothing when the information is unavailable.
+get_ap_max_channels() {
+    [[ $USE_IWCONFIG -eq 1 ]] && return 0
+    get_adapter_info "$1" 2>/dev/null | awk '
+        /valid interface combinations:/ { comb = 1; next }
+        !comb { next }
+        # a line indented with a single tab ends the combination list
+        /^\t[^\t]/ { comb = 0; next }
+        {
+            if ($0 ~ /^[[:space:]]*\*/) {
+                if (rec != "") print rec
+                rec = $0
+            } else if (rec != "") {
+                rec = rec " " $0
+            }
+        }
+        END { if (rec != "") print rec }
+    ' | grep -E '#\{[^}]*\bAP\b[^}]*\}' \
+      | sed -n 's/.*#channels <= \([0-9]\+\).*/\1/p' \
+      | sort -n | tail -1
+}
+
+# Every 5GHz channel is reported as "no IR" while the adapter uses a
+# self-managed (LAR) regulatory domain that is still on the world domain 00.
+# Nothing in userspace can lift that, so explain it instead of only reporting
+# that the channel is unusable.
+regdomain_hint() {
+    local PHY
+    [[ $USE_IWCONFIG -eq 1 ]] && return 0
+    PHY=$(get_phy_device "$1" 2>/dev/null) || return 0
+    iw reg get 2>/dev/null | grep -A1 "^phy#${PHY#phy} (self-managed)" |
+        grep -q "^country 00:" || return 0
+    echo "
+       ${PHY} uses a self-managed regulatory domain and is still on the world
+       domain (country 00), where every 5GHz channel is flagged 'no IR' and can
+       not carry an access point. 'iw reg set' does not change this, the value
+       comes from the adapter's own firmware. 2.4GHz is unaffected, so run the
+       hotspot with --freq-band 2.4."
+}
+
 can_be_ap() {
     # iwconfig does not provide this information, assume true
     [[ $USE_IWCONFIG -eq 1 ]] && return 0
@@ -1427,6 +1472,14 @@ elif [[ $RUNNING_AS_DAEMON -eq 1 && -n "$DAEMON_PIDFILE" ]]; then
     echo $$ >$DAEMON_PIDFILE
 fi
 
+# --mkconfig (and the GUI) store FREQ_BAND=default when no band was requested.
+# Normalise it back to the built-in default, otherwise the literal string
+# "default" falls through every 2.4GHz comparison below and the hotspot ends up
+# on 5GHz channel 36 without anyone asking for it.
+if [[ $FREQ_BAND == default ]]; then
+    FREQ_BAND=2.4
+fi
+
 if [[ $FREQ_BAND_SET != 0 ]]; then
     if [[ $FREQ_BAND != 2.4 && $FREQ_BAND != 5 ]]; then
         echo "ERROR: Invalid frequency band" >&2
@@ -1671,29 +1724,46 @@ if [[ $NO_VIRT -eq 0 ]]; then
     fi
 
 
-    if is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 0 ]]; then
+    if is_wifi_connected ${WIFI_IFACE}; then
         WIFI_IFACE_FREQ=$(iw dev ${WIFI_IFACE} link | grep -i freq | awk '{print $2}')
         WIFI_IFACE_CHANNEL=$(ieee80211_frequency_to_channel ${WIFI_IFACE_FREQ})
-        echo -n "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
         if is_5ghz_frequency $WIFI_IFACE_FREQ; then
-            FREQ_BAND=5
+            WIFI_IFACE_BAND=5
         else
-            FREQ_BAND=2.4
+            WIFI_IFACE_BAND=2.4
         fi
-        if [[ $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
-            if ( get_adapter_info ${WIFI_IFACE} | grep "#channels <= 2" -q )
-            then
-                echo -e "\nmultiple channels supported"
-            else
-                echo -e  "\nmultiple channels not supported",
-                echo -e  "\nfallback to channel ${WIFI_IFACE_CHANNEL}"
-                CHANNEL=$WIFI_IFACE_CHANNEL
+        echo "${WIFI_IFACE} is already associated with channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_FREQ} MHz)"
+
+        AP_MAX_CHANNELS=$(get_ap_max_channels ${WIFI_IFACE})
+
+        if [[ "$AP_MAX_CHANNELS" == 1 && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+            # The adapter only offers AP mode in single-channel interface
+            # combinations, so the AP has to sit on the channel the station half
+            # already uses. iwlwifi behaves this way since Linux 6.11, see
+            # https://github.com/lakinduakash/linux-wifi-hotspot/issues/435
+            # Without this hostapd only reports "Failed to set beacon parameters".
+            if [[ $USING_DEFAULT_CHANNEL -eq 0 ]] ||
+               [[ $FREQ_BAND_SET -eq 1 && $FREQ_BAND != $WIFI_IFACE_BAND ]]; then
+                die "Your adapter can only run an access point on the channel it is already
+       connected to, but a different channel was requested.
+
+           requested: channel ${CHANNEL} (${FREQ_BAND}GHz)
+           connected: channel ${WIFI_IFACE_CHANNEL} (${WIFI_IFACE_BAND}GHz) on ${WIFI_IFACE}
+
+       Use one of these instead:
+         * run the hotspot on the channel already in use:
+               --freq-band ${WIFI_IFACE_BAND} -c ${WIFI_IFACE_CHANNEL}
+         * connect ${WIFI_IFACE} to a network on channel ${CHANNEL} first
+         * disconnect ${WIFI_IFACE} and share a different uplink (e.g. ethernet)"
             fi
-        else
-            echo "channel------------------ ${CHANNEL}"
+            echo "Adapter supports the AP on one channel only, following ${WIFI_IFACE} to channel ${WIFI_IFACE_CHANNEL}"
+            CHANNEL=$WIFI_IFACE_CHANNEL
+            FREQ_BAND=$WIFI_IFACE_BAND
+        elif [[ $FREQ_BAND_SET -eq 0 ]]; then
+            # Multi-channel capable adapter: keep following the station's band
+            # when no specific band was requested.
+            FREQ_BAND=$WIFI_IFACE_BAND
         fi
-    elif is_wifi_connected ${WIFI_IFACE} && [[ $FREQ_BAND_SET -eq 1 ]]; then
-        echo "Custom frequency band set with ${FREQ_BAND}Ghz with channel ${CHANNEL}"
     fi
 
 
@@ -1731,13 +1801,17 @@ fi
 if can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}"; then
     echo "Transmitting to channel ${CHANNEL}..."
 else
-    if [[ $USING_DEFAULT_CHANNEL -eq 1 && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
+    # WIFI_IFACE_CHANNEL is only set when the adapter is associated. Without the
+    # emptiness test the comparison below evaluates it as 0, so a disconnected
+    # adapter "falls back" to an empty channel:
+    # https://github.com/lakinduakash/linux-wifi-hotspot/issues/206
+    if [[ $USING_DEFAULT_CHANNEL -eq 1 && -n "$WIFI_IFACE_CHANNEL" && $WIFI_IFACE_CHANNEL -ne $CHANNEL ]]; then
         echo -e "Your adapter can not transmit to channel ${CHANNEL}" >&2
         CHANNEL=$WIFI_IFACE_CHANNEL
         echo -e "Falling back to channel ${CHANNEL}"
-        can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}" || die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
+        can_transmit_to_channel "${WIFI_IFACE}" "${CHANNEL}" || die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz.$(regdomain_hint ${WIFI_IFACE})"
     else
-        die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
+        die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz.$(regdomain_hint ${WIFI_IFACE})"
     fi
 fi
 
