@@ -822,6 +822,9 @@ HAVEGED_WATCHDOG_PID=
 
 HOSTAPD_CONF=
 HOSTAPD_CTRL=
+# paths outside $CONFDIR that this run created and is therefore free to remove
+HOSTAPD_CONF_OWNED=
+HOSTAPD_CTRL_SOCK_OWNED=
 
 _cleanup() {
     local PID x
@@ -840,8 +843,10 @@ _cleanup() {
         [[ -f $x ]] && kill -9 $(cat $x)
     done
 
-    # the config of a confined hostapd lives outside $CONFDIR
-    [[ -n "$HOSTAPD_CONF" && "$HOSTAPD_CONF" != "$CONFDIR/hostapd.conf" ]] && rm -f "$HOSTAPD_CONF"
+    # a confined hostapd reads its config, and creates its control socket,
+    # outside $CONFDIR. Only ever remove the ones this run created itself
+    [[ -n "$HOSTAPD_CONF_OWNED" ]] && rm -f "$HOSTAPD_CONF_OWNED"
+    [[ -n "$HOSTAPD_CTRL_SOCK_OWNED" ]] && rm -f "$HOSTAPD_CTRL_SOCK_OWNED"
 
     rm -rf $CONFDIR
 
@@ -1016,76 +1021,163 @@ apparmor_hostapd_enforced() {
     grep -qE '^(hostapd|/usr/sbin/hostapd) \(enforce\)' <<< "$profiles"
 }
 
-# translate an AppArmor path glob into an ERE for bash's =~ operator.
-# '**' crosses '/', a single '*' does not, '?' is one non-separator
-# character and {a,b} is an alternation.
-apparmor_glob_to_regex() {
-    local glob="$1" out= i=0 depth=0 ch
-    while [[ $i -lt ${#glob} ]]; do
-        ch=${glob:$i:1}
-        case "$ch" in
-            '*')
-                if [[ ${glob:$i:2} == '**' ]]; then
-                    out+='.*'
-                    i=$((i + 2))
-                    continue
-                fi
-                out+='[^/]*'
-                ;;
-            '?') out+='[^/]' ;;
-            '{') out+='('; depth=$((depth + 1)) ;;
-            '}')
-                if [[ $depth -gt 0 ]]; then
-                    out+=')'
-                    depth=$((depth - 1))
-                else
-                    out+='\}'
-                fi
-                ;;
-            ',')
-                if [[ $depth -gt 0 ]]; then out+='|'; else out+=','; fi
-                ;;
-            *)
-                if [[ "$ch" == [A-Za-z0-9/_@%:-] ]]; then
-                    out+="$ch"
-                else
-                    out+="\\$ch"
-                fi
-                ;;
-        esac
-        i=$((i + 1))
-    done
-    printf '%s' "$out"
+# the profile with its include directives resolved. Distributions keep a good
+# part of the effective policy outside the profile file - abstractions, the
+# tunables that define @{run} and friends, and the local/ override where an
+# administrator adds paths - so reading only /etc/apparmor.d/usr.sbin.hostapd
+# would judge a policy we are not actually running under.
+apparmor_expand_includes() {
+    local file="$1" depth="${2:-0}" line target f
+    [[ $depth -gt 10 || ! -r "$file" ]] && return 0
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[[:space:]]*#?include[[:space:]]+(if[[:space:]]+exists[[:space:]]+)?[\<\"]?([^\>\"[:space:]]+)[\>\"]? ]]; then
+            target="${BASH_REMATCH[2]}"
+            [[ "$target" != /* ]] && target="/etc/apparmor.d/$target"
+            if [[ -d "$target" ]]; then
+                for f in "$target"/*; do
+                    [[ -f "$f" ]] && apparmor_expand_includes "$f" $((depth + 1))
+                done
+            else
+                apparmor_expand_includes "$target" $((depth + 1))
+            fi
+        else
+            printf '%s\n' "$line"
+        fi
+    done < "$file"
 }
 
-# every path glob the hostapd profile grants $1 (a permission letter) on
-apparmor_globs() {
-    [[ -r "$APPARMOR_HOSTAPD_PROFILE" ]] || return 0
-    awk -v perm="$1" '
-        { sub(/#.*/, "") }
-        /^[ \t]*\// && /,[ \t]*$/ {
-            sub(/[ \t]*,[ \t]*$/, "")
-            sub(/^[ \t]+/, "")
-            n = split($0, f, /[ \t]+/)
-            if (n < 2) next
-            # the last field is the permission set; anything else on the line
-            # is not a plain file rule we know how to read
-            if (index(f[n], perm) == 0) next
-            if (f[n] ~ /[^rwmixlkaCUPD]/) next
-            sub(/[ \t]+[^ \t]+$/, "")
-            print
+# the file rules of the resolved policy, one per line, as
+#
+#     A|D <TAB> <permissions> <TAB> <path glob as an ERE>
+#
+# 'D' marks a deny rule: in AppArmor a deny always beats an allow, however
+# broad the allow is, so the two can not be collapsed while reading.
+# @{...} variables are substituted from the definitions the includes bring in,
+# and a rule whose variables we can not resolve is dropped rather than guessed.
+apparmor_parse_policy() {
+    apparmor_expand_includes "$APPARMOR_HOSTAPD_PROFILE" | awk '
+        function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
+
+        # an AppArmor path glob as an ERE. A single "*" does not cross "/",
+        # "**" does, "?" is one non-separator character, {a,b} is an
+        # alternation and [...] passes through as a character class
+        function glob2re(g,   out, i, n, depth, ch, cls) {
+            out = ""; depth = 0; n = length(g)
+            for (i = 1; i <= n; i++) {
+                ch = substr(g, i, 1)
+                if (ch == "*") {
+                    if (substr(g, i, 2) == "**") { out = out ".*"; i++ }
+                    else out = out "[^/]*"
+                } else if (ch == "?") {
+                    out = out "[^/]"
+                } else if (ch == "{") {
+                    out = out "("; depth++
+                } else if (ch == "}") {
+                    if (depth > 0) { out = out ")"; depth-- } else out = out "\\}"
+                } else if (ch == ",") {
+                    out = out (depth > 0 ? "|" : ",")
+                } else if (ch == "[") {
+                    cls = index(substr(g, i + 1), "]")
+                    if (cls == 0) { out = out "\\[" }
+                    else { out = out substr(g, i, cls + 1); i += cls }
+                } else if (ch ~ /[A-Za-z0-9_@%:\/-]/) {
+                    out = out ch
+                } else {
+                    out = out "\\" ch
+                }
+            }
+            return out
         }
-    ' "$APPARMOR_HOSTAPD_PROFILE"
+
+        # substitute @{name} with the value the policy gives it; several values
+        # become an alternation, which reads as a glob further down. Returns the
+        # empty string when a name has no definition we saw.
+        function expand(p,   out, s, e, name, val, round) {
+            for (round = 0; round < 5 && index(p, "@{") > 0; round++) {
+                out = ""
+                while ((s = index(p, "@{")) > 0) {
+                    e = index(substr(p, s), "}")
+                    if (e == 0) return ""
+                    name = substr(p, s, e)
+                    if (!(name in var)) return ""
+                    val = var[name]
+                    if (index(val, ",") > 0) val = "{" val "}"
+                    out = out substr(p, 1, s - 1) val
+                    p = substr(p, s + e)
+                }
+                p = out p
+            }
+            return (index(p, "@{") > 0) ? "" : p
+        }
+
+        { sub(/#.*/, ""); line = trim($0) }
+
+        # @{name} = value ... / @{name} += value ...
+        line ~ /^@\{[A-Za-z0-9_]+\}[ \t]*\+?=/ {
+            eq = index(line, "=")
+            name = trim(substr(line, 1, eq - 1))
+            plus = (substr(name, length(name), 1) == "+")
+            if (plus) name = trim(substr(name, 1, length(name) - 1))
+            val = trim(substr(line, eq + 1))
+            gsub(/"/, "", val)
+            gsub(/[ \t]+/, ",", val)
+            if (plus && (name in var)) var[name] = var[name] "," val
+            else var[name] = val
+            next
+        }
+
+        {
+            if (line == "" || line !~ /,$/) next
+            rule = line
+            sub(/[ \t]*,$/, "", rule)
+
+            # rules can carry qualifiers before the path
+            deny = 0
+            while (match(rule, /^(audit|deny|allow|owner|quiet)([ \t]+|$)/)) {
+                if (substr(rule, 1, 4) == "deny") deny = 1
+                rule = trim(substr(rule, RLENGTH + 1))
+            }
+
+            # only file rules: everything else (network, capability, dbus, ...)
+            # either names no path or is none of our business
+            if (rule !~ /^[\/@]/) next
+            if (!match(rule, /[ \t]+[^ \t]+$/)) next
+            perms = trim(substr(rule, RSTART))
+            path = trim(substr(rule, 1, RSTART - 1))
+            # a link rule ("/a l -> /b") or an exec transition to a named
+            # profile is not a permission set we can read
+            if (perms ~ /[^rwmixlkaeknpucCUPD]/) next
+            path = expand(path)
+            if (path == "") next
+            # @{PROC} and friends are defined with a trailing slash, so an
+            # expansion leaves "/proc//sys" where the kernel sees "/proc/sys"
+            gsub(/\/\/+/, "/", path)
+            print (deny ? "D" : "A") "\t" perms "\t" glob2re(path)
+        }
+    '
+}
+
+# the parsed policy, read once: resolving the includes walks a few dozen
+# abstraction files and every lookup would otherwise repeat it. The trailing
+# comment is a sentinel, so an empty policy is not parsed again on every call
+APPARMOR_RULES=
+apparmor_load_rules() {
+    [[ -n "$APPARMOR_RULES" ]] || APPARMOR_RULES=$(apparmor_parse_policy; echo '#')
 }
 
 # does the policy grant hostapd permission $1 on path $2?
 apparmor_permits() {
-    local perm="$1" path="$2" glob re
-    while read -r glob; do
-        re=$(apparmor_glob_to_regex "$glob")
-        [[ "$path" =~ ^${re}$ ]] && return 0
-    done < <(apparmor_globs "$perm")
-    return 1
+    local perm="$1" path="$2" kind perms re allowed=1
+    while [[ "$path" == *//* ]]; do path=${path//\/\///}; done
+    apparmor_load_rules
+    while IFS=$'\t' read -r kind perms re; do
+        [[ "$perms" == *"$perm"* ]] || continue
+        [[ "$path" =~ ^${re}$ ]] || continue
+        # a deny anywhere in the policy settles it
+        [[ "$kind" == D ]] && return 1
+        allowed=0
+    done <<< "$APPARMOR_RULES"
+    return $allowed
 }
 
 # is our generated config out of hostapd's reach on this system?
@@ -1096,35 +1188,45 @@ hostapd_is_confined() {
     return 0
 }
 
-# first candidate the policy grants $1 on and we can create; empty if none
-apparmor_pick_path() {
-    local perm="$1" candidate parent
+# create a file at the first of the templates ($2..) whose result the policy
+# grants $1 on, and print it. mktemp gives us a name nobody else holds and
+# creates it in one step, so the file we go on to write - and to delete on the
+# way out - is never an administrator's config or another create_ap's.
+apparmor_mktemp() {
+    local perm="$1" template parent path
     shift
-    for candidate in "$@"; do
-        apparmor_permits "$perm" "$candidate" || continue
-        parent=$(dirname "$candidate")
+    for template in "$@"; do
+        parent=$(dirname "$template")
         [[ -d "$parent" ]] || mkdir -p "$parent" 2> /dev/null || continue
-        echo "$candidate"
-        return 0
+        path=$(mktemp "$template" 2> /dev/null) || continue
+        if apparmor_permits "$perm" "$path"; then
+            echo "$path"
+            return 0
+        fi
+        rm -f "$path"
     done
     return 1
 }
 
-# after a hostapd failure, the denial that explains it - if there was one
+# after a hostapd failure, the denial that explains it - if there was one.
+# Only denials carrying this hostapd's pid: the log also holds those of the
+# distribution's own hostapd unit, and blaming one of those for our failure
+# would be worse than saying nothing.
 hostapd_apparmor_denials() {
-    local log=
+    local pid="$1" log=
+    [[ -n "$pid" ]] || return 0
     if which journalctl > /dev/null 2>&1; then
         log=$(journalctl -k --since "-2 min" --no-pager 2> /dev/null)
     fi
     [[ -z "$log" ]] && log=$(dmesg 2> /dev/null | tail -n 200)
-    echo "$log" | grep 'apparmor="DENIED"' | grep -E 'profile="[^"]*hostapd"' | tail -n 3
+    echo "$log" | grep 'apparmor="DENIED"' | grep -E "pid=${pid}([^0-9]|\$)" | tail -n 3
 }
 
-# where a confined hostapd may create its control socket
+# where a confined hostapd may create the control socket for interface $1
 hostapd_ctrl_dir() {
-    local dir
+    local iface="$1" dir
     for dir in /run/hostapd /var/run/hostapd; do
-        if apparmor_permits w "$dir/${WIFI_IFACE}"; then
+        if apparmor_permits w "$dir/${iface}"; then
             mkdir -p "$dir" 2> /dev/null || continue
             echo "$dir"
             return 0
@@ -1892,28 +1994,6 @@ echo $$ > $CONFDIR/pid
 chmod 755 $CONFDIR
 chmod 444 $CONFDIR/pid
 
-# hostapd is confined by AppArmor on several distributions, and its profile
-# usually permits neither reading a config from /tmp nor creating a control
-# socket there. Work out where the policy does allow them before we generate
-# anything. See issue #524.
-HOSTAPD_CONF=$CONFDIR/hostapd.conf
-HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
-if hostapd_is_confined; then
-    HOSTAPD_CONF=$(apparmor_pick_path r \
-        "/etc/hostapd.create_ap.${WIFI_IFACE}.conf" \
-        "/etc/hostapd/create_ap.${WIFI_IFACE}.conf" \
-        "/run/hostapd/create_ap.${WIFI_IFACE}.conf")
-    if [[ -n "$HOSTAPD_CONF" ]]; then
-        echo "AppArmor confines hostapd; its config goes to $HOSTAPD_CONF"
-    else
-        HOSTAPD_CONF=$CONFDIR/hostapd.conf
-        echo "WARN: hostapd is confined by AppArmor and none of the paths its profile" >&2
-        echo "      permits are usable. Leaving the config in $CONFDIR; hostapd will" >&2
-        echo "      most likely be denied it - see $APPARMOR_HOSTAPD_PROFILE" >&2
-    fi
-    HOSTAPD_CTRL=$(hostapd_ctrl_dir) || HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
-fi
-
 COMMON_CONFDIR=/tmp/create_ap.common.conf
 mkdir -p $COMMON_CONFDIR
 
@@ -2061,6 +2141,39 @@ fi
 [[ $MAC_FILTER -eq 1 ]] && echo "MAC address filtering is enabled!"
 
 [[ $ISOLATE_CLIENTS -eq 1 ]] && echo "Access Point's clients will be isolated!"
+
+# hostapd is confined by AppArmor on several distributions, and its profile
+# usually permits neither reading a config from /tmp nor creating a control
+# socket there. Work out where the policy does allow them before we generate
+# anything. This has to wait until $WIFI_IFACE is final - with a virtual
+# interface it is ap0 and not the physical one, and a profile may well name
+# the interface in the socket path it grants. See issue #524.
+HOSTAPD_CONF=$CONFDIR/hostapd.conf
+HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
+if hostapd_is_confined; then
+    HOSTAPD_CONF=$(apparmor_mktemp r \
+        "/etc/hostapd.create_ap.${WIFI_IFACE}.XXXXXXXX" \
+        "/etc/hostapd/create_ap.${WIFI_IFACE}.XXXXXXXX" \
+        "/run/hostapd/create_ap.${WIFI_IFACE}.XXXXXXXX")
+    if [[ -n "$HOSTAPD_CONF" ]]; then
+        HOSTAPD_CONF_OWNED=$HOSTAPD_CONF
+        chmod 600 "$HOSTAPD_CONF"
+        echo "AppArmor confines hostapd; its config goes to $HOSTAPD_CONF"
+    else
+        HOSTAPD_CONF=$CONFDIR/hostapd.conf
+        echo "WARN: hostapd is confined by AppArmor and none of the paths its profile" >&2
+        echo "      permits are usable. Leaving the config in $CONFDIR; hostapd will" >&2
+        echo "      most likely be denied it - see $APPARMOR_HOSTAPD_PROFILE" >&2
+    fi
+    if HOSTAPD_CTRL=$(hostapd_ctrl_dir "$WIFI_IFACE"); then
+        # hostapd unlinks the socket itself, but not when it is killed
+        # outright. Clean up after it - unless something is already there,
+        # which would not be ours to remove
+        [[ -e "$HOSTAPD_CTRL/$WIFI_IFACE" ]] || HOSTAPD_CTRL_SOCK_OWNED=$HOSTAPD_CTRL/$WIFI_IFACE
+    else
+        HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
+    fi
+fi
 
 # hostapd config
 cat << EOF > $CONFDIR/hostapd.conf
@@ -2387,9 +2500,8 @@ fi
 
 # start access point
 # a confined hostapd can not read the config out of $CONFDIR
-if [[ "$HOSTAPD_CONF" != "$CONFDIR/hostapd.conf" ]]; then
-    cp -f $CONFDIR/hostapd.conf $HOSTAPD_CONF || die "Failed to write $HOSTAPD_CONF"
-    chmod 600 $HOSTAPD_CONF
+if [[ -n "$HOSTAPD_CONF_OWNED" ]]; then
+    cat $CONFDIR/hostapd.conf > $HOSTAPD_CONF || die "Failed to write $HOSTAPD_CONF"
 fi
 
 echo "hostapd command-line interface: hostapd_cli -p $HOSTAPD_CTRL"
@@ -2441,7 +2553,7 @@ echo $HOSTAPD_PID > $CONFDIR/hostapd.pid
 
 if ! wait $HOSTAPD_PID; then
     echo -e "\nError: Failed to run hostapd, maybe a program is interfering." >&2
-    HOSTAPD_DENIALS=$(hostapd_apparmor_denials)
+    HOSTAPD_DENIALS=$(hostapd_apparmor_denials $HOSTAPD_PID)
     if [[ -n "$HOSTAPD_DENIALS" ]]; then
         echo >&2
         echo "AppArmor denied hostapd a path it needs:" >&2
