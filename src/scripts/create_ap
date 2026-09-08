@@ -820,6 +820,9 @@ ROUTE_ADDRS=
 
 HAVEGED_WATCHDOG_PID=
 
+HOSTAPD_CONF=
+HOSTAPD_CTRL=
+
 _cleanup() {
     local PID x
 
@@ -836,6 +839,9 @@ _cleanup() {
         # a value in $x. so we need to check if the value is a file
         [[ -f $x ]] && kill -9 $(cat $x)
     done
+
+    # the config of a confined hostapd lives outside $CONFDIR
+    [[ -n "$HOSTAPD_CONF" && "$HOSTAPD_CONF" != "$CONFDIR/hostapd.conf" ]] && rm -f "$HOSTAPD_CONF"
 
     rm -rf $CONFDIR
 
@@ -978,6 +984,153 @@ clean_exit() {
     [[ $BASHPID -ne $$ ]] && kill -USR1 $$
     # we don't need to call cleanup because it's traped on EXIT
     exit 0
+}
+
+# hostapd is confined by AppArmor on several distributions, and the profile
+# they ship grants config reads through a narrow glob, typically:
+#
+#     /etc/hostapd.* r,
+#
+# In AppArmor a single '*' does not cross '/', so that rule permits
+# /etc/hostapd.conf but denies /etc/hostapd/<anything> and everything under
+# /tmp - which is where we generate our config. hostapd then exits with
+# "Could not open configuration file"; the file is there and root owns it, so
+# the message sends users hunting for a missing file while the real cause is
+# only visible in the audit log. Same story for the control socket, which
+# needs write access to a permitted directory.
+#
+# So instead of assuming /tmp is reachable, resolve the active policy first
+# and put both where it actually permits. See issue #524.
+
+APPARMOR_HOSTAPD_PROFILE=/etc/apparmor.d/usr.sbin.hostapd
+APPARMOR_PROFILES=/sys/kernel/security/apparmor/profiles
+
+# is the hostapd profile loaded in enforce mode?
+apparmor_hostapd_enforced() {
+    local profiles
+    [[ $(cat /sys/module/apparmor/parameters/enabled 2> /dev/null) == "Y" ]] || return 1
+    # the profile list is unreadable without privilege. A profile file exists,
+    # so assume it is enforced; guessing "unconfined" would send us back to the
+    # path that fails with a misleading error.
+    profiles=$(cat "$APPARMOR_PROFILES" 2> /dev/null) || return 0
+    grep -qE '^(hostapd|/usr/sbin/hostapd) \(enforce\)' <<< "$profiles"
+}
+
+# translate an AppArmor path glob into an ERE for bash's =~ operator.
+# '**' crosses '/', a single '*' does not, '?' is one non-separator
+# character and {a,b} is an alternation.
+apparmor_glob_to_regex() {
+    local glob="$1" out= i=0 depth=0 ch
+    while [[ $i -lt ${#glob} ]]; do
+        ch=${glob:$i:1}
+        case "$ch" in
+            '*')
+                if [[ ${glob:$i:2} == '**' ]]; then
+                    out+='.*'
+                    i=$((i + 2))
+                    continue
+                fi
+                out+='[^/]*'
+                ;;
+            '?') out+='[^/]' ;;
+            '{') out+='('; depth=$((depth + 1)) ;;
+            '}')
+                if [[ $depth -gt 0 ]]; then
+                    out+=')'
+                    depth=$((depth - 1))
+                else
+                    out+='\}'
+                fi
+                ;;
+            ',')
+                if [[ $depth -gt 0 ]]; then out+='|'; else out+=','; fi
+                ;;
+            *)
+                if [[ "$ch" == [A-Za-z0-9/_@%:-] ]]; then
+                    out+="$ch"
+                else
+                    out+="\\$ch"
+                fi
+                ;;
+        esac
+        i=$((i + 1))
+    done
+    printf '%s' "$out"
+}
+
+# every path glob the hostapd profile grants $1 (a permission letter) on
+apparmor_globs() {
+    [[ -r "$APPARMOR_HOSTAPD_PROFILE" ]] || return 0
+    awk -v perm="$1" '
+        { sub(/#.*/, "") }
+        /^[ \t]*\// && /,[ \t]*$/ {
+            sub(/[ \t]*,[ \t]*$/, "")
+            sub(/^[ \t]+/, "")
+            n = split($0, f, /[ \t]+/)
+            if (n < 2) next
+            # the last field is the permission set; anything else on the line
+            # is not a plain file rule we know how to read
+            if (index(f[n], perm) == 0) next
+            if (f[n] ~ /[^rwmixlkaCUPD]/) next
+            sub(/[ \t]+[^ \t]+$/, "")
+            print
+        }
+    ' "$APPARMOR_HOSTAPD_PROFILE"
+}
+
+# does the policy grant hostapd permission $1 on path $2?
+apparmor_permits() {
+    local perm="$1" path="$2" glob re
+    while read -r glob; do
+        re=$(apparmor_glob_to_regex "$glob")
+        [[ "$path" =~ ^${re}$ ]] && return 0
+    done < <(apparmor_globs "$perm")
+    return 1
+}
+
+# is our generated config out of hostapd's reach on this system?
+hostapd_is_confined() {
+    [[ -f "$APPARMOR_HOSTAPD_PROFILE" ]] || return 1
+    apparmor_hostapd_enforced || return 1
+    apparmor_permits r "$CONFDIR/hostapd.conf" && return 1
+    return 0
+}
+
+# first candidate the policy grants $1 on and we can create; empty if none
+apparmor_pick_path() {
+    local perm="$1" candidate parent
+    shift
+    for candidate in "$@"; do
+        apparmor_permits "$perm" "$candidate" || continue
+        parent=$(dirname "$candidate")
+        [[ -d "$parent" ]] || mkdir -p "$parent" 2> /dev/null || continue
+        echo "$candidate"
+        return 0
+    done
+    return 1
+}
+
+# after a hostapd failure, the denial that explains it - if there was one
+hostapd_apparmor_denials() {
+    local log=
+    if which journalctl > /dev/null 2>&1; then
+        log=$(journalctl -k --since "-2 min" --no-pager 2> /dev/null)
+    fi
+    [[ -z "$log" ]] && log=$(dmesg 2> /dev/null | tail -n 200)
+    echo "$log" | grep 'apparmor="DENIED"' | grep -E 'profile="[^"]*hostapd"' | tail -n 3
+}
+
+# where a confined hostapd may create its control socket
+hostapd_ctrl_dir() {
+    local dir
+    for dir in /run/hostapd /var/run/hostapd; do
+        if apparmor_permits w "$dir/${WIFI_IFACE}"; then
+            mkdir -p "$dir" 2> /dev/null || continue
+            echo "$dir"
+            return 0
+        fi
+    done
+    return 1
 }
 
 list_running_conf() {
@@ -1739,6 +1892,28 @@ echo $$ > $CONFDIR/pid
 chmod 755 $CONFDIR
 chmod 444 $CONFDIR/pid
 
+# hostapd is confined by AppArmor on several distributions, and its profile
+# usually permits neither reading a config from /tmp nor creating a control
+# socket there. Work out where the policy does allow them before we generate
+# anything. See issue #524.
+HOSTAPD_CONF=$CONFDIR/hostapd.conf
+HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
+if hostapd_is_confined; then
+    HOSTAPD_CONF=$(apparmor_pick_path r \
+        "/etc/hostapd.create_ap.${WIFI_IFACE}.conf" \
+        "/etc/hostapd/create_ap.${WIFI_IFACE}.conf" \
+        "/run/hostapd/create_ap.${WIFI_IFACE}.conf")
+    if [[ -n "$HOSTAPD_CONF" ]]; then
+        echo "AppArmor confines hostapd; its config goes to $HOSTAPD_CONF"
+    else
+        HOSTAPD_CONF=$CONFDIR/hostapd.conf
+        echo "WARN: hostapd is confined by AppArmor and none of the paths its profile" >&2
+        echo "      permits are usable. Leaving the config in $CONFDIR; hostapd will" >&2
+        echo "      most likely be denied it - see $APPARMOR_HOSTAPD_PROFILE" >&2
+    fi
+    HOSTAPD_CTRL=$(hostapd_ctrl_dir) || HOSTAPD_CTRL=$CONFDIR/hostapd_ctrl
+fi
+
 COMMON_CONFDIR=/tmp/create_ap.common.conf
 mkdir -p $COMMON_CONFDIR
 
@@ -1894,7 +2069,7 @@ ssid=${SSID}
 interface=${WIFI_IFACE}
 driver=${DRIVER}
 channel=${CHANNEL}
-ctrl_interface=$CONFDIR/hostapd_ctrl
+ctrl_interface=$HOSTAPD_CTRL
 ctrl_interface_group=0
 ignore_broadcast_ssid=$HIDDEN
 ap_isolate=$ISOLATE_CLIENTS
@@ -2211,7 +2386,13 @@ if [[ "$SHARE_METHOD" != "bridge" ]]; then
 fi
 
 # start access point
-echo "hostapd command-line interface: hostapd_cli -p $CONFDIR/hostapd_ctrl"
+# a confined hostapd can not read the config out of $CONFDIR
+if [[ "$HOSTAPD_CONF" != "$CONFDIR/hostapd.conf" ]]; then
+    cp -f $CONFDIR/hostapd.conf $HOSTAPD_CONF || die "Failed to write $HOSTAPD_CONF"
+    chmod 600 $HOSTAPD_CONF
+fi
+
+echo "hostapd command-line interface: hostapd_cli -p $HOSTAPD_CTRL"
 
 if [[ $NO_HAVEGED -eq 0 ]]; then
     haveged_watchdog &
@@ -2254,12 +2435,20 @@ STDBUF_PATH=`which stdbuf`
 if [ $? -eq 0 ]; then
     STDBUF_PATH=$STDBUF_PATH" -oL"
 fi
-$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf > >(handshake_watchdog) &
+$STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $HOSTAPD_CONF > >(handshake_watchdog) &
 HOSTAPD_PID=$!
 echo $HOSTAPD_PID > $CONFDIR/hostapd.pid
 
 if ! wait $HOSTAPD_PID; then
     echo -e "\nError: Failed to run hostapd, maybe a program is interfering." >&2
+    HOSTAPD_DENIALS=$(hostapd_apparmor_denials)
+    if [[ -n "$HOSTAPD_DENIALS" ]]; then
+        echo >&2
+        echo "AppArmor denied hostapd a path it needs:" >&2
+        echo "$HOSTAPD_DENIALS" | sed 's/^/    /' >&2
+        echo "Nothing is interfering - the file is simply out of reach of the" >&2
+        echo "hostapd profile ($APPARMOR_HOSTAPD_PROFILE)." >&2
+    fi
     if networkmanager_is_running; then
         echo "If an error like 'n80211: Could not configure driver mode' was thrown" >&2
         echo "try running the following before starting create_ap:" >&2
