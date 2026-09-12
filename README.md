@@ -63,6 +63,8 @@ If you only need the command line without GUI run `make install-cli-only` as the
 
 - **Unable to allocate IP: firewalld issue:** Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
 
+- **`Could not open configuration file` / `Failed to run hostapd`:** on distributions that ship an enforcing AppArmor profile for hostapd (openSUSE, Debian/Ubuntu), that profile grants config reads through a narrow glob such as `/etc/hostapd.* r,`. A single `*` does not cross `/` in AppArmor, so everything under `/tmp` - where the generated config used to go - was denied, and hostapd reported it as a missing file. `create_ap` now reads the active profile and places its config and hostapd's control socket where the policy actually permits, and prints the denial if one happens anyway. See [#524](https://github.com/lakinduakash/linux-wifi-hotspot/issues/524).
+
 - **Clients see the hotspot but cannot connect:** if devices keep associating and disconnecting, your adapter's firmware may not support AP mode with encryption. `create_ap` now warns when it detects this. Broadcom adapters in T2 Macs are known to be affected, and no `create_ap` option works around it - a USB WiFi adapter is needed. See [#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525).
 
 ## Installation
