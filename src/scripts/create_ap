@@ -820,6 +820,10 @@ ROUTE_ADDRS=
 
 HAVEGED_WATCHDOG_PID=
 
+FIREWALLD_AP_ZONE=
+FIREWALLD_AP_OLD_ZONE=
+FIREWALLD_MASQ_ZONE=
+
 _cleanup() {
     local PID x
 
@@ -876,6 +880,8 @@ _cleanup() {
 
         rm -rf $COMMON_CONFDIR
     fi
+
+    firewalld_down
 
     if [[ "$SHARE_METHOD" != "none" ]]; then
         if [[ "$SHARE_METHOD" == "nat" ]]; then
@@ -978,6 +984,82 @@ clean_exit() {
     [[ $BASHPID -ne $$ ]] && kill -USR1 $$
     # we don't need to call cleanup because it's traped on EXIT
     exit 0
+}
+
+# firewalld keeps its own nftables ruleset, and it is evaluated regardless of
+# the rules create_ap inserts with iptables. The hotspot's DHCP and DNS
+# requests are dropped there, so clients associate, never get a lease and
+# give up - the long-standing complaint in #166 and #209.
+#
+# Rather than fight it, ask firewalld for what we need, the way
+# NetworkManager does for its own shared connections: put the AP interface in
+# the nm-shared zone, which firewalld ships for exactly this purpose (target
+# ACCEPT, services dhcp and dns, icmp), and turn on masquerading for the zone
+# the uplink is in. Everything is runtime only - no --permanent - so nothing
+# outlives the hotspot, and cleanup puts the interface back where it was.
+
+firewalld_is_running() {
+    which firewall-cmd > /dev/null 2>&1 || return 1
+    firewall-cmd --state > /dev/null 2>&1
+}
+
+# the zone an interface is in, or the default zone if it is in none
+firewalld_zone_of() {
+    local zone
+    zone=$(firewall-cmd --get-zone-of-interface="$1" 2> /dev/null)
+    [[ -z "$zone" || "$zone" == "no zone" ]] && zone=$(firewall-cmd --get-default-zone 2> /dev/null)
+    echo "$zone"
+}
+
+firewalld_up() {
+    local ap_iface="$1" uplink="$2" zone
+
+    # nm-shared is the zone meant for a shared connection; older firewalld
+    # releases do not have it, so fall back to trusted
+    for zone in nm-shared trusted; do
+        firewall-cmd --info-zone="$zone" > /dev/null 2>&1 && break
+    done
+
+    FIREWALLD_AP_OLD_ZONE=$(firewall-cmd --get-zone-of-interface="$ap_iface" 2> /dev/null)
+    [[ "$FIREWALLD_AP_OLD_ZONE" == "no zone" ]] && FIREWALLD_AP_OLD_ZONE=
+
+    if firewall-cmd -q --zone="$zone" --change-interface="$ap_iface" 2> /dev/null; then
+        FIREWALLD_AP_ZONE=$zone
+        echo "firewalld is running; $ap_iface put in its $zone zone"
+    else
+        echo "WARN: firewalld is running but $ap_iface could not be put in a zone." >&2
+        echo "      Clients may associate without ever getting an IP address. See" >&2
+        echo "      https://github.com/lakinduakash/linux-wifi-hotspot/issues/166" >&2
+        return
+    fi
+
+    [[ "$SHARE_METHOD" != "nat" ]] && return
+
+    # only touch masquerading if it is off, so cleanup never disables it on a
+    # system that had it enabled all along
+    zone=$(firewalld_zone_of "$uplink")
+    if [[ -n "$zone" ]] && ! firewall-cmd -q --zone="$zone" --query-masquerade; then
+        if firewall-cmd -q --zone="$zone" --add-masquerade; then
+            FIREWALLD_MASQ_ZONE=$zone
+            echo "firewalld: masquerading enabled on zone $zone for $uplink"
+        fi
+    fi
+}
+
+firewalld_down() {
+    firewalld_is_running || return 0
+
+    if [[ -n "$FIREWALLD_AP_ZONE" ]]; then
+        if [[ -n "$FIREWALLD_AP_OLD_ZONE" ]]; then
+            firewall-cmd -q --zone="$FIREWALLD_AP_OLD_ZONE" --change-interface="$WIFI_IFACE"
+        else
+            firewall-cmd -q --zone="$FIREWALLD_AP_ZONE" --remove-interface="$WIFI_IFACE"
+        fi
+    fi
+
+    [[ -n "$FIREWALLD_MASQ_ZONE" ]] && firewall-cmd -q --zone="$FIREWALLD_MASQ_ZONE" --remove-masquerade
+
+    return 0
 }
 
 list_running_conf() {
@@ -2177,6 +2259,12 @@ if [[ "$SHARE_METHOD" != "none" ]]; then
     fi
 else
     echo "No Internet sharing"
+fi
+
+# firewalld drops the hotspot's DHCP and DNS traffic unless the AP interface
+# is in a zone that permits it, whatever iptables says. See issue #166.
+if [[ "$SHARE_METHOD" != "bridge" ]] && firewalld_is_running; then
+    firewalld_up "$WIFI_IFACE" "$INTERNET_IFACE"
 fi
 
 # start dhcp + dns (optional)
