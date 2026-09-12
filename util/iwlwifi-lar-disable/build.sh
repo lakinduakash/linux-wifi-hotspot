@@ -7,7 +7,7 @@
 set -euo pipefail
 
 SELF_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-PATCH="$SELF_DIR/lar_disable.patch"
+PATCH="$SELF_DIR/dkms/patches/lar_disable.patch"
 KVER=$(uname -r)
 STATE_DIR=/var/lib/linux-wifi-hotspot/lar
 WORK_DIR=${WORK_DIR:-/var/tmp/lwh-lar-build}
