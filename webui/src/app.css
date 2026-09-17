@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  font-family: 'Inter', sans-serif;
+  color: #f3f4f6;
+  background-color: #111827;
+}
+
+body {
+  margin: 0;
+  background-color: #111827;
+}
+
+#app {
+  min-height: 100vh;
+  background-color: #111827;
+}
