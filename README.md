@@ -61,7 +61,7 @@ If you only need the command line without GUI run `make install-cli-only` as the
 
 - If any problems with **RealTeK Wifi Adapters** see [this](docs/howto/realtek.md)
 
-- **Unable to allocate IP: firewalld issue:** Please check for potential fixes: [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
+- **Unable to allocate IP: firewalld issue:** firewalld keeps its own ruleset, which drops the hotspot's DHCP and DNS traffic no matter what `create_ap` adds with `iptables`, so clients associate but never get an address. `create_ap` now puts the AP interface in firewalld's `nm-shared` zone and enables masquerading on the uplink's zone for as long as the hotspot runs, the same way NetworkManager handles a shared connection. If you are on an older release, or want to do it by hand, see [#209](https://github.com/lakinduakash/linux-wifi-hotspot/issues/209) [#166](https://github.com/lakinduakash/linux-wifi-hotspot/issues/166)
 
 - **Clients see the hotspot but cannot connect:** if devices keep associating and disconnecting, your adapter's firmware may not support AP mode with encryption. `create_ap` now warns when it detects this. Broadcom adapters in T2 Macs are known to be affected, and no `create_ap` option works around it - a USB WiFi adapter is needed. See [#525](https://github.com/lakinduakash/linux-wifi-hotspot/pull/525).
 
