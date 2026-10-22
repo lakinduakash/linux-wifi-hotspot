@@ -5,3 +5,6 @@ src/cmake-build-debug
 src/ui/resources.c
 wifih.ui~
 about.glade~
+services/hotspotd/target/
+webui/node_modules/
+webui/dist/
