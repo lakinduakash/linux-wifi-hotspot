@@ -1034,10 +1034,16 @@ static int init_config_val_input(ConfigValues* cv){
 
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_random_mac))) {
             char* new_mac = rand_mac();
-            gtk_entry_set_text(entry_mac, new_mac);
-            cv->mac = new_mac;
+
+            if (new_mac != NULL) {
+                gtk_entry_set_text(entry_mac, new_mac);
+                free(new_mac);
+
+                cv->mac = (char*)gtk_entry_get_text(entry_mac);
+            }
         }
-        else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
+
+        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
             cv->mac = (char*)gtk_entry_get_text(entry_mac);
         else
             cv->mac =NULL;
