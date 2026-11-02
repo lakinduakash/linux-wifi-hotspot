@@ -29,12 +29,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <ctype.h>
 #include "util.h"
 #include <regex.h>
+#include <sys/random.h>
 
 regex_t regex;
 int reti;
@@ -65,6 +67,29 @@ void rand_str(char *dest, size_t length) {
         *dest++ = charset[index];
     }
     *dest = '\0';
+}
+
+
+char *rand_mac() {
+    uint8_t bytes[6];
+    char *mac = malloc(18);
+
+    if (!mac)
+        return NULL;
+
+    if (getrandom(bytes, sizeof(bytes), 0) != sizeof(bytes)) {
+        free(mac);
+        return NULL;
+    }
+
+    // Ensure first byte is valid.
+    bytes[0] = (bytes[0] & 0xFC) | 0x02;
+
+    snprintf(mac, 18, "%02x:%02x:%02x:%02x:%02x:%02x",
+            bytes[0], bytes[1], bytes[2],
+            bytes[3], bytes[4], bytes[5]);
+
+    return mac;
 }
 
 

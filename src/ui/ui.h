@@ -91,6 +91,8 @@ static void on_cb_open_toggle(GtkWidget *widget, gpointer data);
 
 static void on_cb_mac_toggle(GtkWidget *widget, gpointer data);
 
+static void on_cb_random_mac_toggle(GtkWidget *widget, gpointer data);
+
 static void on_cb_channel_toggle(GtkWidget *widget, gpointer data);
 
 static void on_cb_mac_filter_toggle(GtkWidget *widget, gpointer data);
