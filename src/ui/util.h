@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int find_str(char *find, const char **array, int length);
 void rand_str(char *dest, size_t length);
+char *rand_mac();
 int isValidMacAddress(const char*);
 int isValidAcceptedMacs(const char*);
 int isValidIPaddress(const char*);

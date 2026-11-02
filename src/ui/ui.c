@@ -96,6 +96,7 @@ GtkCheckButton *cb_no_haveged;
 GtkCheckButton *cb_psk;
 GtkCheckButton *cb_gateway;
 GtkCheckButton *cb_mac;
+GtkCheckButton *cb_random_mac;
 GtkCheckButton *cb_novirt;
 GtkCheckButton *cb_channel;
 GtkCheckButton *cb_open;
@@ -511,6 +512,7 @@ int initUi(int argc, char *argv[]){
     cb_no_haveged = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_no_haveged");
     cb_psk = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_psk");
     cb_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_mac");
+    cb_random_mac = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_random_mac");
     cb_novirt = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_novirt");
     cb_channel = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_channel");
     cb_gateway = (GtkCheckButton *) gtk_builder_get_object(builder, "cb_gateway");
@@ -546,6 +548,7 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL);
     g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_toggle), NULL);
     g_signal_connect (cb_mac, "toggled", G_CALLBACK(on_cb_mac_toggle), NULL); //new
+    g_signal_connect (cb_random_mac, "toggled", G_CALLBACK(on_cb_random_mac_toggle), NULL); //new
     g_signal_connect (cb_channel, "toggled", G_CALLBACK(on_cb_channel_toggle), NULL); //new
     g_signal_connect (cb_mac_filter, "toggled", G_CALLBACK(on_cb_mac_filter_toggle), NULL); //new
     g_signal_connect (cb_gateway, "toggled", G_CALLBACK(on_cb_gateway_toggle), NULL); //new
@@ -1029,7 +1032,12 @@ static int init_config_val_input(ConfigValues* cv){
         else
             cv->gateway = NULL;
 
-        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
+        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_random_mac))) {
+            char* new_mac = rand_mac();
+            gtk_entry_set_text(entry_mac, new_mac);
+            cv->mac = new_mac;
+        }
+        else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac)))
             cv->mac = (char*)gtk_entry_get_text(entry_mac);
         else
             cv->mac =NULL;
@@ -1174,6 +1182,24 @@ static void on_cb_open_toggle(GtkWidget *widget, gpointer data)
         gtk_widget_set_sensitive((GtkWidget*)entry_pass, FALSE);
     } else {
         gtk_widget_set_sensitive((GtkWidget*)entry_pass, TRUE);
+    }
+}
+
+/**
+ * When random mac is toogled, disable set mac label and its entry.
+*/
+static void on_cb_random_mac_toggle(GtkWidget *widget, gpointer data)
+{
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+        gtk_widget_set_sensitive((GtkWidget*)cb_mac, FALSE);
+        gtk_toggle_button_set_active((GtkToggleButton*) cb_mac, TRUE);
+        gtk_widget_set_sensitive((GtkWidget*)entry_mac, FALSE);
+    } else {
+        gtk_widget_set_sensitive((GtkWidget*)cb_mac, TRUE);
+        gtk_widget_set_sensitive(
+            (GtkWidget*)entry_mac,
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb_mac))
+        );
     }
 }
 
