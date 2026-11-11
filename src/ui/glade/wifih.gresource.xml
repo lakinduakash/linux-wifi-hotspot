@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/gtk/wihotspot">
-    <file preprocess="xml-stripblanks">wifih.ui</file>
-  </gresource>
+    <file compressed="true"
+          preprocess="xml-stripblanks">wifih.ui</file>
 
-  <gresource prefix="/org/gtk/wihotspot">
-    <file preprocess="xml-stripblanks">about.glade</file>
-  </gresource>
+    <file compressed="true"
+          preprocess="xml-stripblanks">about.glade</file>
 
-  <gresource prefix="/org/gtk/wihotspot">
-    <file preprocess="xml-stripblanks">qr.glade</file>
+    <file compressed="true"
+          preprocess="xml-stripblanks">qr.glade</file>
   </gresource>
 
   <gresource prefix="/css">
