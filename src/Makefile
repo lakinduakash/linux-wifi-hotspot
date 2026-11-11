@@ -19,26 +19,30 @@ BUILT_SRC = resources.c
 _OBJ = main.o ui.o h_prop.o util.o read_config.o about_ui.o qr_ui.o qrgen.o $(BUILT_SRC:.c=.o)
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-# Determine this makefile's path.
-# Be sure to place this BEFORE `include` directives, if any.
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
+# Release optimization flags
+ifeq ($(MAKECMDGOALS),release)
+	CFLAGS += -Os -flto -DNDEBUG
+	CXXFLAGS += -Os -flto -DNDEBUG
+	LDFLAGS += -flto -Wl,--gc-sections -s
+endif
 
-.PHONY: clean
+.PHONY: clean release
 
-all: resources.c
+wihotspot-gui: $(OBJ)
+	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LDFLAGS)
 
-resources.c: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
-	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=ui/$@ --sourcedir=ui/glade --generate-source
-	@$(MAKE) -f $(THIS_FILE) wihotspot-gui
-	
+release: clean wihotspot-gui
+
+ui/resources.c: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
+	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=$@ --sourcedir=ui/glade --generate-source
+
 $(ODIR)/%.o: ui/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: ui/%.cpp
 	g++ -c -o $@ $< $(CXXFLAGS)
 
-wihotspot-gui: $(OBJ)
-	$(CC) -o $(ODIR)/$@ $^ $(CFLAGS) $(LDFLAGS)
+$(ODIR)/resources.o: ui/resources.c
 
 install: $(ODIR)/wihotspot-gui
 	install -Dm644 desktop/icons/hotspot@64.png $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
@@ -51,7 +55,7 @@ install: $(ODIR)/wihotspot-gui
 	install -Dm644 scripts/policies/polkit.rules $(DESTDIR)$(PREFIX)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
 	install -Dm644 scripts/policies/polkit.policy $(DESTDIR)$(PREFIX)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
 	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
-	cd scripts && $(MAKE) install
+	$(MAKE) -C scripts install
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
@@ -64,7 +68,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
 	rm -f $(DESTDIR)$(PREFIX)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
 	rm -f $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)
-	cd scripts && $(MAKE) uninstall
+	$(MAKE) -C scripts uninstall
 
 clean-old:
 	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/wihotspot.png
@@ -73,4 +77,3 @@ clean:
 	rm -f $(ODIR)/*.o
 	rm -f ui/$(BUILT_SRC)
 	rm -f $(ODIR)/wihotspot-gui
-

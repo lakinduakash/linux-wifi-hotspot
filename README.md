@@ -138,17 +138,22 @@ sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd 
 
 ## Installation
 
+```bash
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
 
-    #build binaries
-    make
+    # Build binary
+    make release
 
-    #install
+    # Install
     sudo make install
+```
 
 ## Uninstallation
+
+```bash
     sudo make uninstall
+```
 
 ## Running
 You can launch the GUI by searching for "Wifi Hotspot" in the Application Menu

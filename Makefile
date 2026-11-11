@@ -2,30 +2,35 @@ all:
 	mkdir -p build
 	@echo "Run 'sudo make install' for installation."
 	@echo "Run 'sudo make uninstall' for uninstallation."
-	cd src && $(MAKE)
+	$(MAKE) -C src
 
 install:
 	@echo "Installing..."
-	cd src && $(MAKE) install
+	$(MAKE) -C src install
+
+release:
+	mkdir -p build
+	@echo "Building release binary..."
+	$(MAKE) -C src release
 
 test:
 	mkdir -p build
 	@echo "Testing..."
-	cd test && $(MAKE)
+	$(MAKE) -C test
 
 install-cli-only:
 	@echo "Installing command line interface only..."
-	cd src/scripts && $(MAKE) install-cli-only
+	$(MAKE) -C src/scripts install-cli-only
 
 uninstall:
 	@echo "Uninstalling..."
-	cd src && $(MAKE) uninstall
+	$(MAKE) -C src uninstall
 
 clean-old:
-	cd src && $(MAKE) clean-old
+	$(MAKE) -C src clean-old
 
 .PHONY: clean test
 
 clean:
-	cd src && $(MAKE) clean
-	cd test && $(MAKE) clean
+	$(MAKE) -C src clean
+	$(MAKE) -C test clean
