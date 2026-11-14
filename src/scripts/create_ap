@@ -2213,6 +2213,12 @@ fi
 # so "ieee80211ac=1" on its own never gets past 40MHz. Whatever is asked for is
 # capped to what the regulatory domain allows, so an over-wide request degrades
 # instead of leaving hostapd unable to start.
+# 802.11ax requires WMM and HT (plus VHT on 5 GHz) in hostapd
+if [[ $IEEE80211AX -eq 1 ]]; then
+    IEEE80211N=1
+    [[ $FREQ_BAND == 5 ]] && IEEE80211AC=1
+fi
+
 EFFECTIVE_BW=20
 if [[ $FREQ_BAND == 5 ]] && [[ $IEEE80211N -eq 1 || $IEEE80211AC -eq 1 || $IEEE80211AX -eq 1 ]]; then
     case $VHT_CHWIDTH in
@@ -2290,7 +2296,7 @@ if [[ -n "$VHT_CAPAB" ]]; then
     echo "vht_capab=${VHT_CAPAB}" >> $CONFDIR/hostapd.conf
 fi
 
-if [[ $IEEE80211N -eq 1 ]] || [[ $IEEE80211AC -eq 1 ]]; then
+if [[ $IEEE80211N -eq 1 ]] || [[ $IEEE80211AC -eq 1 ]] || [[ $IEEE80211AX -eq 1 ]]; then
     echo "wmm_enabled=1" >> $CONFDIR/hostapd.conf
 fi
 
