@@ -53,7 +53,7 @@ usage() {
     echo "  --ieee80211ax           Enable IEEE 802.11ax (VHT)"
     echo "  --ht_capab <HT>         HT capabilities (default: [HT40+])"
     echo "  --vht_capab <VHT>       VHT capabilities"
-    echo "  --vht-chwidth <MHz>     Channel width to aim for on 5GHz with --ieee80211ac."
+    echo "  --vht-chwidth <MHz>     Channel width to aim for on 5GHz with --ieee80211ac or --ieee80211ax."
     echo "                          Valid inputs: 20, 40, 80, 160 (default: 80). Capped to"
     echo "                          what the regulatory domain allows."
     echo "  --country <code>        Set two-letter country code for regularity (example: US)"
@@ -2214,15 +2214,15 @@ fi
 # capped to what the regulatory domain allows, so an over-wide request degrades
 # instead of leaving hostapd unable to start.
 EFFECTIVE_BW=20
-if [[ $FREQ_BAND == 5 ]] && [[ $IEEE80211N -eq 1 || $IEEE80211AC -eq 1 ]]; then
+if [[ $FREQ_BAND == 5 ]] && [[ $IEEE80211N -eq 1 || $IEEE80211AC -eq 1 || $IEEE80211AX -eq 1 ]]; then
     case $VHT_CHWIDTH in
         20|40|80|160) EFFECTIVE_BW=$VHT_CHWIDTH ;;
         *) echo "WARN: invalid --vht-chwidth '${VHT_CHWIDTH}', using 80" >&2
            EFFECTIVE_BW=80 ;;
     esac
 
-    # 802.11n tops out at 40MHz; 80 and 160 need VHT
-    [[ $IEEE80211AC -eq 0 && $EFFECTIVE_BW -gt 40 ]] && EFFECTIVE_BW=40
+    # 802.11n tops out at 40MHz; 80 and 160 need VHT or HE
+    [[ $IEEE80211AC -eq 0 && $IEEE80211AX -eq 0 && $EFFECTIVE_BW -gt 40 ]] && EFFECTIVE_BW=40
 
     REG_BW=$(get_max_regulatory_bw $((5000 + CHANNEL * 5)))
     if [[ -n "$REG_BW" && $REG_BW -lt $EFFECTIVE_BW ]]; then
@@ -2248,32 +2248,42 @@ ht_capab=${HT_CAPAB}
 EOF
 fi
 
+# VHT and HE share the same 5 GHz channel-width encoding and seg0 centre
+# indices; resolve them once up front so both stay in sync on fallback.
+VHT_OPER_CHWIDTH=
+VHT_SEG0=
+if [[ $FREQ_BAND == 5 ]] && [[ $IEEE80211AC -eq 1 || $IEEE80211AX -eq 1 ]]; then
+    case $EFFECTIVE_BW in
+        160) VHT_OPER_CHWIDTH=2 ;;
+        80)  VHT_OPER_CHWIDTH=1 ;;
+        *)   VHT_OPER_CHWIDTH=0 ;;
+    esac
+
+    if [[ $VHT_OPER_CHWIDTH -ne 0 ]]; then
+        VHT_SEG0=$(get_vht_seg0_idx ${CHANNEL} ${EFFECTIVE_BW})
+        if [[ -z "$VHT_SEG0" ]]; then
+            # no known centre index for this channel, stay narrow rather
+            # than emit a width hostapd can not place
+            VHT_OPER_CHWIDTH=0
+        fi
+    fi
+fi
+
 if [[ $IEEE80211AC -eq 1 ]]; then
     echo "ieee80211ac=1" >> $CONFDIR/hostapd.conf
-
     if [[ $FREQ_BAND == 5 ]]; then
-        case $EFFECTIVE_BW in
-            160) VHT_OPER_CHWIDTH=2 ;;
-            80)  VHT_OPER_CHWIDTH=1 ;;
-            *)   VHT_OPER_CHWIDTH=0 ;;
-        esac
         echo "vht_oper_chwidth=${VHT_OPER_CHWIDTH}" >> $CONFDIR/hostapd.conf
-
-        if [[ $VHT_OPER_CHWIDTH -ne 0 ]]; then
-            VHT_SEG0=$(get_vht_seg0_idx ${CHANNEL} ${EFFECTIVE_BW})
-            if [[ -n "$VHT_SEG0" ]]; then
-                echo "vht_oper_centr_freq_seg0_idx=${VHT_SEG0}" >> $CONFDIR/hostapd.conf
-            else
-                # no known centre index for this channel, stay narrow rather
-                # than emit a width hostapd can not place
-                sed -i 's/^vht_oper_chwidth=.*/vht_oper_chwidth=0/' $CONFDIR/hostapd.conf
-            fi
-        fi
+        [[ -n "$VHT_SEG0" ]] && echo "vht_oper_centr_freq_seg0_idx=${VHT_SEG0}" >> $CONFDIR/hostapd.conf
     fi
 fi
 
 if [[ $IEEE80211AX -eq 1 ]]; then
     echo "ieee80211ax=1" >> $CONFDIR/hostapd.conf
+    if [[ $FREQ_BAND == 5 ]]; then
+        # hostapd does not inherit vht_oper_* for HE; emit he_oper_* explicitly
+        echo "he_oper_chwidth=${VHT_OPER_CHWIDTH}" >> $CONFDIR/hostapd.conf
+        [[ -n "$VHT_SEG0" ]] && echo "he_oper_centr_freq_seg0_idx=${VHT_SEG0}" >> $CONFDIR/hostapd.conf
+    fi
 fi
 
 if [[ -n "$VHT_CAPAB" ]]; then
