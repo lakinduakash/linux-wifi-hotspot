@@ -1,4 +1,39 @@
 #!/bin/sh
 
-# Start wihotspot-gui
-/usr/bin/wihotspot-gui
+# Find executable, preferring local build first
+find_ui() {
+    target="$1"
+    if [ -x "./build/$target" ]; then
+        echo "./build/$target"
+    elif [ -x "./$target" ]; then
+        echo "./$target"
+    elif [ -x "../build/$target" ]; then
+        echo "../build/$target"
+    elif command -v "$target" >/dev/null 2>&1; then
+        command -v "$target"
+    fi
+}
+
+GUI_BIN=$(find_ui "wihotspot-gui")
+ADW_BIN=$(find_ui "wihotspot-adw")
+
+# Launch preferred UI if available
+PREF_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/wihotspot/ui"
+if [ -f "$PREF_FILE" ]; then
+    PREF=$(cat "$PREF_FILE" 2>/dev/null)
+    if [ "$PREF" = "adw" ] && [ -n "$ADW_BIN" ]; then
+        exec "$ADW_BIN" "$@"
+    elif [ "$PREF" = "gui" ] && [ -n "$GUI_BIN" ]; then
+        exec "$GUI_BIN" "$@"
+    fi
+fi
+
+# Fallback
+if [ -n "$GUI_BIN" ]; then
+    exec "$GUI_BIN" "$@"
+elif [ -n "$ADW_BIN" ]; then
+    exec "$ADW_BIN" "$@"
+else
+    echo "Error: Neither wihotspot-gui nor wihotspot-adw is installed." >&2
+    exit 1
+fi

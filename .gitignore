@@ -3,5 +3,7 @@ build
 .vscode
 src/cmake-build-debug
 src/ui/resources.c
+src/ui/adw/window.ui
+src/ui/adw/resources_adw.c
 wifih.ui~
 about.glade~

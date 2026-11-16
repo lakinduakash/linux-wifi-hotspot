@@ -65,6 +65,7 @@ GObject *window;
 GtkButton *button_create_hp;
 GtkButton *button_stop_hp;
 GtkButton *button_about;
+GtkButton *button_switch_ui;
 GtkButton *button_qr;
 GtkButton *button_refresh;
 
@@ -186,6 +187,71 @@ static void on_stop_hp_clicked(GtkWidget *widget, gpointer data) {
 
 static void on_about_open_click(GtkWidget *widget, gpointer data){
     show_info(widget,data);
+}
+
+static gchar* find_target_binary(const gchar *target) {
+    gchar *self_exe = g_file_read_link("/proc/self/exe", NULL);
+    if (self_exe) {
+        gchar *dir = g_path_get_dirname(self_exe);
+        gchar *sibling = g_build_filename(dir, target, NULL);
+        g_free(dir);
+        g_free(self_exe);
+        if (g_file_test(sibling, G_FILE_TEST_IS_EXECUTABLE)) {
+            return sibling;
+        }
+        g_free(sibling);
+    }
+
+    const gchar *local_paths[] = { "./build", ".", "../build" };
+    for (size_t i = 0; i < G_N_ELEMENTS(local_paths); i++) {
+        gchar *candidate = g_build_filename(local_paths[i], target, NULL);
+        if (g_file_test(candidate, G_FILE_TEST_IS_EXECUTABLE)) {
+            return candidate;
+        }
+        g_free(candidate);
+    }
+
+    gchar *system_path = g_find_program_in_path(target);
+    if (system_path) {
+        return system_path;
+    }
+
+    return g_strdup(target);
+}
+
+static void on_switch_modern_ui_click(GtkWidget *widget, gpointer data) {
+    (void)widget;
+    (void)data;
+    g_print("Switching to modern Libadwaita UI...\n");
+
+    const gchar *config_dir = g_get_user_config_dir();
+    gchar *wihotspot_dir = g_build_filename(config_dir, "wihotspot", NULL);
+    g_mkdir_with_parents(wihotspot_dir, 0755);
+    gchar *pref_file = g_build_filename(wihotspot_dir, "ui", NULL);
+    g_file_set_contents(pref_file, "adw\n", -1, NULL);
+    g_free(pref_file);
+    g_free(wihotspot_dir);
+
+    gchar *target_cmd = find_target_binary("wihotspot-adw");
+    const gchar *argv[] = { target_cmd, NULL };
+    GError *error = NULL;
+    if (g_spawn_async(NULL, (gchar **)argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error)) {
+        gtk_main_quit();
+    } else {
+        g_warning("Failed to launch wihotspot-adw: %s", error ? error->message : "unknown error");
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   GTK_MESSAGE_ERROR,
+                                                   GTK_BUTTONS_CLOSE,
+                                                   "Failed to launch modern UI:\n%s",
+                                                   error ? error->message : "wihotspot-adw not found");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+        if (error) {
+            g_error_free(error);
+        }
+    }
+    g_free(target_cmd);
 }
 
 static void on_qr_open_click(GtkWidget *widget, gpointer data){
@@ -489,6 +555,7 @@ int initUi(int argc, char *argv[]){
     button_create_hp = (GtkButton *) gtk_builder_get_object(builder, "button_create_hp");
     button_stop_hp = (GtkButton *) gtk_builder_get_object(builder, "button_stop_hp");
     button_about = (GtkButton *) gtk_builder_get_object(builder, "button_about");
+    button_switch_ui = (GtkButton *) gtk_builder_get_object(builder, "button_switch_ui");
     button_qr = (GtkButton *) gtk_builder_get_object(builder, "button_qr");
     button_refresh = (GtkButton *)gtk_builder_get_object(builder, "button_refresh");
 
@@ -544,6 +611,9 @@ int initUi(int argc, char *argv[]){
     g_signal_connect (button_create_hp, "clicked", G_CALLBACK(on_create_hp_clicked), NULL);
     g_signal_connect (button_stop_hp, "clicked", G_CALLBACK(on_stop_hp_clicked), NULL);
     g_signal_connect (button_about, "clicked", G_CALLBACK(on_about_open_click), NULL);
+    if (button_switch_ui) {
+        g_signal_connect (button_switch_ui, "clicked", G_CALLBACK(on_switch_modern_ui_click), NULL);
+    }
     g_signal_connect (button_qr, "clicked", G_CALLBACK(on_qr_open_click), NULL);
     g_signal_connect (button_refresh, "clicked", G_CALLBACK(on_refresh_clicked), NULL);
     g_signal_connect (cb_open, "toggled", G_CALLBACK(on_cb_open_toggle), NULL);

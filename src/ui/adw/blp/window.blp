@@ -1,0 +1,62 @@
+using Gtk 4.0;
+using Adw 1;
+
+menu primary_menu {
+  section {
+    item {
+      label: _("Switch to Classic UI");
+      action: "win.switch-ui";
+    }
+  }
+
+  section {
+    item {
+      label: _("About Wi Hotspot");
+      action: "win.about";
+    }
+  }
+}
+
+Adw.ApplicationWindow window {
+  default-width: 600;
+  default-height: 450;
+  title: "Wi Hotspot";
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      MenuButton {
+        icon-name: "open-menu-symbolic";
+        menu-model: primary_menu;
+        tooltip-text: "Main Menu";
+      }
+    }
+
+    content: Adw.StatusPage {
+      title: "Wi Hotspot";
+      description: "Hello World";
+      icon-name: "network-wireless-hotspot-symbolic";
+
+    };
+  }
+}
+
+Adw.AboutDialog about_dialog {
+  application-name: "Linux Wifi Hotspot";
+  application-icon: "wihotspot";
+  version: "5.0.0";
+  developer-name: "Lakindu Akash";
+  website: "https://github.com/lakinduakash/linux-wifi-hotspot";
+  copyright: "(c) lakinduakash 2024";
+  developers: [
+    "Lakindu Akash",
+    "Oblique",
+    "Open source community"
+  ];
+  artists: [
+    "Freepik from www.flaticon.com"
+  ];
+  license-type: custom;
+  license: "Copyright (c) 2024, lakinduaksh\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n\n* Redistributions of source code must retain the above copyright notice, this\n  list of conditions and the following disclaimer.\n\n* Redistributions in binary form must reproduce the above copyright notice,\n  this list of conditions and the following disclaimer in the documentation\n  and/or other materials provided with the distribution.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\nAND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\nIMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE\nFOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\nDAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR\nSERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER\nCAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\nOR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\nOF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.";
+}
