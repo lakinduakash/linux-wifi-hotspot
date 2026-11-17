@@ -4,6 +4,10 @@ all:
 	@echo "Run 'sudo make uninstall' for uninstallation."
 	cd src && $(MAKE)
 
+wihotspot-gui wihotspot-adw:
+	mkdir -p build
+	cd src && $(MAKE) $@
+
 install:
 	@echo "Installing..."
 	cd src && $(MAKE) install
@@ -24,7 +28,7 @@ uninstall:
 clean-old:
 	cd src && $(MAKE) clean-old
 
-.PHONY: clean test
+.PHONY: clean test wihotspot-gui wihotspot-adw
 
 clean:
 	cd src && $(MAKE) clean

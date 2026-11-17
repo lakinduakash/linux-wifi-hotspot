@@ -122,18 +122,21 @@ install it using your distro's package manager_
 * pkg-config
 * gtk
 * libgtk-3-dev
+* libgtk-4-dev (for the modern UI)
+* libadwaita-1-dev (for the modern UI)
+* blueprint-compiler (for the modern UI)
 * libqrencode-dev (for qr code generation)
 * libpng-dev (for qr code generation)
 
 On Ubuntu or Debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
+sudo apt install -y libgtk-3-dev libgtk-4-dev libadwaita-1-dev blueprint-compiler build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
 ```
 
 On Fedora/CentOS/Red Hat Enterprise Linux/Rocky Linux/Oracle Linux
 ```bash
-sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
+sudo dnf install -y gtk3-devel gtk4-devel libadwaita-devel blueprint-compiler gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
 ```
 
 ## Installation
@@ -141,11 +144,27 @@ sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd 
     git clone https://github.com/lakinduakash/linux-wifi-hotspot
     cd linux-wifi-hotspot
 
-    #build binaries
+    # build both classic GTK3 and modern Libadwaita UIs (default)
     make
 
-    #install
+    # install both UIs
     sudo make install
+
+### Build Options
+
+By default, both `wihotspot-gui` (GTK3) and `wihotspot-adw` (Libadwaita / GTK4) are built and installed. You can selectively disable either UI:
+
+* Disable the Libadwaita / GTK4 UI (build and install only classic GTK3 UI):
+  ```bash
+  make ENABLE_ADW=0
+  sudo make install ENABLE_ADW=0
+  ```
+
+* Disable the classic GTK3 UI (build & install only modern Libadwaita UI):
+  ```bash
+  make ENABLE_GTK3=0
+  sudo make install ENABLE_GTK3=0
+  ```
 
 ## Uninstallation
     sudo make uninstall
