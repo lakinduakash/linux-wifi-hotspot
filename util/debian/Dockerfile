@@ -4,7 +4,7 @@ ARG GIT_TAG=master
 ARG GIT_URL=https://github.com/lakinduakash/linux-wifi-hotspot/archive/${GIT_TAG}.tar.gz
 
 # Retrieve dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y debhelper devscripts build-essential pkg-config libgtk-3-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y debhelper devscripts build-essential pkg-config libgtk-4-dev
 
 # Clone source code
 WORKDIR /root

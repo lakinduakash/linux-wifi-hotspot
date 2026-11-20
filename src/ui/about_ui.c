@@ -39,17 +39,18 @@ static GError *error = NULL;
 void show_info(GtkWidget *widget, gpointer root) {
 
     builder = gtk_builder_new();
-    //Load ui description from built resource - need to generate compiled source with glib-compile-resource
-    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/about.glade",&error);
 
-    root = gtk_builder_get_object(builder, "about_dialog");
+    // Load UI description from compiled resource
+    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/about.ui",&error);
 
-    GtkAboutDialog* dialog= GTK_ABOUT_DIALOG(root);
-    
-    gtk_dialog_run(GTK_DIALOG(dialog));
+    GtkWidget *dialog =
+        GTK_WIDGET(gtk_builder_get_object(builder, "about_dialog"));
 
-    gtk_widget_destroy(GTK_WIDGET( dialog));
-    
-    g_signal_connect (dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(root));
 
+    // Release builder when dialog is closed
+    g_signal_connect_swapped(dialog, "close-request",
+                             G_CALLBACK(g_object_unref), builder);
+
+    gtk_window_present(GTK_WINDOW(dialog));
 }

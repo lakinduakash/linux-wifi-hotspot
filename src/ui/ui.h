@@ -40,7 +40,21 @@ typedef struct {
     GtkEntry *pass;
 } WIData;
 
-int initUi(int argc, char *argv[]);
+#define CONNECT_SIGNAL(widget, signal, callback) \
+    g_signal_connect(widget, signal, G_CALLBACK(callback), NULL);
+
+#define CONNECT_TOGGLED(widget, data) \
+    g_signal_connect(widget, "toggled", G_CALLBACK(on_toggle_changed), data);
+
+#define CONNECT_BUTTON_CLICKED(widget) \
+    g_signal_connect(button_##widget, "clicked", \
+                    G_CALLBACK(on_##widget##_clicked), NULL);
+
+#define CONNECT_ENTRY_CHANGED(name) \
+    g_signal_connect(entry_##name, "changed", \
+                     G_CALLBACK(entry_##name##_warn), NULL);
+
+int initUi(GtkApplication *app);
 
 void init_ui_from_config();
 
@@ -83,22 +97,24 @@ static void expand_log(void);
 
 gchar* get_accepted_macs();
 
+gboolean is_toggle_active(GtkCheckButton *widget);
+
+gboolean is_widget_active(GtkWidget *widget);
+
+static void assign_gtk_widgets(void);
+
+static void connect_callbacks(void);
+
 static void set_connected_devices_label(); // new
+
+static void on_toggle_changed(GtkWidget *widget, gpointer data);
 
 static void on_refresh_clicked(GtkWidget *widget, gpointer data);
 
 static void on_cb_open_toggle(GtkWidget *widget, gpointer data);
 
-static void on_cb_mac_toggle(GtkWidget *widget, gpointer data);
-
 static void on_cb_random_mac_toggle(GtkWidget *widget, gpointer data);
 
-static void on_cb_channel_toggle(GtkWidget *widget, gpointer data);
-
-static void on_cb_mac_filter_toggle(GtkWidget *widget, gpointer data);
-
-static void on_cb_gateway_toggle(GtkWidget *widget, gpointer data);
-
-static void clear_connecetd_devices_list();
+static void clear_connected_devices_list();
 
 #endif //WIHOTSPOT_UI_H

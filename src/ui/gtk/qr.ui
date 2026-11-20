@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkDialog" id="dialog_qr">
+    <property name="title" translatable="1">QR code</property>
+    <property name="resizable">0</property>
+    <property name="modal">1</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child>
+          <object class="GtkPicture" id="image_qr">
+            <property name="halign">0</property>
+            <property name="valign">0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

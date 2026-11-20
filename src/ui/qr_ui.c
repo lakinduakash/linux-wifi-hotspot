@@ -39,21 +39,28 @@ static GError *error = NULL;
 void open_qr(GtkWidget *widget, gpointer root,char* image_path) {
 
     builder = gtk_builder_new();
-    //Load ui description from built resource - need to generate compiled source with glib-compile-resource
-    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/qr.glade",&error);
+
+    // Load UI description from compiled resource
+    gtk_builder_add_from_resource(builder,"/org/gtk/wihotspot/qr.ui",&error);
 
     root = gtk_builder_get_object(builder, "dialog_qr");
 
-    GtkImage* qr_image = (GtkImage *) gtk_builder_get_object(builder, "image_qr");
+    GtkPicture* qr_image = (GtkPicture *) gtk_builder_get_object(builder, "image_qr");
 
-    gtk_image_set_from_file(qr_image,image_path);
+    gtk_picture_set_filename(qr_image, image_path);
 
-    GtkDialog* dialog= GTK_DIALOG(root);
+    GtkDialog* dialog = GTK_DIALOG(root);
     
-    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_window_set_transient_for(GTK_WINDOW(dialog),
+                    GTK_WINDOW(gtk_widget_get_root(widget)));
 
-    gtk_widget_destroy(GTK_WIDGET( dialog));
-    
-    g_signal_connect (dialog, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    // Release builder when dialog is closed
+    g_signal_connect_swapped(
+        dialog,
+        "close-request",
+        G_CALLBACK(g_object_unref),
+        builder
+    );
 
+    gtk_window_present(GTK_WINDOW(dialog));
 }
