@@ -25,16 +25,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+#include <gtk/gtk.h>
 #include "ui.h"
 
-
-int main(int argc, char *argv[]) {
-
-    g_set_prgname("wihotspot");
-    initUi(argc,argv);
-
-    return 0;
+static void activate(GtkApplication *app, gpointer data) {
+    if (initUi(app) != 0)
+        g_application_quit(G_APPLICATION(app));
 }
 
+int main(int argc, char **argv) {
+    GtkApplication *app = gtk_application_new(
+        "com.lakinduakash.wifihotspot",
+        G_APPLICATION_DEFAULT_FLAGS
+    );
 
+    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
+    int status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    g_object_unref(app);
+
+    return status;
+}

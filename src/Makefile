@@ -1,8 +1,8 @@
 CC=gcc
 PKGCONFIG = $(shell which pkg-config)
 
-CFLAGS += `pkg-config --cflags gtk+-3.0`
-LDFLAGS += `pkg-config --libs gtk+-3.0 --libs x11` -lstdc++ -lpng -lqrencode
+CFLAGS += `pkg-config --cflags gtk4`
+LDFLAGS += `pkg-config --libs gtk4 --libs x11` -lstdc++ -lpng -lqrencode
 
 APP_NAME="wihotspot"
 APP_GUI_BINARY="wihotspot-gui"
@@ -27,8 +27,8 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 all: resources.c
 
-resources.c: ui/glade/wifih.gresource.xml ui/glade/wifih.ui
-	$(GLIB_COMPILE_RESOURCES) ui/glade/wifih.gresource.xml --target=ui/$@ --sourcedir=ui/glade --generate-source
+resources.c: ui/gtk/wifih.gresource.xml ui/gtk/wifih.ui
+	$(GLIB_COMPILE_RESOURCES) ui/gtk/wifih.gresource.xml --target=ui/$@ --sourcedir=ui/gtk --generate-source
 	@$(MAKE) -f $(THIS_FILE) wihotspot-gui
 	
 $(ODIR)/%.o: ui/%.c
@@ -47,7 +47,7 @@ install: $(ODIR)/wihotspot-gui
 	install -Dm644 desktop/icons/hotspot@256.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/wihotspot.png
 	install -Dm644 desktop/icons/hotspot@512.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/512x512/apps/wihotspot.png
 	install -Dm644 desktop/icons/hotspot.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/wihotspot.svg
-	install -Dm644 desktop/wifihotspot.desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
+	install -Dm644 desktop/$(APP_NAME).desktop $(DESTDIR)$(PREFIX)/share/applications/$(APP_NAME).desktop
 	install -Dm644 scripts/policies/polkit.rules $(DESTDIR)$(PREFIX)/share/polkit-1/rules.d/90-org.opensuse.policykit.wihotspot.rules
 	install -Dm644 scripts/policies/polkit.policy $(DESTDIR)$(PREFIX)/share/polkit-1/actions/org.opensuse.policykit.wihotspot.policy
 	install -Dm755 $(ODIR)/wihotspot-gui $(DESTDIR)$(BINDIR)/$(APP_GUI_BINARY)

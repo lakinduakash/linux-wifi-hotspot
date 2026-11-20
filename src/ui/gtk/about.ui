@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkAboutDialog" id="about_dialog">
+    <property name="program-name">Linux Wifi Hotspot</property>
+    <property name="version">5.0.0</property>
+    <property name="copyright" translatable="1">© lakinduakash 2026</property>
+    <property name="comments" translatable="1">For more info visit
+https://github.com/lakinduakash/linux-wifi-hotspot</property>
+    <property name="website">https://github.com/lakinduakash/linux-wifi-hotspot</property>
+    <property name="website-label" translatable="1">Star on Github</property>
+    <property name="license" translatable="1">Copyright 2019-2026, lakinduaksh
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</property>
+    <property name="authors">Lakindu Akash
+Oblique
+Open source community</property>
+    <property name="artists">Freepik from www.flaticon.com</property>
+    <property name="logo-icon-name">wihotspot</property>
+    <property name="license-type">custom</property>
+  </object>
+</interface>

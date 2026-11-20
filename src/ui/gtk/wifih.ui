@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkApplicationWindow" id="window">
+    <property name="visible">1</property>
+    <property name="title" translatable="1">Wi Hotspot</property>
+    <child>
+      <object class="GtkCenterBox">
+        <property name="margin-top">5</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">10</property>
+        <property name="orientation">vertical</property>
+        <child type="start">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">3</property>
+                <property name="homogeneous">1</property>
+                <property name="margin-bottom">20</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="halign">start</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="1">SSID</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_ssid">
+                    <property name="focusable">1</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="margin-start">20</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="1">Password</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="cb_open">
+                        <property name="label" translatable="1">Open</property>
+                        <property name="focusable">1</property>
+                        <property name="halign">start</property>
+                        <property name="margin-start">10</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="entry_pass">
+                    <property name="focusable">1</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="homogeneous">1</property>
+                <property name="margin-bottom">15</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="halign">start</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="1">Wifi interface</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkDropDown" id="combo_wifi"/>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="halign">start</property>
+                    <property name="margin-start">20</property>
+                    <property name="label" translatable="1">Internet interface</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkDropDown" id="combo_internet"/>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator"/>
+            </child>
+            <child>
+              <object class="GtkExpander">
+                <property name="focusable">1</property>
+                <property name="resize-toplevel">1</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="focusable">1</property>
+                    <property name="has-frame">1</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="min-content-height">160</property>
+                    <property name="propagate-natural-height">1</property>
+                    <property name="child">
+                      <object class="GtkViewport">
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="GtkGrid">
+                                <property name="margin-top">10</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="row-spacing">10</property>
+                                <property name="column-homogeneous">1</property>
+                                <child>
+                                  <object class="GtkCheckButton" id="rb_freq_2">
+                                    <property name="label" translatable="1">2.4Ghz</property>
+                                    <property name="focusable">1</property>
+                                    <property name="group">rb_freq_auto</property>
+                                    <layout>
+                                      <property name="column">2</property>
+                                      <property name="row">0</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="rb_freq_auto">
+                                    <property name="label" translatable="1">Auto</property>
+                                    <property name="focusable">1</property>
+                                    <property name="active">1</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">0</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="halign">start</property>
+                                    <property name="label" translatable="1">Frequency band</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">0</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="rb_freq_5">
+                                    <property name="label" translatable="1">5Ghz</property>
+                                    <property name="focusable">1</property>
+                                    <property name="group">rb_freq_auto</property>
+                                    <layout>
+                                      <property name="column">3</property>
+                                      <property name="row">0</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_hidden">
+                                    <property name="label" translatable="1">Hidden</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">1</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_use_psk">
+                                    <property name="label" translatable="1">Use psk</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">2</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_random_mac">
+                                    <property name="label" translatable="1">Random MAC</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">3</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_mac">
+                                    <property name="label" translatable="1">Set MAC</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">4</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_mac">
+                                    <property name="focusable">1</property>
+                                    <property name="halign">start</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">4</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_no_virt">
+                                    <property name="label" translatable="1">No Virt</property>
+                                    <property name="focusable">1</property>
+                                    <property name="tooltip-text" translatable="1">Do not create virtual interface</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">5</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_channel">
+                                    <property name="label" translatable="1">Channel</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">6</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_channel">
+                                    <property name="focusable">1</property>
+                                    <property name="halign">start</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">6</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_gateway">
+                                    <property name="label" translatable="1">Gateway</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">7</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_gateway">
+                                    <property name="focusable">1</property>
+                                    <property name="halign">start</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">7</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_mac_filter">
+                                    <property name="label" translatable="1">Mac Filter</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">8</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTextView" id="tv_mac_filter">
+                                    <property name="focusable">1</property>
+                                    <property name="accepts-tab">0</property>
+                                    <property name="input-hints">GTK_INPUT_HINT_UPPERCASE_CHARS | GTK_INPUT_HINT_NONE</property>
+                                    <property name="monospace">1</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">8</property>
+                                      <property name="row-span">2</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_ieee80211n">
+                                    <property name="label" translatable="1">IEEE 802.11n</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">10</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_no_haveged">
+                                    <property name="label">No Haveged</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">0</property>
+                                      <property name="row">11</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_ieee80211ac">
+                                    <property name="label" translatable="1">IEEE 802.11ac</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">1</property>
+                                      <property name="row">10</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkCheckButton" id="cb_ieee80211ax">
+                                    <property name="label" translatable="1">IEEE 802.11ax</property>
+                                    <property name="focusable">1</property>
+                                    <layout>
+                                      <property name="column">2</property>
+                                      <property name="row">10</property>
+                                    </layout>
+                                  </object>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="1">Advanced</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkExpander">
+                <property name="vexpand">1</property>
+                <property name="focusable">1</property>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="focusable">1</property>
+                    <property name="has-frame">1</property>
+                    <property name="min-content-height">100</property>
+                    <property name="child">
+                      <object class="GtkViewport">
+                        <property name="child">
+                          <object class="GtkCenterBox">
+                            <property name="orientation">vertical</property>
+                            <child type="start">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkGrid">
+                                    <property name="column-homogeneous">1</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="label" translatable="1">Number</property>
+                                        <layout>
+                                          <property name="column">0</property>
+                                          <property name="row">0</property>
+                                        </layout>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="label" translatable="1">Hostname</property>
+                                        <layout>
+                                          <property name="column">1</property>
+                                          <property name="row">0</property>
+                                        </layout>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="label" translatable="1">IP</property>
+                                        <layout>
+                                          <property name="column">2</property>
+                                          <property name="row">0</property>
+                                        </layout>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="label" translatable="1">MAC</property>
+                                        <layout>
+                                          <property name="column">3</property>
+                                          <property name="row">0</property>
+                                        </layout>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkGrid" id="grid_devices">
+                                    <property name="row-homogeneous">1</property>
+                                    <property name="column-homogeneous">1</property>
+                                    <property name="baseline-row">1</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="end">
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkButton" id="button_refresh">
+                                    <property name="label" translatable="1">Refresh</property>
+                                    <property name="focusable">1</property>
+                                    <property name="receives-default">1</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="1">Connected devices</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="halign">end</property>
+                <property name="spacing">10</property>
+                <property name="margin-top">15</property>
+                <property name="margin-bottom">15</property>
+                <child>
+                  <object class="GtkButton" id="button_about">
+                    <property name="label" translatable="1">About</property>
+                    <property name="margin-end">40</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_qr_open">
+                    <property name="label" translatable="1">Open QR</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_stop_hp">
+                    <property name="label" translatable="1">Stop</property>
+                    <property name="halign">end</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_create_hp">
+                    <property name="label" translatable="1">Create hotspot</property>
+                    <property name="halign">end</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkProgressBar" id="progress_bar">
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-bottom">5</property>
+                <property name="pulse-step">0.20</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparator"/>
+            </child>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">5</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="label_status">
+                    <property name="halign">start</property>
+                    <property name="margin-start">5</property>
+                    <property name="label" translatable="1">Running status</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label_input_error">
+                    <property name="halign">center</property>
+                    <property name="margin-top">5</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkExpander" id="expander_log">
+                    <property name="vexpand">1</property>
+                    <property name="focusable">1</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">2</property>
+                    <property name="margin-bottom">2</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scroll_log">
+                        <property name="focusable">1</property>
+                        <property name="has-frame">1</property>
+                        <property name="min-content-height">160</property>
+                        <property name="child">
+                          <object class="GtkTextView" id="textview_log">
+                            <property name="focusable">1</property>
+                            <property name="editable">0</property>
+                            <property name="cursor-visible">0</property>
+                            <property name="monospace">1</property>
+                            <property name="wrap-mode">word-char</property>
+                            <property name="left-margin">4</property>
+                            <property name="right-margin">4</property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="label" translatable="1">Log</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
