@@ -121,19 +121,19 @@ install it using your distro's package manager_
 * build-essential
 * pkg-config
 * gtk
-* libgtk-3-dev
+* libgtk-4-dev
 * libqrencode-dev (for qr code generation)
 * libpng-dev (for qr code generation)
 
 On Ubuntu or Debian install dependencies by,
 
 ```bash
-sudo apt install -y libgtk-3-dev build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
+sudo apt install -y libgtk-4-dev build-essential gcc g++ pkg-config make hostapd libqrencode-dev libpng-dev
 ```
 
 On Fedora/CentOS/Red Hat Enterprise Linux/Rocky Linux/Oracle Linux
 ```bash
-sudo dnf install -y gtk3-devel gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
+sudo dnf install -y gtk4-devel gcc gcc-c++ kernel-devel pkg-config make hostapd qrencode-devel libpng-devel
 ```
 
 ## Installation
